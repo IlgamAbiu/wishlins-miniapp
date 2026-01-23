@@ -19,24 +19,33 @@ class WishlistBloc extends Bloc<WishlistEvent, WishlistState> {
   Future<void> _onAppStarted(AppStarted event, Emitter<WishlistState> emit) async {
     emit(WishlistLoading());
     
-    // Mock user for dev, in production use TelegramWebApp
-    _currentUser = model.User(id: 123, firstName: 'Dev');
+    _currentUser = model.User(id: 123, firstName: 'Dev (Browser)');
     
     try {
-      final tgUser = TelegramWebApp.instance.initDataUnsafe.user;
-      if (tgUser != null) {
-        _currentUser = model.User(
-          id: tgUser.id,
-          firstName: tgUser.firstName,
-          lastName: tgUser.lastName,
-          username: tgUser.username,
-          photoUrl: tgUser.photoUrl,
-        );
+      final webApp = TelegramWebApp.instance;
+      // Some versions of the package might throw on accessing initDataUnsafe if not supported
+      if (webApp.isSupported) {
+        final user = webApp.initDataUnsafe?.user;
+        if (user != null) {
+          _currentUser = model.User(
+            id: user.id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            username: user.username,
+            photoUrl: user.photoUrl,
+          );
+        }
       }
-    } catch (_) {}
+    } catch (e) {
+      print('TelegramWebApp not available: $e');
+    }
 
-    await repository.syncUser(_currentUser!);
-    add(LoadMyEvents(_currentUser!.id));
+    try {
+      await repository.syncUser(_currentUser!);
+      add(LoadMyEvents(_currentUser!.id));
+    } catch (e) {
+      emit(WishlistError('Connection error: $e'));
+    }
   }
 
   Future<void> _onLoadMyEvents(LoadMyEvents event, Emitter<WishlistState> emit) async {

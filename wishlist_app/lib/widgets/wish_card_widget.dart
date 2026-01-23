@@ -34,12 +34,12 @@ class WishCardWidget extends StatelessWidget {
                     fit: BoxFit.cover,
                     width: double.infinity,
                     height: double.infinity,
-                    placeholder: (context, url) => Container(color: Colors.slate.shade50),
+                    placeholder: (context, url) => Container(color: const Color(0xfff8fafc)),
                   )
                 else
                   Container(
-                    color: Colors.slate.shade100,
-                    child: Center(child: Icon(LucideIcons.gift, color: Colors.slate.shade300, size: 40)),
+                    color: const Color(0xfff1f5f9),
+                    child: Center(child: Icon(LucideIcons.gift, color: const Color(0xff94a3b8), size: 40)),
                   ),
                 // Reserved Badge
                 if (wish.isBooked)

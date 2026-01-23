@@ -4,7 +4,7 @@ import '../models/event.dart';
 import '../models/wish.dart';
 
 class WishlistRepository {
-  final Dio _dio = Dio(BaseOptions(baseUrl: 'http://72.56.75.232:8000')); // Assuming default port for Python
+  final Dio _dio = Dio(BaseOptions(baseUrl: 'https://wishlist.splittrip.ru')); 
 
   Future<void> syncUser(User user) async {
     await _dio.post('/api/auth', data: user.toJson());

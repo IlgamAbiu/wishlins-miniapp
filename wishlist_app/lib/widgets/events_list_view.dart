@@ -19,7 +19,7 @@ class EventsListView extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.fromLTRB(24, 60, 24, 24),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.between,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -30,7 +30,7 @@ class EventsListView extends StatelessWidget {
                   ),
                   Text(
                     'Все твои заветные желания',
-                    style: TextStyle(fontSize: 14, color: Colors.slate.shade500, fontWeight: FontWeight.w500),
+                    style: TextStyle(fontSize: 14, color: const Color(0xff64748b), fontWeight: FontWeight.w500),
                   ),
                 ],
               ),

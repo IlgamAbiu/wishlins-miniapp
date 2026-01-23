@@ -14,6 +14,11 @@ class WishlistBloc extends Bloc<WishlistEvent, WishlistState> {
     on<LoadMyEvents>(_onLoadMyEvents);
     on<SelectEvent>(_onSelectEvent);
     on<BackToList>(_onBackToList);
+    on<CreateEventRequested>(_onCreateEvent);
+    on<AddWishRequested>(_onAddWish);
+    on<UpdateWishRequested>(_onUpdateWish);
+    on<DeleteWishRequested>(_onDeleteWish);
+    on<ToggleWishBooking>(_onToggleWishBooking);
   }
 
   Future<void> _onAppStarted(AppStarted event, Emitter<WishlistState> emit) async {
@@ -23,7 +28,6 @@ class WishlistBloc extends Bloc<WishlistEvent, WishlistState> {
     
     try {
       final webApp = TelegramWebApp.instance;
-      // Some versions of the package might throw on accessing initDataUnsafe if not supported
       if (webApp.isSupported) {
         final user = webApp.initDataUnsafe?.user;
         if (user != null) {
@@ -68,9 +72,65 @@ class WishlistBloc extends Bloc<WishlistEvent, WishlistState> {
     }
   }
 
+  Future<void> _onCreateEvent(CreateEventRequested event, Emitter<WishlistState> emit) async {
+    try {
+      await repository.createEvent(_currentUser!.id, event.title, event.date, event.description);
+      add(LoadMyEvents(_currentUser!.id));
+    } catch (e) {
+      emit(WishlistError('Failed to create event: $e'));
+    }
+  }
+
+  Future<void> _onAddWish(AddWishRequested event, Emitter<WishlistState> emit) async {
+    try {
+      await repository.createWish({
+        ...event.wishData,
+        'eventId': event.eventId,
+      });
+      add(SelectEvent(event.eventId));
+    } catch (e) {
+      emit(WishlistError('Failed to add wish: $e'));
+    }
+  }
+
+  Future<void> _onUpdateWish(UpdateWishRequested event, Emitter<WishlistState> emit) async {
+    try {
+      await repository.updateWish(event.wishId, event.wishData);
+      if (state is EventDetailLoaded) {
+        add(SelectEvent((state as EventDetailLoaded).event.id));
+      }
+    } catch (e) {
+      emit(WishlistError('Failed to update wish: $e'));
+    }
+  }
+
+  Future<void> _onDeleteWish(DeleteWishRequested event, Emitter<WishlistState> emit) async {
+    try {
+      final eventId = (state as EventDetailLoaded).event.id;
+      await repository.deleteWish(event.wishId);
+      add(SelectEvent(eventId));
+    } catch (e) {
+      emit(WishlistError('Failed to delete wish: $e'));
+    }
+  }
+
+  Future<void> _onToggleWishBooking(ToggleWishBooking event, Emitter<WishlistState> emit) async {
+    try {
+      final eventId = (state as EventDetailLoaded).event.id;
+      await repository.updateWish(event.wishId, {
+        'isBooked': event.isBooked,
+        'bookedByUserId': event.isBooked ? _currentUser!.id : null,
+      });
+      add(SelectEvent(eventId));
+    } catch (e) {
+      emit(WishlistError('Failed to toggle booking: $e'));
+    }
+  }
+
   void _onBackToList(BackToList event, Emitter<WishlistState> emit) {
     if (_currentUser != null) {
       add(LoadMyEvents(_currentUser!.id));
     }
   }
 }
+

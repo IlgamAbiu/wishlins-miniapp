@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../blocs/wishlist_bloc.dart';
+import '../blocs/wishlist_event.dart';
+import 'event_dialog.dart';
 
 class LandingView extends StatelessWidget {
   const LandingView({super.key});
@@ -80,7 +84,20 @@ class LandingView extends StatelessWidget {
             const SizedBox(height: 48),
             // Buttons
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (dialogContext) => EventDialog(
+                    onSave: (title, date, desc) {
+                      context.read<WishlistBloc>().add(CreateEventRequested(
+                        title: title,
+                        date: date,
+                        description: desc,
+                      ));
+                    },
+                  ),
+                );
+              },
               style: ElevatedButton.styleFrom(
                 padding: EdgeInsets.zero,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
@@ -109,6 +126,7 @@ class LandingView extends StatelessWidget {
                 ),
               ),
             ),
+
             const SizedBox(height: 12),
             OutlinedButton(
               onPressed: () {},

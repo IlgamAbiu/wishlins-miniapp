@@ -5,6 +5,7 @@ import '../models/event.dart';
 import '../models/user.dart';
 import '../blocs/wishlist_bloc.dart';
 import '../blocs/wishlist_event.dart';
+import 'event_dialog.dart';
 
 class EventsListView extends StatelessWidget {
   final List<Event> events;
@@ -35,7 +36,20 @@ class EventsListView extends StatelessWidget {
                 ],
               ),
               GestureDetector(
-                onTap: () {},
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (dialogContext) => EventDialog(
+                      onSave: (title, date, desc) {
+                        context.read<WishlistBloc>().add(CreateEventRequested(
+                          title: title,
+                          date: date,
+                          description: desc,
+                        ));
+                      },
+                    ),
+                  );
+                },
                 child: Container(
                   width: 44,
                   height: 44,

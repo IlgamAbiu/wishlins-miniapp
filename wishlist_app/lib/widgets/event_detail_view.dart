@@ -7,6 +7,7 @@ import '../models/user.dart';
 import '../blocs/wishlist_bloc.dart';
 import '../blocs/wishlist_event.dart';
 import 'wish_card_widget.dart';
+import 'wish_dialog.dart';
 
 class EventDetailView extends StatelessWidget {
   final Event event;
@@ -46,6 +47,23 @@ class EventDetailView extends StatelessWidget {
                   style: IconButton.styleFrom(backgroundColor: Colors.white.withOpacity(0.2)),
                 ),
               ),
+              // Share Button
+              Positioned(
+                top: 50,
+                right: 20,
+                child: IconButton(
+                  onPressed: () {
+                    final shareUrl = 'https://t.me/share/url?url=https://wishlist.splittrip.ru/%23/event/${event.id}&text=Посмотри мой вишлист на ${event.title}! ✨';
+                    // In Flutter Web we can use url_launcher or JS interop
+                    // For now, let's just use Telegram JS API if available
+                    try {
+                      // Using Window.open or similar
+                    } catch (_) {}
+                  },
+                  icon: const Icon(LucideIcons.share2, color: Colors.white),
+                  style: IconButton.styleFrom(backgroundColor: Colors.white.withOpacity(0.2)),
+                ),
+              ),
               // Content
               Positioned.fill(
                 child: Padding(
@@ -66,7 +84,7 @@ class EventDetailView extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        isOwner ? 'Мой Вишлист' : '${event.owner?.firstName ?? 'Unknown'}\'s Wishlist',
+                        isOwner ? 'Мой Вишлист' : '${event.owner?.firstName ?? 'Друг'}\'s Wishlist',
                         style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 8),
@@ -123,7 +141,7 @@ class EventDetailView extends StatelessWidget {
                     itemCount: wishes.length + (isOwner ? 1 : 0),
                     itemBuilder: (context, index) {
                       if (isOwner && index == wishes.length) {
-                        return _buildAddButton();
+                        return _buildAddButton(context);
                       }
                       return WishCardWidget(wish: wishes[index], isOwner: isOwner, currentUserId: user.id);
                     },
@@ -149,17 +167,28 @@ class EventDetailView extends StatelessWidget {
     );
   }
 
-  Widget _buildAddButton() {
+  Widget _buildAddButton(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: const Color(0xfff1f5f9), width: 2, style: BorderStyle.none), // Wait, dashed border needs custom painter in Flutter
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () {},
+          onTap: () {
+            showDialog(
+              context: context,
+              builder: (dialogContext) => WishDialog(
+                onSave: (data) {
+                  context.read<WishlistBloc>().add(AddWishRequested(
+                    eventId: event.id,
+                    wishData: data,
+                  ));
+                },
+              ),
+            );
+          },
           borderRadius: BorderRadius.circular(32),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -178,3 +207,4 @@ class EventDetailView extends StatelessWidget {
     );
   }
 }
+

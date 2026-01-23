@@ -29,4 +29,33 @@ class CreateEventRequested extends WishlistEvent {
   CreateEventRequested({required this.title, this.date, this.description});
 }
 
+class DeleteEventRequested extends WishlistEvent {
+  final int eventId;
+  DeleteEventRequested(this.eventId);
+}
+
+class AddWishRequested extends WishlistEvent {
+  final int eventId;
+  final Map<String, dynamic> wishData;
+  AddWishRequested({required this.eventId, required this.wishData});
+}
+
+class UpdateWishRequested extends WishlistEvent {
+  final int wishId;
+  final Map<String, dynamic> wishData;
+  UpdateWishRequested({required this.wishId, required this.wishData});
+}
+
+class DeleteWishRequested extends WishlistEvent {
+  final int wishId;
+  DeleteWishRequested(this.wishId);
+}
+
+class ToggleWishBooking extends WishlistEvent {
+  final int wishId;
+  final bool isBooked;
+  ToggleWishBooking({required this.wishId, required this.isBooked});
+}
+
 class BackToList extends WishlistEvent {}
+

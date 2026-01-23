@@ -1,0 +1,5 @@
+{
+  "name": "Вишлист",
+  "description": "Telegram Mini App для создания списков желаний с анонимным бронированием.",
+  "requestFramePermissions": []
+}

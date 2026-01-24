@@ -23,6 +23,16 @@ dist-ssr
 *.sln
 *.sw?
 
+# Environment files (contain secrets!)
+.env
+**/.env
+
+# Python virtual environments
+venv/
+**/venv/
+__pycache__/
+**/__pycache__/
+
 # Project specific
 data/
 deploy_package.tar.gz

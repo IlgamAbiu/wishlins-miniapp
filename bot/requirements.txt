@@ -1,0 +1,10 @@
+# Telegram Bot
+aiogram==3.17.0
+
+# HTTP Client
+aiohttp==3.11.11
+
+# Configuration
+pydantic==2.10.4
+pydantic-settings==2.7.1
+python-dotenv==1.0.1

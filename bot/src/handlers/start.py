@@ -17,11 +17,11 @@ router = Router(name="start")
 
 # Welcome message content
 WELCOME_MESSAGE = """
-Welcome to Wishlist!
+Добро пожаловать в список желаний!
 
-Create and share wishlists with friends and family. Never get a duplicate gift again.
+Создавайте и делитесь списками желаний с друзьями и семьей. Больше никогда не получайте повторяющиеся подарки.
 
-Tap the button below to open your wishlist.
+Нажмите кнопку ниже, чтобы открыть свой список желаний.
 """.strip()
 
 

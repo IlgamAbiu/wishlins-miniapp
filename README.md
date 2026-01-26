@@ -266,35 +266,78 @@ npm run dev
 
 ## Production Deployment
 
-### 1. Configure Production Environment
+### ⚡ [Quick Start - Деплой за 5 минут →](QUICKSTART.md)
+
+Быстрое руководство по развертыванию на production сервере.
+
+### 🚀 Скрипты для деплоя
+
+Проект включает набор скриптов для автоматизации деплоя:
+
+- **[setup-server.sh](setup-server.sh)** - Первоначальная настройка сервера
+- **[quick-start.sh](quick-start.sh)** - Быстрый старт приложения
+- **[deploy.sh](deploy.sh)** - Автоматический деплой обновлений
+- **[check-status.sh](check-status.sh)** - Проверка статуса сервисов
+- **[generate-nginx-config.sh](generate-nginx-config.sh)** - Генерация Nginx конфигурации
+
+📖 **Подробнее о скриптах**: [SCRIPTS.md](SCRIPTS.md)
+
+### Quick Deploy to Server
+
+Полная инструкция по деплою: **[DEPLOYMENT.md](DEPLOYMENT.md)**
+
+#### Быстрый старт:
 
 ```bash
+# 1. Настройка сервера (первый раз)
+./setup-server.sh user@your-server-ip
+
+# 2. На сервере: клонируйте репозиторий
+ssh user@your-server-ip
+git clone <your-repo-url> ~/apps/wishlins-miniapp
+cd ~/apps/wishlins-miniapp
+
+# 3. Настройте переменные окружения
 cp .env.example .env
-# Edit .env with production values:
-# - Strong POSTGRES_PASSWORD
-# - Your domain in MINIAPP_URL
-# - CORS_ORIGINS with your domain
+nano .env  # Укажите ваши настройки
+
+# 4. Запустите приложение
+docker compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml exec backend alembic upgrade head
+
+# 5. Настройте Nginx и SSL
+./generate-nginx-config.sh your-domain.com
+# Следуйте инструкциям из вывода скрипта
 ```
 
-### 2. Deploy with Docker Compose
+#### Автоматический деплой с локальной машины:
 
 ```bash
-docker-compose -f docker-compose.prod.yml up -d
+# После первоначальной настройки просто запустите:
+./deploy.sh user@your-server-ip
 ```
 
-### 3. Set Up Telegram Bot Webhook (Optional)
-
-For production, configure webhook instead of polling:
+#### Ручной деплой:
 
 ```bash
-curl -X POST "https://api.telegram.org/bot<TOKEN>/setWebhook" \
-  -H "Content-Type: application/json" \
-  -d '{"url": "https://your-domain.com/webhook"}'
+# 1. Настройте .env файл
+cp .env.example .env
+# Укажите production значения:
+# - Сильный POSTGRES_PASSWORD
+# - Ваш домен в MINIAPP_URL
+# - CORS_ORIGINS с вашим доменом
+
+# 2. Запустите с Docker Compose
+docker compose -f docker-compose.prod.yml up -d --build
+
+# 3. Выполните миграции
+docker compose -f docker-compose.prod.yml exec backend alembic upgrade head
+
+# 4. Настройте HTTPS
+# Используйте reverse proxy (nginx, Traefik, Caddy) с SSL сертификатами
 ```
 
-### 4. Configure HTTPS
-
-Use a reverse proxy (nginx, Traefik, Caddy) with SSL certificates for production deployment.
+Подробные инструкции, включая настройку Nginx, SSL, мониторинг и troubleshooting: **[DEPLOYMENT.md](DEPLOYMENT.md)**
 
 ## Testing Telegram Mini App
 

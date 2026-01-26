@@ -28,6 +28,8 @@ services:
       - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-wishlist}
       - DEBUG=false
       - CORS_ORIGINS=${CORS_ORIGINS:-["*"]}
+    ports:
+      - "8000:8000"
     depends_on:
       postgres:
         condition: service_healthy

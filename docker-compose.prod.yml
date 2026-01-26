@@ -29,7 +29,7 @@ services:
       - DEBUG=false
       - CORS_ORIGINS=${CORS_ORIGINS:-["*"]}
     ports:
-      - "8000:8000"
+      - "3001:8000"
     depends_on:
       postgres:
         condition: service_healthy
@@ -58,7 +58,7 @@ services:
         - VITE_API_URL=${VITE_API_URL}
     container_name: wishlist-frontend
     ports:
-      - "8080:80"
+      - "3000:80"
     restart: unless-stopped
 
 volumes:

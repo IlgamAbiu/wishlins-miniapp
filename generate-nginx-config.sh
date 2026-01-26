@@ -48,7 +48,7 @@ server {
 
     # Frontend
     location / {
-        proxy_pass http://localhost:80;
+        proxy_pass http://localhost:3000;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
@@ -62,7 +62,7 @@ server {
 
     # Backend API
     location /api/ {
-        proxy_pass http://localhost:8000;
+        proxy_pass http://localhost:3001;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
@@ -76,7 +76,7 @@ server {
 
     # Health check
     location /health {
-        proxy_pass http://localhost:8000/health;
+        proxy_pass http://localhost:3001/health;
         access_log off;
     }
 

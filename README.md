@@ -2,6 +2,12 @@
 
 A production-ready MVP for a Telegram-based Wishlist service.
 
+## 📚 Quick Links
+
+- **[WORKFLOW.md](WORKFLOW.md)** - Что делать после коммита? Пошаговая инструкция по деплою
+- **[DEPLOYMENT.md](DEPLOYMENT.md)** - Полное руководство по развертыванию на production
+- **[SCRIPTS.md](SCRIPTS.md)** - Описание скриптов автоматизации
+
 ## Architecture Overview
 
 ```

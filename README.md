@@ -2,11 +2,30 @@
 
 A production-ready MVP for a Telegram-based Wishlist service.
 
+## 🚀 Быстрый старт для разработки
+
+```bash
+make dev
+```
+
+**Подробнее**: [docs/START_HERE.md](docs/START_HERE.md)
+
 ## 📚 Quick Links
 
-- **[WORKFLOW.md](WORKFLOW.md)** - Что делать после коммита? Пошаговая инструкция по деплою
-- **[DEPLOYMENT.md](DEPLOYMENT.md)** - Полное руководство по развертыванию на production
-- **[SCRIPTS.md](SCRIPTS.md)** - Описание скриптов автоматизации
+### 🚀 Для разработчиков
+- **[docs/START_HERE.md](docs/START_HERE.md)** - ⚡ Быстрый старт (начните отсюда!)
+- **[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)** - 🔧 Полное руководство по локальной разработке
+- **[docs/CHEATSHEET.md](docs/CHEATSHEET.md)** - 📋 Шпаргалка с командами
+
+### 🚢 Для деплоя
+- **[docs/WORKFLOW.md](docs/WORKFLOW.md)** - Что делать после коммита? Пошаговая инструкция по деплою
+- **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)** - Полное руководство по развертыванию на production
+- **[docs/SCRIPTS.md](docs/SCRIPTS.md)** - Описание скриптов автоматизации
+
+### 📂 Структура
+- **[PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md)** - Организация файлов и папок
+- **[docs/](docs/)** - Вся документация
+- **[scripts/](scripts/)** - Все скрипты
 
 ## Architecture Overview
 
@@ -81,46 +100,37 @@ Wishlist/
 
 ## Quick Start
 
-### Prerequisites
+### 🚀 Development Mode (Recommended)
 
-- Docker and Docker Compose
-- Telegram Bot Token (from [@BotFather](https://t.me/botfather))
-
-### 1. Clone and Configure
+Для локальной разработки используйте удобный скрипт:
 
 ```bash
-# Clone the repository
-cd Wishlist
-
-# Copy environment file
-cp .env.example .env
-
-# Edit .env and add your Telegram Bot Token
+# Запустить все сервисы с hot reload
+./dev.sh
 ```
 
-### 2. Start with Docker Compose
-
-```bash
-# Start all services
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-```
-
-### 3. Run Database Migrations
-
-```bash
-# Run migrations
-docker-compose exec backend alembic upgrade head
-```
-
-### 4. Access Services
-
-- **Backend API**: http://localhost:8000
-- **API Docs**: http://localhost:8000/docs (debug mode only)
-- **Frontend**: http://localhost:5173
+Доступные сервисы:
+- **Frontend**: http://localhost:5173 (Vite HMR)
+- **Backend API**: http://localhost:8000 (FastAPI docs: /docs)
 - **PostgreSQL**: localhost:5432
+
+Подробнее: **[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)**
+
+### 📦 Production Mode
+
+```bash
+# 1. Configure environment
+cp .env.example .env
+# Edit .env and add your settings
+
+# 2. Start all services
+docker-compose -f docker-compose.prod.yml up -d --build
+
+# 3. Run migrations
+docker-compose -f docker-compose.prod.yml exec backend alembic upgrade head
+```
+
+Подробнее: **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)**
 
 ## Development Setup
 
@@ -286,11 +296,11 @@ npm run dev
 - **[check-status.sh](check-status.sh)** - Проверка статуса сервисов
 - **[generate-nginx-config.sh](generate-nginx-config.sh)** - Генерация Nginx конфигурации
 
-📖 **Подробнее о скриптах**: [SCRIPTS.md](SCRIPTS.md)
+📖 **Подробнее о скриптах**: [docs/SCRIPTS.md](docs/SCRIPTS.md)
 
 ### Quick Deploy to Server
 
-Полная инструкция по деплою: **[DEPLOYMENT.md](DEPLOYMENT.md)**
+Полная инструкция по деплою: **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)**
 
 #### Быстрый старт:
 
@@ -343,7 +353,7 @@ docker compose -f docker-compose.prod.yml exec backend alembic upgrade head
 # Используйте reverse proxy (nginx, Traefik, Caddy) с SSL сертификатами
 ```
 
-Подробные инструкции, включая настройку Nginx, SSL, мониторинг и troubleshooting: **[DEPLOYMENT.md](DEPLOYMENT.md)**
+Подробные инструкции, включая настройку Nginx, SSL, мониторинг и troubleshooting: **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)**
 
 ## Testing Telegram Mini App
 

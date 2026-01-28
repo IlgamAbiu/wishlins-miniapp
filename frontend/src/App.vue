@@ -1,24 +1,12 @@
 <script setup lang="ts">
 /**
  * Root application component with Tab Bar navigation.
- *
- * Architecture Decision:
- * - Custom tab router instead of Vue Router because:
- *   1. Simpler for tab-based navigation
- *   2. No URL changes in Mini App context
- *   3. Lighter footprint
- *   4. Keeps all tabs mounted (preserves state)
- *   5. Better control over transitions
- *
- * - Uses KeepAlive to preserve tab state when switching
- * - Applies Telegram theme on mount
  */
-import { computed, onMounted, defineAsyncComponent } from 'vue'
+import { computed, defineAsyncComponent } from 'vue'
 import { useNavigation } from '@/composables/useNavigation'
-import { telegramService } from '@/services'
 import { TabBar } from '@/components/navigation'
 
-// Lazy load views for better initial load performance
+// Lazy load views
 const FeedView = defineAsyncComponent(() => import('@/views/FeedView.vue'))
 const ProfileView = defineAsyncComponent(() => import('@/views/ProfileView.vue'))
 const FriendsView = defineAsyncComponent(() => import('@/views/FriendsView.vue'))
@@ -33,23 +21,11 @@ const tabComponents = {
 }
 
 const currentComponent = computed(() => tabComponents[activeTab.value])
-
-onMounted(() => {
-  // Initialize Telegram WebApp
-  telegramService.init()
-
-  // Apply Telegram theme colors
-  telegramService.applyTheme()
-})
 </script>
 
 <template>
   <div class="app">
     <main class="app__content">
-      <!--
-        KeepAlive preserves component state when switching tabs.
-        This maintains scroll position, loaded data, and form state.
-      -->
       <KeepAlive>
         <component :is="currentComponent" :key="activeTab" />
       </KeepAlive>
@@ -65,7 +41,7 @@ onMounted(() => {
    ============================================================================ */
 
 :root {
-  /* Default theme (light) - overridden by Telegram */
+  /* Default theme colors */
   --tg-bg-color: #ffffff;
   --tg-text-color: #000000;
   --tg-hint-color: #999999;
@@ -73,25 +49,9 @@ onMounted(() => {
   --tg-button-color: #3390ec;
   --tg-button-text-color: #ffffff;
   --tg-secondary-bg-color: #f5f5f5;
-  --tg-header-bg-color: #ffffff;
-  --tg-section-bg-color: #ffffff;
-  --tg-accent-text-color: #3390ec;
-  --tg-destructive-text-color: #ff3b30;
 
-  /* RGB values for rgba() usage */
-  --tg-bg-color-rgb: 255, 255, 255;
-
-  /* Tab bar height for layout calculations */
+  /* Tab bar height */
   --tab-bar-height: 56px;
-}
-
-/* Dark mode defaults */
-.dark {
-  --tg-bg-color: #1c1c1e;
-  --tg-text-color: #ffffff;
-  --tg-hint-color: #8e8e93;
-  --tg-secondary-bg-color: #2c2c2e;
-  --tg-bg-color-rgb: 28, 28, 30;
 }
 
 * {
@@ -108,8 +68,6 @@ html, body {
   color: var(--tg-text-color);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-
-  /* Prevent overscroll bounce on iOS */
   overscroll-behavior: none;
 }
 
@@ -133,12 +91,7 @@ button {
   -webkit-tap-highlight-color: transparent;
 }
 
-img {
-  max-width: 100%;
-  height: auto;
-}
-
-/* Scrollbar styling for webkit browsers */
+/* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 0;
   height: 0;

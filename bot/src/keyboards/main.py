@@ -15,7 +15,7 @@ def get_miniapp_button() -> InlineKeyboardButton:
     """Create button that opens the Mini App."""
     settings = get_settings()
     return InlineKeyboardButton(
-        text="Open Wishlist",
+        text="Создать мой список желаний",
         web_app=WebAppInfo(url=settings.miniapp_url),
     )
 

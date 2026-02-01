@@ -22,6 +22,19 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Bot description texts
+BOT_DESCRIPTION = """
+Создавайте и делитесь списками желаний с друзьями и семьей.
+""".strip()
+
+BOT_ABOUT = """
+👋 Добро пожаловать в список желаний!
+
+Создавайте и делитесь списками желаний с друзьями и семьей. Больше никогда не получайте повторяющиеся подарки.
+
+Нажмите "Start", чтобы начать! 🎁
+""".strip()
+
 
 async def main() -> None:
     """Main entry point for the bot."""
@@ -48,6 +61,14 @@ async def main() -> None:
     logger.info(f"Starting {settings.bot_name}...")
 
     try:
+        # Set bot description and about text
+        try:
+            await bot.set_my_description(description=BOT_DESCRIPTION)
+            await bot.set_my_short_description(short_description=BOT_DESCRIPTION)
+            logger.info("Bot description set successfully")
+        except Exception as e:
+            logger.warning(f"Failed to set bot description: {e}")
+
         # Check backend health
         if await api_client.health_check():
             logger.info("Backend API is healthy")

@@ -15,13 +15,15 @@ from src.keyboards import get_main_keyboard
 logger = logging.getLogger(__name__)
 router = Router(name="start")
 
-# Welcome message content
-WELCOME_MESSAGE = """
-Добро пожаловать в список желаний!
+# Welcome messages
+WELCOME_INFO_MESSAGE = """
+👋 Добро пожаловать в список желаний!
 
 Создавайте и делитесь списками желаний с друзьями и семьей. Больше никогда не получайте повторяющиеся подарки.
+""".strip()
 
-Нажмите кнопку ниже, чтобы открыть свой список желаний.
+WELCOME_CTA_MESSAGE = """
+Нажмите кнопку ниже, чтобы создать свой список желаний.
 """.strip()
 
 
@@ -75,8 +77,11 @@ async def handle_start(message: Message, api_client: BackendAPIClient) -> None:
         # Continue anyway - show welcome message even if registration fails
         # User can be registered on next interaction
 
-    # Send welcome message with main CTA button
+    # Send welcome info message (without buttons)
+    await message.answer(text=WELCOME_INFO_MESSAGE)
+
+    # Send CTA message with Mini App button
     await message.answer(
-        text=WELCOME_MESSAGE,
+        text=WELCOME_CTA_MESSAGE,
         reply_markup=get_main_keyboard(),
     )

@@ -5,6 +5,11 @@
 
 set -e
 
+# Change to project root directory (two levels up from scripts/dev/)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+cd "$PROJECT_ROOT"
+
 # Colors for output
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
@@ -28,10 +33,19 @@ echo -e "${GREEN}✓ Docker is running${NC}"
 
 # Check if .env exists
 if [ ! -f .env ]; then
-    echo -e "${YELLOW}⚠ .env file not found${NC}"
-    echo "Creating .env from .env.example..."
-    cp .env.example .env
-    echo -e "${YELLOW}Please edit .env and add your TELEGRAM_BOT_TOKEN${NC}"
+    echo -e "${RED}✗ .env file not found${NC}"
+    echo ""
+    echo "Please create .env file in the project root with the following variables:"
+    echo ""
+    echo "  TELEGRAM_BOT_TOKEN=your_bot_token_from_botfather"
+    echo "  MINIAPP_URL=https://your-ngrok-url.ngrok-free.app"
+    echo "  VITE_API_URL=http://localhost:8000/api/v1"
+    echo "  VITE_BOT_USERNAME=your_bot_username"
+    echo "  POSTGRES_USER=postgres"
+    echo "  POSTGRES_PASSWORD=postgres"
+    echo "  POSTGRES_DB=wishlist"
+    echo '  CORS_ORIGINS=["http://localhost:5173","http://localhost:3000","*"]'
+    echo ""
     exit 1
 fi
 

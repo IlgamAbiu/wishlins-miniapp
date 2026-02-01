@@ -90,3 +90,91 @@ class ErrorResponse(BaseModel):
 
     detail: str = Field(..., description="Error message")
     code: Optional[str] = Field(None, description="Error code")
+
+
+class WishlistCreateRequest(BaseModel):
+    """Request schema for creating a wishlist."""
+
+    title: str = Field(..., min_length=1, max_length=255, description="Wishlist title")
+    description: Optional[str] = Field(None, description="Wishlist description")
+    is_public: bool = Field(default=False, description="Whether wishlist is public")
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "title": "Birthday Wishlist",
+                "description": "Things I want for my birthday",
+                "is_public": True,
+            }
+        }
+    }
+
+
+class WishlistUpdateRequest(BaseModel):
+    """Request schema for updating a wishlist."""
+
+    title: Optional[str] = Field(None, min_length=1, max_length=255, description="Wishlist title")
+    description: Optional[str] = Field(None, description="Wishlist description")
+    is_public: Optional[bool] = Field(None, description="Whether wishlist is public")
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "title": "Updated Birthday Wishlist",
+                "is_public": False,
+            }
+        }
+    }
+
+
+class WishlistResponse(BaseModel):
+    """Response schema for wishlist data."""
+
+    id: UUID = Field(..., description="Wishlist ID")
+    user_id: UUID = Field(..., description="Owner user ID")
+    title: str = Field(..., description="Wishlist title")
+    description: Optional[str] = Field(None, description="Wishlist description")
+    is_public: bool = Field(..., description="Whether wishlist is public")
+    created_at: datetime = Field(..., description="Creation timestamp")
+    updated_at: datetime = Field(..., description="Last update timestamp")
+
+    model_config = {
+        "from_attributes": True,
+        "json_schema_extra": {
+            "example": {
+                "id": "550e8400-e29b-41d4-a716-446655440001",
+                "user_id": "550e8400-e29b-41d4-a716-446655440000",
+                "title": "Birthday Wishlist",
+                "description": "Things I want for my birthday",
+                "is_public": True,
+                "created_at": "2024-01-15T10:30:00Z",
+                "updated_at": "2024-01-15T10:30:00Z",
+            }
+        }
+    }
+
+
+class WishlistListResponse(BaseModel):
+    """Response schema for list of wishlists."""
+
+    wishlists: list[WishlistResponse]
+    total: int = Field(..., description="Total number of wishlists")
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "wishlists": [
+                    {
+                        "id": "550e8400-e29b-41d4-a716-446655440001",
+                        "user_id": "550e8400-e29b-41d4-a716-446655440000",
+                        "title": "Birthday Wishlist",
+                        "description": "Things I want for my birthday",
+                        "is_public": True,
+                        "created_at": "2024-01-15T10:30:00Z",
+                        "updated_at": "2024-01-15T10:30:00Z",
+                    }
+                ],
+                "total": 1,
+            }
+        }
+    }

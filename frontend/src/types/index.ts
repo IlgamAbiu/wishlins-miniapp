@@ -26,3 +26,24 @@ export interface NavigationState {
   previousTab: TabId | null
   history: TabId[]
 }
+
+/**
+ * Wishlist from API.
+ */
+export interface Wishlist {
+  id: string
+  user_id: string
+  title: string
+  description: string | null
+  is_public: boolean
+  created_at: string
+  updated_at: string
+}
+
+/**
+ * API response for wishlist list.
+ */
+export interface WishlistListResponse {
+  wishlists: Wishlist[]
+  total: number
+}

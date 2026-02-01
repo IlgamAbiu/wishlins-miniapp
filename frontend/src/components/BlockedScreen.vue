@@ -4,7 +4,7 @@
  * Displays a message and button to redirect to Telegram bot.
  */
 
-const botUsername = import.meta.env.VITE_BOT_USERNAME || 'wishlistbot'
+const botUsername = import.meta.env.VITE_BOT_USERNAME || 'lalala'
 const telegramLink = `https://t.me/${botUsername}`
 
 function openTelegram() {

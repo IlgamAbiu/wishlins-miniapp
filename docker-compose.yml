@@ -61,6 +61,7 @@ services:
     working_dir: /app
     environment:
       - VITE_API_URL=http://localhost:8000/api/v1
+      - VITE_BOT_USERNAME=${VITE_BOT_USERNAME:-wishlistbot}
     ports:
       - "5173:5173"
     volumes:

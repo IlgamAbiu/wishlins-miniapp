@@ -1,383 +1,127 @@
 # Wishlist - Telegram Mini App
 
-A production-ready MVP for a Telegram-based Wishlist service.
+Сервис списков желаний для Telegram.
 
-## 🚀 Быстрый старт для разработки
+## Архитектура
+
+```
+Telegram Bot (Python) ──► Backend API (FastAPI) ◄── Mini App (Vue 3)
+                                   │
+                              PostgreSQL
+```
+
+## Структура проекта
+
+```
+├── backend/          # FastAPI backend
+├── bot/              # Telegram bot (aiogram)
+├── frontend/         # Vue 3 Mini App
+├── scripts/
+│   ├── dev/          # Скрипты для разработки
+│   └── deploy/       # Скрипты для деплоя
+├── docker-compose.yml      # Dev конфигурация
+└── docker-compose.prod.yml # Prod конфигурация
+```
+
+## Локальная разработка
+
+### Требования
+- Docker + Docker Compose
+- Node.js 18+ (для frontend без Docker)
+- Python 3.12+ (для backend/bot без Docker)
+- ngrok (для тестирования Mini App)
+
+### Запуск
 
 ```bash
-make dev
-```
-
-**Подробнее**: [docs/START_HERE.md](docs/START_HERE.md)
-
-## 📚 Quick Links
-
-### 🚀 Для разработчиков
-- **[docs/START_HERE.md](docs/START_HERE.md)** - ⚡ Быстрый старт (начните отсюда!)
-- **[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)** - 🔧 Полное руководство по локальной разработке
-- **[docs/CHEATSHEET.md](docs/CHEATSHEET.md)** - 📋 Шпаргалка с командами
-
-### 🚢 Для деплоя
-- **[docs/WORKFLOW.md](docs/WORKFLOW.md)** - Что делать после коммита? Пошаговая инструкция по деплою
-- **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)** - Полное руководство по развертыванию на production
-- **[docs/SCRIPTS.md](docs/SCRIPTS.md)** - Описание скриптов автоматизации
-
-### 📂 Структура
-- **[PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md)** - Организация файлов и папок
-- **[docs/](docs/)** - Вся документация
-- **[scripts/](scripts/)** - Все скрипты
-
-## Architecture Overview
-
-```
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│  Telegram Bot   │────▶│   Backend API   │◀────│   Mini App      │
-│    (Python)     │     │    (FastAPI)    │     │    (Vue 3)      │
-└─────────────────┘     └────────┬────────┘     └─────────────────┘
-                                 │
-                        ┌────────▼────────┐
-                        │   PostgreSQL    │
-                        └─────────────────┘
-```
-
-### Components
-
-1. **Telegram Bot** (`/bot`) - Handles Telegram interactions
-2. **Backend API** (`/backend`) - Business logic and data persistence
-3. **Mini App Frontend** (`/frontend`) - Vue 3 web application
-
-## Features (MVP Scope)
-
-- ✅ `/start` command handling
-- ✅ Welcome message with service description
-- ✅ Automatic user registration
-- ✅ Button to open Mini App
-- ✅ Mini App with empty wishlist screen
-- ✅ User profile display (name, avatar)
-
-## Tech Stack
-
-| Component | Technology |
-|-----------|------------|
-| Bot | Python 3.12, aiogram 3.x |
-| Backend | Python 3.12, FastAPI, SQLAlchemy, Alembic |
-| Frontend | Vue 3, TypeScript, Vite |
-| Database | PostgreSQL 16 |
-| Container | Docker, Docker Compose |
-
-## Project Structure
-
-```
-Wishlist/
-├── backend/                 # Backend API
-│   ├── src/
-│   │   ├── api/            # API routes and schemas
-│   │   ├── domain/         # Pure domain entities
-│   │   ├── services/       # Business logic
-│   │   ├── repositories/   # Database access
-│   │   └── infrastructure/ # DB setup, ORM models
-│   ├── alembic/            # Database migrations
-│   └── Dockerfile
-│
-├── bot/                     # Telegram Bot
-│   ├── src/
-│   │   ├── handlers/       # Command handlers
-│   │   ├── keyboards/      # UI components
-│   │   └── api/            # Backend API client
-│   └── Dockerfile
-│
-├── frontend/               # Mini App
-│   ├── src/
-│   │   ├── api/            # API client
-│   │   ├── composables/    # Vue composables
-│   │   ├── components/     # Vue components
-│   │   └── pages/          # Page components
-│   └── Dockerfile
-│
-├── docker-compose.yml      # Development setup
-└── docker-compose.prod.yml # Production setup
-```
-
-## Quick Start
-
-### 🚀 Development Mode (Recommended)
-
-Для локальной разработки используйте удобный скрипт:
-
-```bash
-# Запустить все сервисы с hot reload
-./dev.sh
-```
-
-Доступные сервисы:
-- **Frontend**: http://localhost:5173 (Vite HMR)
-- **Backend API**: http://localhost:8000 (FastAPI docs: /docs)
-- **PostgreSQL**: localhost:5432
-
-Подробнее: **[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)**
-
-### 📦 Production Mode
-
-```bash
-# 1. Configure environment
-cp .env.example .env
-# Edit .env and add your settings
-
-# 2. Start all services
-docker-compose -f docker-compose.prod.yml up -d --build
-
-# 3. Run migrations
-docker-compose -f docker-compose.prod.yml exec backend alembic upgrade head
-```
-
-Подробнее: **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)**
-
-## Development Setup
-
-### Backend
-
-```bash
-cd backend
-
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # Linux/macOS
-# or: venv\Scripts\activate  # Windows
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Copy environment file
+# 1. Создать .env из примера
 cp .env.example .env
 
-# Run migrations
-alembic upgrade head
+# 2. Заполнить .env:
+#    - TELEGRAM_BOT_TOKEN (от @BotFather)
+#    - MINIAPP_URL (ngrok URL)
+#    - VITE_BOT_USERNAME (имя бота без @)
 
-# Start development server
-python -m src.main
-```
-
-### Bot
-
-```bash
-cd bot
-
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Copy environment file
-cp .env.example .env
-# Edit .env and add your TELEGRAM_BOT_TOKEN
-
-# Start the bot
-python -m src.main
-```
-
-### Frontend
-
-```bash
-cd frontend
-
-# Install dependencies
-npm install
-
-# Copy environment file
-cp .env.example .env
-
-# Start development server
-npm run dev
-```
-
-## API Endpoints
-
-### Users
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/v1/users/register` | Register or update user |
-| GET | `/api/v1/users/telegram/{telegram_id}` | Get user by Telegram ID |
-
-### Health
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/health` | Health check |
-
-## User Flow
-
-```
-┌─────────────┐
-│ User opens  │
-│    bot      │
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐     ┌─────────────┐
-│ /start cmd  │────▶│ Bot sends   │
-│             │     │ user data   │
-└─────────────┘     │ to backend  │
-                    └──────┬──────┘
-                           │
-                           ▼
-                    ┌─────────────┐
-                    │ Backend     │
-                    │ registers   │
-                    │ user        │
-                    └──────┬──────┘
-                           │
-                           ▼
-┌─────────────┐     ┌─────────────┐
-│ User sees   │◀────│ Bot sends   │
-│ welcome msg │     │ welcome +   │
-│ + button    │     │ CTA button  │
-└──────┬──────┘     └─────────────┘
-       │
-       ▼
-┌─────────────┐     ┌─────────────┐
-│ User clicks │────▶│ Mini App    │
-│ button      │     │ opens       │
-└─────────────┘     └──────┬──────┘
-                           │
-                           ▼
-                    ┌─────────────┐
-                    │ Empty       │
-                    │ wishlist    │
-                    │ screen      │
-                    └─────────────┘
-```
-
-## Analytics Events (Placeholders)
-
-| Event | Description |
-|-------|-------------|
-| `bot_start` | User started the bot |
-| `user_registered` | New user was registered |
-| `miniapp_opened` | User opened the Mini App |
-
-## Architecture Principles
-
-### Backend Layers
-
-1. **API Layer** - Request/response handling only
-2. **Service Layer** - Business logic
-3. **Repository Layer** - Database access only
-4. **Domain Layer** - Pure entities, no frameworks
-
-### Bot Layers
-
-1. **Handlers** - Telegram event processing
-2. **Keyboards** - UI component builders
-3. **API Client** - Backend communication
-
-### Frontend Layers
-
-1. **Pages** - Route-level components
-2. **Components** - Reusable UI components
-3. **Composables** - Shared logic (Telegram SDK)
-4. **API** - Backend communication
-
-## Production Deployment
-
-### ⚡ [Quick Start - Деплой за 5 минут →](QUICKSTART.md)
-
-Быстрое руководство по развертыванию на production сервере.
-
-### 🚀 Скрипты для деплоя
-
-Проект включает набор скриптов для автоматизации деплоя:
-
-- **[setup-server.sh](setup-server.sh)** - Первоначальная настройка сервера
-- **[quick-start.sh](quick-start.sh)** - Быстрый старт приложения
-- **[deploy.sh](deploy.sh)** - Автоматический деплой обновлений
-- **[check-status.sh](check-status.sh)** - Проверка статуса сервисов
-- **[generate-nginx-config.sh](generate-nginx-config.sh)** - Генерация Nginx конфигурации
-
-📖 **Подробнее о скриптах**: [docs/SCRIPTS.md](docs/SCRIPTS.md)
-
-### Quick Deploy to Server
-
-Полная инструкция по деплою: **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)**
-
-#### Быстрый старт:
-
-```bash
-# 1. Настройка сервера (первый раз)
-./setup-server.sh user@your-server-ip
-
-# 2. На сервере: клонируйте репозиторий
-ssh user@your-server-ip
-git clone <your-repo-url> ~/apps/wishlins-miniapp
-cd ~/apps/wishlins-miniapp
-
-# 3. Настройте переменные окружения
-cp .env.example .env
-nano .env  # Укажите ваши настройки
-
-# 4. Запустите приложение
-docker compose -f docker-compose.prod.yml up -d --build
-docker compose -f docker-compose.prod.yml exec backend alembic upgrade head
-
-# 5. Настройте Nginx и SSL
-./generate-nginx-config.sh your-domain.com
-# Следуйте инструкциям из вывода скрипта
-```
-
-#### Автоматический деплой с локальной машины:
-
-```bash
-# После первоначальной настройки просто запустите:
-./deploy.sh user@your-server-ip
-```
-
-#### Ручной деплой:
-
-```bash
-# 1. Настройте .env файл
-cp .env.example .env
-# Укажите production значения:
-# - Сильный POSTGRES_PASSWORD
-# - Ваш домен в MINIAPP_URL
-# - CORS_ORIGINS с вашим доменом
-
-# 2. Запустите с Docker Compose
-docker compose -f docker-compose.prod.yml up -d --build
-
-# 3. Выполните миграции
-docker compose -f docker-compose.prod.yml exec backend alembic upgrade head
-
-# 4. Настройте HTTPS
-# Используйте reverse proxy (nginx, Traefik, Caddy) с SSL сертификатами
-```
-
-Подробные инструкции, включая настройку Nginx, SSL, мониторинг и troubleshooting: **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)**
-
-## Testing Telegram Mini App
-
-1. Create a bot with [@BotFather](https://t.me/botfather)
-2. Configure Mini App URL via `/setmenubutton`
-3. Or use inline button with `web_app` parameter
-
-For local development, use [ngrok](https://ngrok.com/) to expose your local server:
-
-```bash
+# 3. Запустить ngrok
 ngrok http 5173
+
+# 4. Обновить MINIAPP_URL в .env на полученный URL
+
+# 5. Запустить все сервисы
+./scripts/dev/dev.sh
 ```
 
-Then update your `MINIAPP_URL` with the ngrok URL.
+### Доступные сервисы
+- Frontend: http://localhost:5173
+- Backend API: http://localhost:8000
+- API Docs: http://localhost:8000/docs
 
-## Extending the Project
+### Полезные команды
 
-The architecture is designed for easy feature expansion:
+```bash
+# Логи всех сервисов
+docker-compose logs -f
 
-1. **Add new bot commands**: Create handler in `bot/src/handlers/`
-2. **Add new API endpoints**: Create route in `backend/src/api/routes/`
-3. **Add new business logic**: Create service in `backend/src/services/`
-4. **Add new frontend pages**: Create component in `frontend/src/pages/`
+# Логи конкретного сервиса
+docker-compose logs -f frontend|backend|bot
 
-## License
+# Перезапуск сервиса
+docker-compose restart bot
 
-MIT
+# Остановка
+docker-compose down
+```
+
+## Деплой на сервер
+
+### Требования
+- Ubuntu 22.04+ / Debian 12+
+- Docker + Docker Compose
+- Домен с SSL (Let's Encrypt)
+
+### Пошаговая инструкция
+
+```bash
+# 1. На сервере: клонировать репозиторий
+git clone <repo-url> ~/apps/wishlist
+cd ~/apps/wishlist
+
+# 2. Настроить переменные окружения
+cp .env.example .env
+nano .env
+# Указать:
+#   TELEGRAM_BOT_TOKEN=токен_бота
+#   MINIAPP_URL=https://your-domain.com
+#   VITE_BOT_USERNAME=имя_бота
+#   POSTGRES_PASSWORD=надежный_пароль
+
+# 3. Запустить приложение
+docker compose -f docker-compose.prod.yml up -d --build
+
+# 4. Выполнить миграции БД
+docker compose -f docker-compose.prod.yml exec backend alembic upgrade head
+
+# 5. Настроить Nginx + SSL
+./scripts/deploy/generate-nginx-config.sh your-domain.com
+# Следовать инструкциям в выводе
+```
+
+### Обновление на сервере
+
+```bash
+git pull
+docker compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml exec backend alembic upgrade head
+```
+
+## Переменные окружения
+
+| Переменная | Описание |
+|------------|----------|
+| `TELEGRAM_BOT_TOKEN` | Токен бота от @BotFather |
+| `MINIAPP_URL` | URL Mini App (ngrok для dev, домен для prod) |
+| `VITE_BOT_USERNAME` | Username бота без @ |
+| `VITE_API_URL` | URL Backend API |
+| `POSTGRES_USER` | Пользователь PostgreSQL |
+| `POSTGRES_PASSWORD` | Пароль PostgreSQL |
+| `POSTGRES_DB` | Имя базы данных |

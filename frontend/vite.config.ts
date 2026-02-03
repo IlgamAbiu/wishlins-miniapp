@@ -12,7 +12,7 @@ export default defineConfig({
   server: {
     port: 5173,
     host: true,
-    allowedHosts: ['localhost', '.ngrok-free.app', '.ngrok.io'],
+    allowedHosts: ['localhost', '.wishlist.splittrip.ru'],
   },
   build: {
     target: 'es2020',

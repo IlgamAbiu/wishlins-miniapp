@@ -42,8 +42,9 @@ cp .env.example .env
 #    - MINIAPP_URL (ngrok URL)
 #    - VITE_BOT_USERNAME (имя бота без @)
 
-# 3. Запустить ngrok
-ngrok http 5173
+# 3. Настроить домен
+# В продакшене используется: https://wishlist.splittrip.ru
+
 
 # 4. Обновить MINIAPP_URL в .env на полученный URL
 

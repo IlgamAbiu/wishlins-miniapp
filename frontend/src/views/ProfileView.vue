@@ -6,7 +6,6 @@ import { ref, watch, onMounted } from 'vue'
 import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
 import { useWishlists } from '@/composables/useWishlists'
 import { useWishes } from '@/composables/useWishes'
-import { storeToRefs } from 'pinia' // If using stores, but we are using composables directly
 import EventCarousel from '@/components/EventCarousel.vue'
 import WishGrid from '@/components/WishGrid.vue'
 import AddWishModal from '@/components/AddWishModal.vue'
@@ -52,40 +51,12 @@ async function handleEventSelect(id: string) {
 async function handleAddEvent(title: string) {
   if (!user.value) return
   
-  // Create wishlist via simpler API call if useWishlists doesn't support it yet
-  // We need to implement createWishlist in useWishlists or call API directly
-  // Let's assume we update useWishlists or use direct fetch for now to match the "Execution" speed
-  // But cleaner is to update useWishlists.ts. For now I'll just use the composable's method if I add it.
+  const newWishlist = await createWishlist(title, true)
   
-  // Actually, I didn't update useWishlists.ts to have createWishlist yet.
-  // I should do that. But for now I will inline it or let the modal emit trigger a reload.
-  
-  try {
-     // Quick inline fetch since I didn't edit useWishlists.ts yet
-     const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
-     const response = await fetch(`${API_BASE_URL}/wishlists/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-           title,
-           is_public: true // Default to public for events? Or false? Let's say true.
-        })
-     })
-     
-     if (response.ok) {
-        await fetchWishlists(user.value.id)
-        // Select the new one (it should be last created)
-        // Actually sorting logic in Carousel handles display
-        // We just need to find the one with this title or just created.
-        // Simplified: just select the last one in the list (newest usually)
-        if (wishlists.value.length > 0) {
-           // If backend returns list sorted by something?
-           // We can just rely on user seeing it.
-        }
-        showAddEventModal.value = false
-     }
-  } catch (e) {
-     console.error("Failed to create event", e)
+  if (newWishlist) {
+    showAddEventModal.value = false
+    // Select the new event
+    selectedEventId.value = newWishlist.id
   }
 }
 

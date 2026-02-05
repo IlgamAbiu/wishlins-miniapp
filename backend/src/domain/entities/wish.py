@@ -1,0 +1,71 @@
+"""
+Wish domain entity.
+"""
+
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Optional
+from uuid import UUID
+
+
+@dataclass
+class Wish:
+    """Wish domain entity."""
+
+    id: UUID
+    wishlist_id: UUID
+    title: str
+    description: Optional[str]
+    link: Optional[str]
+    image_url: Optional[str]
+    price: Optional[float]
+    currency: Optional[str]
+    is_booked: bool
+    created_at: datetime
+    updated_at: datetime
+
+    def to_dict(self) -> dict:
+        """Convert entity to dictionary."""
+        return {
+            "id": str(self.id),
+            "wishlist_id": str(self.wishlist_id),
+            "title": self.title,
+            "description": self.description,
+            "link": self.link,
+            "image_url": self.image_url,
+            "price": self.price,
+            "currency": self.currency,
+            "is_booked": self.is_booked,
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat(),
+        }
+
+
+@dataclass
+class WishCreate:
+    """Data required to create a new wish."""
+
+    wishlist_id: UUID
+    title: str
+    description: Optional[str] = None
+    link: Optional[str] = None
+    image_url: Optional[str] = None
+    price: Optional[float] = None
+    currency: Optional[str] = "RUB"
+
+    def __post_init__(self):
+        if not self.title or not self.title.strip():
+            raise ValueError("title is required and cannot be empty")
+
+
+@dataclass
+class WishUpdate:
+    """Data for updating an existing wish."""
+
+    title: Optional[str] = None
+    description: Optional[str] = None
+    link: Optional[str] = None
+    image_url: Optional[str] = None
+    price: Optional[float] = None
+    currency: Optional[str] = None
+    is_booked: Optional[bool] = None

@@ -18,6 +18,7 @@ class Wishlist:
     title: str
     description: Optional[str]
     is_public: bool
+    is_default: bool
     created_at: datetime
     updated_at: datetime
 
@@ -29,6 +30,7 @@ class Wishlist:
             "title": self.title,
             "description": self.description,
             "is_public": self.is_public,
+            "is_default": self.is_default,
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
         }

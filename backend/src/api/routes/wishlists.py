@@ -55,6 +55,7 @@ async def get_user_wishlists_by_telegram_id(
                 title=w.title,
                 description=w.description,
                 is_public=w.is_public,
+                is_default=w.is_default,
                 created_at=w.created_at,
                 updated_at=w.updated_at,
             )
@@ -88,6 +89,7 @@ async def get_user_wishlists(
                 title=w.title,
                 description=w.description,
                 is_public=w.is_public,
+                is_default=w.is_default,
                 created_at=w.created_at,
                 updated_at=w.updated_at,
             )
@@ -139,6 +141,7 @@ async def create_wishlist(
         title=wishlist.title,
         description=wishlist.description,
         is_public=wishlist.is_public,
+        is_default=wishlist.is_default,
         created_at=wishlist.created_at,
         updated_at=wishlist.updated_at,
     )
@@ -173,6 +176,7 @@ async def get_wishlist(
         title=wishlist.title,
         description=wishlist.description,
         is_public=wishlist.is_public,
+        is_default=wishlist.is_default,
         created_at=wishlist.created_at,
         updated_at=wishlist.updated_at,
     )
@@ -214,6 +218,7 @@ async def update_wishlist(
         title=wishlist.title,
         description=wishlist.description,
         is_public=wishlist.is_public,
+        is_default=wishlist.is_default,
         created_at=wishlist.created_at,
         updated_at=wishlist.updated_at,
     )

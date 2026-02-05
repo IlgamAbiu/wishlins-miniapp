@@ -135,6 +135,7 @@ class WishlistResponse(BaseModel):
     title: str = Field(..., description="Wishlist title")
     description: Optional[str] = Field(None, description="Wishlist description")
     is_public: bool = Field(..., description="Whether wishlist is public")
+    is_default: bool = Field(..., description="Whether this is the default wishlist")
     created_at: datetime = Field(..., description="Creation timestamp")
     updated_at: datetime = Field(..., description="Last update timestamp")
 
@@ -178,3 +179,46 @@ class WishlistListResponse(BaseModel):
             }
         }
     }
+
+
+class WishBase(BaseModel):
+    """Base Wish schema."""
+
+    title: str = Field(..., min_length=1, max_length=255)
+    description: Optional[str] = None
+    link: Optional[str] = None
+    image_url: Optional[str] = None
+    price: Optional[float] = None
+    currency: Optional[str] = "RUB"
+
+
+class WishCreateRequest(WishBase):
+    """Schema for creating a wish."""
+    pass
+
+
+class WishUpdateRequest(BaseModel):
+    """Schema for updating a wish."""
+
+    title: Optional[str] = Field(None, min_length=1, max_length=255)
+    description: Optional[str] = None
+    link: Optional[str] = None
+    image_url: Optional[str] = None
+    price: Optional[float] = None
+    currency: Optional[str] = None
+    is_booked: Optional[bool] = None
+
+
+class WishResponse(WishBase):
+    """Schema for wish response."""
+
+    id: UUID
+    wishlist_id: UUID
+    is_booked: bool
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {
+        "from_attributes": True
+    }
+

@@ -36,9 +36,41 @@ export interface Wishlist {
   title: string
   description: string | null
   is_public: boolean
+  is_default: boolean
   created_at: string
   updated_at: string
 }
+
+/**
+ * Wish from API.
+ */
+export interface Wish {
+  id: string
+  wishlist_id: string
+  title: string
+  description: string | null
+  link: string | null
+  image_url: string | null
+  price: number | null
+  currency: string | null
+  is_booked: boolean
+  created_at: string
+  updated_at: string
+}
+
+/**
+ * Request payload for creating a wish.
+ */
+export interface CreateWishRequest {
+  wishlist_id: string
+  title: string
+  description?: string
+  link?: string
+  image_url?: string
+  price?: number
+  currency?: string
+}
+
 
 /**
  * API response for wishlist list.

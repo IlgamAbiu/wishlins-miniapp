@@ -1,30 +1,30 @@
 """
-Wishlist ORM model for SQLAlchemy.
+Wish ORM model for SQLAlchemy.
 """
 
 from datetime import datetime
 from uuid import uuid4
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, String, Text, func
+from sqlalchemy import Boolean, DateTime, ForeignKey, String, Text, Float, func
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
 
 from src.infrastructure.database import Base
 
 
-class WishlistModel(Base):
-    """Wishlist database model."""
+class WishModel(Base):
+    """Wish database model."""
 
-    __tablename__ = "wishlists"
+    __tablename__ = "wishes"
 
     id: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True),
         primary_key=True,
         default=uuid4,
     )
-    user_id: Mapped[UUID] = mapped_column(
+    wishlist_id: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("users.id", ondelete="CASCADE"),
+        ForeignKey("wishlists.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
@@ -36,12 +36,24 @@ class WishlistModel(Base):
         Text,
         nullable=True,
     )
-    is_public: Mapped[bool] = mapped_column(
-        Boolean,
-        default=False,
-        nullable=False,
+    link: Mapped[str | None] = mapped_column(
+        String(2048),
+        nullable=True,
     )
-    is_default: Mapped[bool] = mapped_column(
+    image_url: Mapped[str | None] = mapped_column(
+        String(2048),
+        nullable=True,
+    )
+    price: Mapped[float | None] = mapped_column(
+        Float,
+        nullable=True,
+    )
+    currency: Mapped[str | None] = mapped_column(
+        String(3),
+        default="RUB",
+        nullable=True,
+    )
+    is_booked: Mapped[bool] = mapped_column(
         Boolean,
         default=False,
         nullable=False,
@@ -59,4 +71,4 @@ class WishlistModel(Base):
     )
 
     def __repr__(self) -> str:
-        return f"<Wishlist(id={self.id}, user_id={self.user_id}, title={self.title})>"
+        return f"<Wish(id={self.id}, wishlist_id={self.wishlist_id}, title={self.title})>"

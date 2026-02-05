@@ -5,7 +5,7 @@ Wish management routes.
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from src.api.dependencies import UserServiceDep
 from src.api.schemas import (
     WishCreateRequest,
@@ -47,11 +47,11 @@ async def get_wishlist_wishes(
 
 @router.post("", response_model=WishResponse, status_code=status.HTTP_201_CREATED)
 async def create_wish(
-    telegram_id: int,
     request: WishCreateRequest,
     user_service: UserServiceDep,
     service: Annotated[WishService, Depends(get_wish_service)],
     session: Annotated[AsyncSession, Depends(get_session)],
+    telegram_id: int = Query(..., description="Telegram user ID"),
 ):
     """Create a new wish."""
     user = await user_service.get_user_by_telegram_id(telegram_id)
@@ -95,11 +95,11 @@ async def create_wish(
 @router.put("/{wish_id}", response_model=WishResponse)
 async def update_wish(
     wish_id: UUID,
-    telegram_id: int,
     request: WishUpdateRequest,
     user_service: UserServiceDep,
     service: Annotated[WishService, Depends(get_wish_service)],
     session: Annotated[AsyncSession, Depends(get_session)],
+    telegram_id: int = Query(..., description="Telegram user ID"),
 ):
     """Update a wish."""
     user = await user_service.get_user_by_telegram_id(telegram_id)
@@ -146,10 +146,10 @@ async def update_wish(
 @router.delete("/{wish_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_wish(
     wish_id: UUID,
-    telegram_id: int,
     user_service: UserServiceDep,
     service: Annotated[WishService, Depends(get_wish_service)],
     session: Annotated[AsyncSession, Depends(get_session)],
+    telegram_id: int = Query(..., description="Telegram user ID"),
 ):
     """Delete a wish."""
     user = await user_service.get_user_by_telegram_id(telegram_id)

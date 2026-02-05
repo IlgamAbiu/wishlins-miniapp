@@ -5,7 +5,7 @@ API layer handles only request/response orchestration.
 
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Query, status
 
 from src.api.dependencies import WishlistServiceDep, UserServiceDep
 from src.api.schemas import (
@@ -112,10 +112,10 @@ async def get_user_wishlists(
     description="Create a new wishlist for a user.",
 )
 async def create_wishlist(
-    telegram_id: int,
     request: WishlistCreateRequest,
     wishlist_service: WishlistServiceDep,
     user_service: UserServiceDep,
+    telegram_id: int = Query(..., description="Telegram user ID"),
 ) -> WishlistResponse:
     """Create a new wishlist."""
     # First, find the user by telegram_id

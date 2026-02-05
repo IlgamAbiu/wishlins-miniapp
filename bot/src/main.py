@@ -9,7 +9,7 @@ from aiogram.types import BotCommand
 
 from src.api.client import BackendAPIClient
 from src.config import get_settings
-from src.handlers import start, web_app
+from src.handlers import start
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, stream=sys.stdout)
@@ -47,7 +47,6 @@ async def main() -> None:
 
     # Register routers
     dp.include_router(start.router)
-    dp.include_router(web_app.router)
 
     # Inject dependencies into handlers
     # We pass api_client via workflow_data (kwarg injection)

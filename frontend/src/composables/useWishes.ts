@@ -17,22 +17,6 @@ export function useWishes() {
         error.value = null
 
         try {
-            // Assuming we'll add an endpoint to get wishes by wishlist
-            // For now, we might need to filter or get from wishlist details if backend structure differs
-            // But based on our new backend, we should have a route or we can use the main wishlists route if it returns wishes items (it doesn't currently)
-            // We haven't implemented GET /wishlists/{id}/wishes or GET /wishes?wishlist_id={id}
-            // Let's assume we use the main GET /wishlists/{id} ? No, that returns just wishlist info.
-
-            // Wait, in our backend plan we didn't explicitly add a route to get wishes for a wishlist!
-            // We added `WishRepository.get_by_wishlist_id` but we didn't expose it in `WishController` (wishes.py) as a list endpoint.
-            // We implicitly might have expected them to be included in Wishlist response OR we need a new endpoint.
-            // Let's check backend routes again.
-            // We defined `wishes` router with POST, PUT, DELETE. But no GET list!
-            // We need to fix backend first to allow fetching wishes.
-
-            // I will implement the fetch here assuming the endpoint exists, then I will go fix the backend.
-            // Proposed endpoint: GET /api/v1/wishes?wishlist_id=...
-
             const response = await fetch(`${API_BASE_URL}/wishes?wishlist_id=${wishlistId}`)
 
             if (!response.ok) {
@@ -48,12 +32,12 @@ export function useWishes() {
         }
     }
 
-    async function createWish(wish: CreateWishRequest): Promise<Wish | null> {
+    async function createWish(wish: CreateWishRequest, telegramId: number): Promise<Wish | null> {
         loading.value = true
         error.value = null
 
         try {
-            const response = await fetch(`${API_BASE_URL}/wishes`, {
+            const response = await fetch(`${API_BASE_URL}/wishes?telegram_id=${telegramId}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -76,10 +60,10 @@ export function useWishes() {
         }
     }
 
-    async function deleteWish(wishId: string): Promise<boolean> {
+    async function deleteWish(wishId: string, telegramId: number): Promise<boolean> {
         loading.value = true
         try {
-            const response = await fetch(`${API_BASE_URL}/wishes/${wishId}`, {
+            const response = await fetch(`${API_BASE_URL}/wishes/${wishId}?telegram_id=${telegramId}`, {
                 method: 'DELETE',
             })
 
@@ -97,12 +81,40 @@ export function useWishes() {
         }
     }
 
+    async function updateWish(wishId: string, wish: Partial<CreateWishRequest>, telegramId: number): Promise<Wish | null> {
+        loading.value = true;
+        try {
+            const response = await fetch(`${API_BASE_URL}/wishes/${wishId}?telegram_id=${telegramId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(wish),
+            })
+
+            if (!response.ok) {
+                throw new Error('Failed to update wish')
+            }
+
+            const updated = await response.json()
+            const index = wishes.value.findIndex(w => w.id === wishId)
+            if (index !== -1) wishes.value[index] = updated
+            return updated
+        } catch (err) {
+            error.value = err instanceof Error ? err.message : 'Failed to update wish'
+            return null
+        } finally {
+            loading.value = false
+        }
+    }
+
     return {
         wishes,
         loading,
         error,
         fetchWishes,
         createWish,
-        deleteWish
+        deleteWish,
+        updateWish
     }
 }

@@ -6,24 +6,23 @@ from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from src.api.dependencies import get_current_user
+from src.api.dependencies import UserServiceDep
 from src.api.schemas import (
     WishCreateRequest,
     WishResponse,
     WishUpdateRequest,
 )
-from src.domain.entities.user import User
 from src.domain.entities.wish import WishCreate, WishUpdate
 from src.repositories import WishRepository, WishlistRepository
 from src.services import WishService
-from src.infrastructure.database import get_db
+from src.infrastructure.database import get_session
 from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(prefix="/wishes", tags=["wishes"])
 
 
 async def get_wish_service(
-    session: Annotated[AsyncSession, Depends(get_db)],
+    session: Annotated[AsyncSession, Depends(get_session)],
 ) -> WishService:
     """Dependency to get wish service."""
     wish_repository = WishRepository(session)
@@ -48,12 +47,17 @@ async def get_wishlist_wishes(
 
 @router.post("", response_model=WishResponse, status_code=status.HTTP_201_CREATED)
 async def create_wish(
+    telegram_id: int,
     request: WishCreateRequest,
-    user: Annotated[User, Depends(get_current_user)],
+    user_service: UserServiceDep,
     service: Annotated[WishService, Depends(get_wish_service)],
-    session: Annotated[AsyncSession, Depends(get_db)],
+    session: Annotated[AsyncSession, Depends(get_session)],
 ):
     """Create a new wish."""
+    user = await user_service.get_user_by_telegram_id(telegram_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
     # Verify wishlist ownership
     wishlist_repo = WishlistRepository(session)
     wishlist = await wishlist_repo.get_by_id(request.wishlist_id)
@@ -91,12 +95,17 @@ async def create_wish(
 @router.put("/{wish_id}", response_model=WishResponse)
 async def update_wish(
     wish_id: UUID,
+    telegram_id: int,
     request: WishUpdateRequest,
-    user: Annotated[User, Depends(get_current_user)],
+    user_service: UserServiceDep,
     service: Annotated[WishService, Depends(get_wish_service)],
-    session: Annotated[AsyncSession, Depends(get_db)],
+    session: Annotated[AsyncSession, Depends(get_session)],
 ):
     """Update a wish."""
+    user = await user_service.get_user_by_telegram_id(telegram_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
     wish_repo = WishRepository(session)
     wish = await wish_repo.get_by_id(wish_id)
     
@@ -137,11 +146,16 @@ async def update_wish(
 @router.delete("/{wish_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_wish(
     wish_id: UUID,
-    user: Annotated[User, Depends(get_current_user)],
+    telegram_id: int,
+    user_service: UserServiceDep,
     service: Annotated[WishService, Depends(get_wish_service)],
-    session: Annotated[AsyncSession, Depends(get_db)],
+    session: Annotated[AsyncSession, Depends(get_session)],
 ):
     """Delete a wish."""
+    user = await user_service.get_user_by_telegram_id(telegram_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
     wish_repo = WishRepository(session)
     wish = await wish_repo.get_by_id(wish_id)
     

@@ -38,11 +38,11 @@ export function useWishlists() {
     }
   }
 
-  async function createWishlist(title: string, isPublic: boolean = false): Promise<Wishlist | null> {
+  async function createWishlist(title: string, telegramId: number, isPublic: boolean = false): Promise<Wishlist | null> {
     loading.value = true
     error.value = null
     try {
-      const response = await fetch(`${API_BASE_URL}/wishlists/`, {
+      const response = await fetch(`${API_BASE_URL}/wishlists/?telegram_id=${telegramId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

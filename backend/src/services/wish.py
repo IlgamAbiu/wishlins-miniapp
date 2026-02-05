@@ -7,8 +7,7 @@ from typing import List
 from uuid import UUID, uuid4
 
 from src.domain.entities.wish import Wish, WishCreate, WishUpdate
-from src.repositories.wish import WishRepository
-from src.repositories.wishlist import WishlistRepository
+from src.repositories import WishlistRepository, WishRepository
 
 
 class WishService:

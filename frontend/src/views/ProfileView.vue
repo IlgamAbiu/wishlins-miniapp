@@ -51,7 +51,7 @@ async function handleEventSelect(id: string) {
 async function handleAddEvent(title: string) {
   if (!user.value) return
   
-  const newWishlist = await createWishlist(title, true)
+  const newWishlist = await createWishlist(title, user.value.id, true)
   
   if (newWishlist) {
     showAddEventModal.value = false
@@ -61,12 +61,12 @@ async function handleAddEvent(title: string) {
 }
 
 async function handleAddWish(data: any) {
-  if (!selectedEventId.value) return
+  if (!selectedEventId.value || !user.value) return
   
   const newWish = await createWish({
     ...data,
     wishlist_id: selectedEventId.value
-  })
+  }, user.value.id)
   
   if (newWish) {
     showAddWishModal.value = false

@@ -120,6 +120,14 @@ function onWishClick(wish: any) {
          />
       </section>
 
+      <!-- Floating Sticky Button -->
+      <div class="sticky-footer">
+        <button class="main-add-btn" @click="showAddWishModal = true">
+          <span class="btn-icon">+</span>
+          Добавить желание
+        </button>
+      </div>
+
       <!-- Modals -->
       <Teleport to="body">
          <AddWishModal
@@ -139,26 +147,38 @@ function onWishClick(wish: any) {
 
 <style scoped>
 .profile-view {
-  height: 100%;
-  background: #fbfbfb; /* Light clean background */
+  height: 100vh;
+  background: var(--tg-bg-color, #ffffff);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.content {
+  flex: 1;
   overflow-y: auto;
-  padding-bottom: 80px; /* Space for tab bar */
+  padding-bottom: 100px; /* Space for sticky button */
+  -webkit-overflow-scrolling: touch;
 }
 
 .header {
-  padding: 24px 20px 0;
+  padding: 16px 20px;
   display: flex;
   align-items: center;
   gap: 16px;
+  background: var(--tg-bg-color, white);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .avatar {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
+  width: 56px;
+  height: 56px;
+  border-radius: 20px;
   overflow: hidden;
-  border: 2px solid white;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0,0,0,0.05);
 }
 
 .avatar img {
@@ -170,34 +190,85 @@ function onWishClick(wish: any) {
 .avatar-placeholder {
   width: 100%;
   height: 100%;
-  background: var(--tg-button-color, #3390ec);
+  background: linear-gradient(135deg, #FF9F0A, #FF375F);
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 24px;
-  font-weight: bold;
+  font-weight: 700;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .user-info h1 {
   margin: 0;
-  font-size: 24px;
-  font-weight: 800;
-  color: #222;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--tg-text-color, #000);
+  line-height: 1.2;
 }
 
 .username {
-  color: var(--tg-hint-color, #999);
-  font-size: 15px;
+  color: var(--tg-hint-color, #8e8e93);
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .events-section {
-  margin-top: 24px;
-  margin-bottom: 12px;
+  padding-top: 10px;
+  margin-bottom: 10px;
 }
 
 .wishes-section {
   min-height: 200px;
+  padding-top: 10px;
+}
+
+.sticky-footer {
+  position: fixed;
+  bottom: 24px;
+  left: 0;
+  right: 0;
+  padding: 0 20px;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  pointer-events: none; /* Let clicks pass through area */
+}
+
+.main-add-btn {
+  pointer-events: auto; /* Re-enable clicks on button */
+  width: 100%;
+  max-width: 400px;
+  height: 56px;
+  background: var(--tg-button-color, #007AFF);
+  color: var(--tg-button-text-color, white);
+  border: none;
+  border-radius: 16px;
+  font-size: 17px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 12px 24px rgba(0, 122, 255, 0.3);
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.main-add-btn:active {
+  transform: scale(0.96);
+}
+
+.btn-icon {
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 1;
 }
 
 /* Transitions */

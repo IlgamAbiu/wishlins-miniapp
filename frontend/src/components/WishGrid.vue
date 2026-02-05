@@ -79,14 +79,6 @@ function formatPrice(price: number | null, currency: string | null) {
       </div>
     </div>
     
-    <!-- Floating Add Button (visible when content exists) -->
-    <button
-      v-if="wishes.length > 0"
-      class="floating-add-btn"
-      @click="$emit('add')"
-    >
-      +
-    </button>
   </div>
 </template>
 
@@ -227,28 +219,5 @@ function formatPrice(price: number | null, currency: string | null) {
   text-overflow: ellipsis;
 }
 
-/* Floating Action Button */
-.floating-add-btn {
-  position: fixed;
-  bottom: calc(var(--tab-bar-height, 56px) + 20px);
-  right: 20px;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: var(--tg-button-color, #3390ec);
-  color: white;
-  font-size: 32px;
-  border: none;
-  box-shadow: 0 4px 12px rgba(51, 144, 236, 0.4);
-  cursor: pointer;
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.2s;
-}
 
-.floating-add-btn:active {
-  transform: scale(0.9);
-}
 </style>

@@ -47,6 +47,25 @@ class UserService:
         if existing_user is None:
             # Create new user
             user = await self._repository.create(data)
+            
+            # Create default "My Wishes" wishlist
+            # We need a session, but repositories take session in init.
+            # UserService takes UserRepository which has session.
+            # We can reuse the session from UserRepository
+            from src.repositories import WishlistRepository
+            from src.domain.entities.wishlist import WishlistCreate
+            
+            wishlist_repo = WishlistRepository(self._repository.session)
+            await wishlist_repo.create(
+                WishlistCreate(
+                    user_id=user.id,
+                    title="Мои желания",
+                    description="Мой основной список желаний",
+                    is_public=True,
+                    is_default=True
+                )
+            )
+
             # Placeholder: track analytics event
             self._track_event(AnalyticsEvents.USER_REGISTERED, user)
             return user, True

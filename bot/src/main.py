@@ -1,16 +1,13 @@
-"""
-Telegram Bot entry point.
-"""
-
 import asyncio
 import logging
 import sys
 
 from aiogram import Bot, Dispatcher
+from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.types import BotCommand
 
-from src.api.client import backend_client
+from src.api.client import BackendAPIClient
 from src.config import get_settings
 from src.handlers import start, web_app
 
@@ -49,11 +46,13 @@ async def main() -> None:
     api_client = BackendAPIClient()
 
     # Register routers
-    dp.include_router(start_router)
+    dp.include_router(start.router)
+    dp.include_router(web_app.router)
 
     # Inject dependencies into handlers
-    dp["api_client"] = api_client
-
+    # We pass api_client via workflow_data (kwarg injection)
+    # This works because dp.start_polling(..., api_client=api_client) passes it
+    
     logger.info(f"Starting {settings.bot_name}...")
 
     try:
@@ -61,7 +60,12 @@ async def main() -> None:
         try:
             await bot.set_my_description(description=BOT_DESCRIPTION)
             await bot.set_my_short_description(short_description=BOT_DESCRIPTION)
-            logger.info("Bot description set successfully")
+            
+            await bot.set_my_commands([
+                BotCommand(command="start", description="Start the bot"),
+                BotCommand(command="webapp", description="Open Mini App"),
+            ])
+            logger.info("Bot description and commands set successfully")
         except Exception as e:
             logger.warning(f"Failed to set bot description: {e}")
 

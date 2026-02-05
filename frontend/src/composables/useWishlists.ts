@@ -36,43 +36,41 @@ export function useWishlists() {
     } finally {
       loading.value = false
     }
-  }
-
-  async function createWishlist(title: string, isPublic: boolean = false): Promise<Wishlist | null> {
-    loading.value = true
-    error.value = null
-    try {
-      const response = await fetch(`${API_BASE_URL}/wishlists/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title,
-          is_public: isPublic
+    async function createWishlist(title: string, isPublic: boolean = false): Promise<Wishlist | null> {
+      loading.value = true
+      error.value = null
+      try {
+        const response = await fetch(`${API_BASE_URL}/wishlists/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            title,
+            is_public: isPublic
+          })
         })
-      })
 
-      if (!response.ok) {
-        throw new Error(`Failed to create wishlist: ${response.statusText}`)
+        if (!response.ok) {
+          throw new Error(`Failed to create wishlist: ${response.statusText}`)
+        }
+
+        const newWishlist = await response.json()
+        wishlists.value.push(newWishlist)
+        return newWishlist
+      } catch (err) {
+        error.value = err instanceof Error ? err.message : 'Failed to create wishlist'
+        return null
+      } finally {
+        loading.value = false
       }
+    }
 
-      const newWishlist = await response.json()
-      wishlists.value.push(newWishlist)
-      return newWishlist
-    } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to create wishlist'
-      return null
-    } finally {
-      loading.value = false
+    return {
+      wishlists,
+      loading,
+      error,
+      fetchWishlists,
+      createWishlist,
     }
   }
-
-  return {
-    wishlists,
-    loading,
-    error,
-    fetchWishlists,
-    createWishlist,
-  }
-}

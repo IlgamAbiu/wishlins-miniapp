@@ -33,6 +33,11 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     restart: unless-stopped
 
   # Telegram Bot
@@ -46,7 +51,8 @@ services:
       - MINIAPP_URL=${MINIAPP_URL}
       - BACKEND_API_URL=http://backend:8000
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     restart: unless-stopped
 
   # Frontend Mini App

@@ -44,6 +44,7 @@ class WishlistRepository:
             title=data.title,
             description=data.description,
             is_public=data.is_public,
+            is_default=data.is_default,
         )
         self._session.add(model)
         await self._session.flush()
@@ -90,6 +91,7 @@ class WishlistRepository:
             title=model.title,
             description=model.description,
             is_public=model.is_public,
+            is_default=model.is_default,
             created_at=model.created_at,
             updated_at=model.updated_at,
         )

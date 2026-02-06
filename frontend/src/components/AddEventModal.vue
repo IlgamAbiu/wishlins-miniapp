@@ -145,7 +145,8 @@ function handleSubmit() {
 
 .form-row {
   display: flex;
-  gap: 16px;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .emoji-group {

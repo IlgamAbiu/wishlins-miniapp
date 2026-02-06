@@ -55,7 +55,7 @@ class UserService:
             from src.repositories import WishlistRepository
             from src.domain.entities.wishlist import WishlistCreate
             
-            wishlist_repo = WishlistRepository(self._repository.session)
+            wishlist_repo = WishlistRepository(self._repository._session)
             await wishlist_repo.create(
                 WishlistCreate(
                     user_id=user.id,

@@ -205,7 +205,13 @@ async def update_wishlist(
     request: WishlistUpdateRequest,
     wishlist_service: WishlistServiceDep,
 ) -> WishlistResponse:
-    """Update a wishlist."""
+    wishlist = await wishlist_service.get_wishlist_by_id(wishlist_id)
+    if wishlist and wishlist.is_default:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Cannot update default wishlist",
+        )
+
     wishlist_data = WishlistUpdate(
         title=request.title,
         description=request.description,
@@ -251,6 +257,13 @@ async def delete_wishlist(
     wishlist_service: WishlistServiceDep,
 ) -> None:
     """Delete a wishlist."""
+    wishlist = await wishlist_service.get_wishlist_by_id(wishlist_id)
+    if wishlist and wishlist.is_default:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Cannot delete default wishlist",
+        )
+
     deleted = await wishlist_service.delete_wishlist(wishlist_id)
 
     if not deleted:

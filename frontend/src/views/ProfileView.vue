@@ -231,7 +231,7 @@ function onWishClick(wish: any) {
 
 .sticky-footer {
   position: fixed;
-  bottom: 24px;
+  bottom: 90px; /* Above TabBar (56px) + spacing */
   left: 0;
   right: 0;
   padding: 0 20px;

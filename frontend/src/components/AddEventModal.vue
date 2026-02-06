@@ -22,6 +22,13 @@ function handleSubmit() {
   isSubmitting.value = true
   emit('submit', title.value, emoji.value, eventDate.value || new Date().toISOString())
 }
+
+function onInputFocus(event: FocusEvent) {
+  // Ensure the input is visible above keyboard
+  setTimeout(() => {
+    (event.target as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }, 300)
+}
 </script>
 
 <template>
@@ -41,6 +48,7 @@ function handleSubmit() {
             placeholder="День рождения, Новый год..."
             required
             autofocus
+            @focus="onInputFocus"
           />
         </div>
 
@@ -70,6 +78,7 @@ function handleSubmit() {
               v-model="eventDate"
               type="date"
               required
+              @focus="onInputFocus"
             />
           </div>
         </div>
@@ -102,11 +111,12 @@ function handleSubmit() {
   width: 100%;
   background: white;
   border-radius: 24px 24px 0 0;
-  padding: 24px;
+  padding: 24px; /* Consistent padding */
   padding-bottom: max(24px, env(safe-area-inset-bottom));
   animation: slide-up 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
   max-height: 90vh;
   overflow-y: auto;
+  box-sizing: border-box; /* Ensure padding doesn't add to width */
 }
 
 .modal-header {
@@ -145,7 +155,8 @@ function handleSubmit() {
 
 .form-row {
   display: flex;
-  gap: 16px;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .emoji-group {
@@ -171,6 +182,8 @@ input {
   font-size: 16px;
   background: #f9f9f9;
   box-sizing: border-box;
+  appearance: none;
+  -webkit-appearance: none;
 }
 
 input:focus {

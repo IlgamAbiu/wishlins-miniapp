@@ -35,6 +35,12 @@ function handleSubmit() {
     description: form.description
   })
 }
+
+function onInputFocus(event: FocusEvent) {
+  setTimeout(() => {
+    (event.target as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }, 300)
+}
 </script>
 
 <template>
@@ -54,6 +60,7 @@ function handleSubmit() {
             placeholder="Что вы хотите?"
             required
             autofocus
+            @focus="onInputFocus"
           />
         </div>
 
@@ -65,11 +72,12 @@ function handleSubmit() {
               type="number"
               placeholder="0"
               min="0"
+              @focus="onInputFocus"
             />
           </div>
           <div class="form-group currency-group">
             <label>Валюта</label>
-            <select v-model="form.currency">
+            <select v-model="form.currency" @focus="onInputFocus">
               <option value="RUB">RUB</option>
               <option value="USD">USD</option>
               <option value="EUR">EUR</option>
@@ -83,6 +91,7 @@ function handleSubmit() {
             v-model="form.link"
             type="url"
             placeholder="https://..."
+            @focus="onInputFocus"
           />
         </div>
 
@@ -92,6 +101,7 @@ function handleSubmit() {
             v-model="form.description"
             rows="3"
             placeholder="Размер, цвет, детали..."
+            @focus="onInputFocus"
           ></textarea>
         </div>
 

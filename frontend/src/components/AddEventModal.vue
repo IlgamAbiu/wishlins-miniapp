@@ -22,6 +22,13 @@ function handleSubmit() {
   isSubmitting.value = true
   emit('submit', title.value, emoji.value, eventDate.value || new Date().toISOString())
 }
+
+function onInputFocus(event: FocusEvent) {
+  // Ensure the input is visible above keyboard
+  setTimeout(() => {
+    (event.target as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }, 300)
+}
 </script>
 
 <template>
@@ -41,6 +48,7 @@ function handleSubmit() {
             placeholder="День рождения, Новый год..."
             required
             autofocus
+            @focus="onInputFocus"
           />
         </div>
 
@@ -70,6 +78,7 @@ function handleSubmit() {
               v-model="eventDate"
               type="date"
               required
+              @focus="onInputFocus"
             />
           </div>
         </div>
@@ -173,6 +182,8 @@ input {
   font-size: 16px;
   background: #f9f9f9;
   box-sizing: border-box;
+  appearance: none;
+  -webkit-appearance: none;
 }
 
 input:focus {

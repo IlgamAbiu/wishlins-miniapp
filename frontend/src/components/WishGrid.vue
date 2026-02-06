@@ -42,9 +42,6 @@ function formatPrice(price: number | null, currency: string | null) {
     <div v-else-if="wishes.length === 0" class="grid-empty">
       <div class="empty-icon">✨</div>
       <p class="empty-text">Список желаний пуст</p>
-      <button class="empty-btn" @click="$emit('add')">
-        Добавить желание
-      </button>
     </div>
 
     <!-- Grid Content -->
@@ -130,15 +127,7 @@ function formatPrice(price: number | null, currency: string | null) {
   margin-bottom: 24px;
 }
 
-.empty-btn {
-  padding: 12px 24px;
-  background: var(--tg-button-color, #3390ec);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  font-weight: 600;
-  cursor: pointer;
-}
+
 
 /* Grid Layout */
 .grid-content {

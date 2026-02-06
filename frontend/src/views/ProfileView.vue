@@ -2,22 +2,28 @@
 /**
  * ProfileView - User profile with Events (Wishlists) and Wishes.
  */
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, computed } from 'vue'
 import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
 import { useWishlists } from '@/composables/useWishlists'
 import { useWishes } from '@/composables/useWishes'
 import EventCarousel from '@/components/EventCarousel.vue'
+import EventActions from '@/components/EventActions.vue'
 import WishGrid from '@/components/WishGrid.vue'
 import AddWishModal from '@/components/AddWishModal.vue'
 import AddEventModal from '@/components/AddEventModal.vue'
 
 const { isInTelegram, user, userDisplayName } = useTelegramWebApp()
-const { wishlists, fetchWishlists, createWishlist } = useWishlists() // Assuming createWishlist exists in useWishlists or will be added
+const { wishlists, fetchWishlists, createWishlist, updateWishlist, deleteWishlist } = useWishlists()
 const { wishes, loading: wishesLoading, error: wishesError, fetchWishes, createWish } = useWishes()
 
 const selectedEventId = ref<string | null>(null)
 const showAddWishModal = ref(false)
 const showAddEventModal = ref(false)
+const editingEvent = ref<any>(null) // Event being edited
+
+const selectedEvent = computed(() => 
+  wishlists.value.find(w => w.id === selectedEventId.value)
+)
 
 // Initial Data Fetch
 async function initData() {
@@ -48,15 +54,58 @@ async function handleEventSelect(id: string) {
   selectedEventId.value = id
 }
 
-async function handleAddEvent(title: string, emoji: string, date: string) {
+async function handleSaveEvent(title: string, emoji: string, date: string) {
   if (!user.value) return
   
-  const newWishlist = await createWishlist(title, user.value.id, true, emoji, date)
+  if (editingEvent.value) {
+    // Update existing
+    const updated = await updateWishlist(editingEvent.value.id, {
+      title,
+      emoji,
+      eventDate: date
+    })
+    if (updated) {
+      showAddEventModal.value = false
+      editingEvent.value = null
+    }
+  } else {
+    // Create new
+    const newWishlist = await createWishlist(title, user.value.id, true, emoji, date)
+    if (newWishlist) {
+      showAddEventModal.value = false
+      selectedEventId.value = newWishlist.id
+    }
+  }
+}
+
+function openCreateEventModal() {
+  editingEvent.value = null
+  showAddEventModal.value = true
+}
+
+function handleEditEvent() {
+  editingEvent.value = selectedEvent.value
+  showAddEventModal.value = true
+}
+
+async function handleDeleteEvent() {
+  if (!selectedEvent.value || !confirm('Удалить это событие и все желания в нем?')) return
   
-  if (newWishlist) {
-    showAddEventModal.value = false
-    // Select the new event
-    selectedEventId.value = newWishlist.id
+  const success = await deleteWishlist(selectedEvent.value.id)
+  if (success) {
+    // Select default event
+    const defaultEvent = wishlists.value.find(w => w.is_default)
+    if (defaultEvent) selectedEventId.value = defaultEvent.id
+  }
+}
+
+function handleShareEvent() {
+  // TODO: Implement real sharing
+  console.log('Sharing event:', selectedEvent.value?.id)
+  if (window.Telegram?.WebApp) {
+      window.Telegram.WebApp.showAlert('Ссылка на событие скопирована!')
+  } else {
+      alert('Ссылка скопирована! (тест)')
   }
 }
 
@@ -105,9 +154,19 @@ function onWishClick(wish: any) {
           :events="wishlists"
           :selected-event-id="selectedEventId"
           @select="handleEventSelect"
-          @add="showAddEventModal = true"
+          @add="openCreateEventModal"
         />
       </section>
+
+      <!-- Event Actions (Edit/Share/Delete) -->
+      <EventActions
+        v-if="selectedEvent"
+        :event="selectedEvent"
+        :can-delete="true"
+        @edit="handleEditEvent"
+        @share="handleShareEvent"
+        @delete="handleDeleteEvent"
+      />
 
       <!-- Data Status/Grid -->
       <section class="wishes-section">
@@ -137,8 +196,13 @@ function onWishClick(wish: any) {
          />
          <AddEventModal
            v-if="showAddEventModal"
+           :initial-data="editingEvent ? { 
+             title: editingEvent.title, 
+             emoji: editingEvent.emoji, 
+             date: editingEvent.event_date 
+           } : undefined"
            @close="showAddEventModal = false"
-           @submit="handleAddEvent"
+           @submit="handleSaveEvent"
          />
       </Teleport>
     </div>

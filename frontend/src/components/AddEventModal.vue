@@ -3,17 +3,32 @@
  * Add Event Modal.
  * Bottom sheet to add a new event (wishlist).
  */
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+
+const props = defineProps<{
+  initialData?: {
+    title: string
+    emoji: string | null
+    date: string | null
+  }
+}>()
 
 const emit = defineEmits<{
   (e: 'close'): void
   (e: 'submit', title: string, emoji: string, date: string): void
 }>()
 
-const title = ref('')
-const emoji = ref('🎉')
-const eventDate = ref('')
+const title = ref(props.initialData?.title || '')
+const emoji = ref(props.initialData?.emoji || '🎉')
+// Format date for input type="date" (YYYY-MM-DD)
+const formatDate = (isoString?: string | null) => {
+  if (!isoString) return ''
+  return isoString.split('T')[0]
+}
+const eventDate = ref(formatDate(props.initialData?.date))
+
 const isSubmitting = ref(false)
+const isEditMode = computed(() => !!props.initialData)
 
 const commonEmojis = ['🎉', '🎂', '🎄', '💍', '🍼', '🏠', '🎓', '✈️', '💼', '🎁']
 
@@ -35,7 +50,7 @@ function onInputFocus(event: FocusEvent) {
   <div class="modal-overlay" @click.self="$emit('close')">
     <div class="modal-content">
       <div class="modal-header">
-        <h3>Новое событие</h3>
+        <h3>{{ isEditMode ? 'Редактировать событие' : 'Новое событие' }}</h3>
         <button class="close-btn" @click="$emit('close')">✕</button>
       </div>
 
@@ -88,7 +103,7 @@ function onInputFocus(event: FocusEvent) {
           class="submit-btn"
           :disabled="isSubmitting || !title.trim()"
         >
-          Создать событие
+          {{ isEditMode ? 'Сохранить изменения' : 'Создать событие' }}
         </button>
       </form>
     </div>

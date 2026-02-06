@@ -46,6 +46,14 @@ class WishlistModel(Base):
         default=False,
         nullable=False,
     )
+    emoji: Mapped[str | None] = mapped_column(
+        String(10),
+        nullable=True,
+    )
+    event_date: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),

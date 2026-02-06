@@ -90,6 +90,8 @@ async def get_user_wishlists(
                 description=w.description,
                 is_public=w.is_public,
                 is_default=w.is_default,
+                emoji=w.emoji,
+                event_date=w.event_date,
                 created_at=w.created_at,
                 updated_at=w.updated_at,
             )
@@ -131,6 +133,8 @@ async def create_wishlist(
         title=request.title,
         description=request.description,
         is_public=request.is_public,
+        emoji=request.emoji,
+        event_date=request.event_date,
     )
 
     wishlist = await wishlist_service.create_wishlist(wishlist_data)
@@ -142,6 +146,8 @@ async def create_wishlist(
         description=wishlist.description,
         is_public=wishlist.is_public,
         is_default=wishlist.is_default,
+        emoji=wishlist.emoji,
+        event_date=wishlist.event_date,
         created_at=wishlist.created_at,
         updated_at=wishlist.updated_at,
     )
@@ -177,6 +183,8 @@ async def get_wishlist(
         description=wishlist.description,
         is_public=wishlist.is_public,
         is_default=wishlist.is_default,
+        emoji=wishlist.emoji,
+        event_date=wishlist.event_date,
         created_at=wishlist.created_at,
         updated_at=wishlist.updated_at,
     )
@@ -202,6 +210,8 @@ async def update_wishlist(
         title=request.title,
         description=request.description,
         is_public=request.is_public,
+        emoji=request.emoji,
+        event_date=request.event_date,
     )
 
     wishlist = await wishlist_service.update_wishlist(wishlist_id, wishlist_data)
@@ -219,6 +229,8 @@ async def update_wishlist(
         description=wishlist.description,
         is_public=wishlist.is_public,
         is_default=wishlist.is_default,
+        emoji=wishlist.emoji,
+        event_date=wishlist.event_date,
         created_at=wishlist.created_at,
         updated_at=wishlist.updated_at,
     )

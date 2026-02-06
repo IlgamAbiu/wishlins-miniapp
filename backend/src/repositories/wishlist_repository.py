@@ -45,6 +45,8 @@ class WishlistRepository:
             description=data.description,
             is_public=data.is_public,
             is_default=data.is_default,
+            emoji=data.emoji,
+            event_date=data.event_date,
         )
         self._session.add(model)
         await self._session.flush()
@@ -62,6 +64,10 @@ class WishlistRepository:
             update_data["description"] = data.description
         if data.is_public is not None:
             update_data["is_public"] = data.is_public
+        if data.emoji is not None:
+            update_data["emoji"] = data.emoji
+        if data.event_date is not None:
+            update_data["event_date"] = data.event_date
 
         if not update_data:
             return await self.get_by_id(wishlist_id)
@@ -92,6 +98,8 @@ class WishlistRepository:
             description=model.description,
             is_public=model.is_public,
             is_default=model.is_default,
+            emoji=model.emoji,
+            event_date=model.event_date,
             created_at=model.created_at,
             updated_at=model.updated_at,
         )

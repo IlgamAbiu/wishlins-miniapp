@@ -52,7 +52,7 @@ class WishService:
         if not wishlist:
             raise ValueError(f"Wishlist with id {wishlist_id} not found")
 
-        return await self._wish_repository.get_wishlist_wishes(wishlist_id)
+        return await self._wish_repository.get_by_wishlist_id(wishlist_id)
 
     async def update_wish(self, wish_id: UUID, data: WishUpdate) -> Wish:
         """Update an existing wish."""

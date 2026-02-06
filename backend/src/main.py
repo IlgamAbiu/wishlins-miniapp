@@ -45,11 +45,9 @@ def create_app() -> FastAPI:
     )
 
     # Include routers
-    # Note: Nginx removes /api/ prefix, so we use /v1 directly in production
-    api_prefix = "/v1" if not settings.debug else "/api/v1"
-    app.include_router(users_router, prefix=api_prefix)
-    app.include_router(wishlists_router, prefix=api_prefix)
-    app.include_router(wishes_router, prefix=api_prefix)
+    app.include_router(users_router, prefix="/api/v1")
+    app.include_router(wishlists_router, prefix="/api/v1")
+    app.include_router(wishes_router, prefix="/api/v1")
 
     # Health check
     @app.get("/health", tags=["health"])

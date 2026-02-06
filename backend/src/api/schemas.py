@@ -194,7 +194,8 @@ class WishBase(BaseModel):
 
 class WishCreateRequest(WishBase):
     """Schema for creating a wish."""
-    pass
+
+    wishlist_id: UUID = Field(..., description="Wishlist ID to add the wish to")
 
 
 class WishUpdateRequest(BaseModel):

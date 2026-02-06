@@ -38,7 +38,13 @@ export function useWishlists() {
     }
   }
 
-  async function createWishlist(title: string, telegramId: number, isPublic: boolean = false): Promise<Wishlist | null> {
+  async function createWishlist(
+    title: string,
+    telegramId: number,
+    isPublic: boolean = false,
+    emoji?: string | null,
+    eventDate?: string | null
+  ): Promise<Wishlist | null> {
     loading.value = true
     error.value = null
     try {
@@ -49,7 +55,9 @@ export function useWishlists() {
         },
         body: JSON.stringify({
           title,
-          is_public: isPublic
+          is_public: isPublic,
+          emoji,
+          event_date: eventDate
         })
       })
 

@@ -48,10 +48,10 @@ async function handleEventSelect(id: string) {
   selectedEventId.value = id
 }
 
-async function handleAddEvent(title: string) {
+async function handleAddEvent(title: string, emoji: string, date: string) {
   if (!user.value) return
   
-  const newWishlist = await createWishlist(title, user.value.id, true)
+  const newWishlist = await createWishlist(title, user.value.id, true, emoji, date)
   
   if (newWishlist) {
     showAddEventModal.value = false

@@ -37,6 +37,8 @@ export interface Wishlist {
   description: string | null
   is_public: boolean
   is_default: boolean
+  emoji: string | null
+  event_date: string | null
   created_at: string
   updated_at: string
 }

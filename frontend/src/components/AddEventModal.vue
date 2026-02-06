@@ -7,16 +7,20 @@ import { ref } from 'vue'
 
 const emit = defineEmits<{
   (e: 'close'): void
-  (e: 'submit', title: string): void
+  (e: 'submit', title: string, emoji: string, date: string): void
 }>()
 
 const title = ref('')
+const emoji = ref('🎉')
+const eventDate = ref('')
 const isSubmitting = ref(false)
+
+const commonEmojis = ['🎉', '🎂', '🎄', '💍', '🍼', '🏠', '🎓', '✈️', '💼', '🎁']
 
 function handleSubmit() {
   if (!title.value.trim()) return
   isSubmitting.value = true
-  emit('submit', title.value)
+  emit('submit', title.value, emoji.value, eventDate.value || new Date().toISOString())
 }
 </script>
 
@@ -40,12 +44,42 @@ function handleSubmit() {
           />
         </div>
 
+        <div class="form-row">
+          <div class="form-group emoji-group">
+            <label>Иконка</label>
+            <div class="emoji-selector">
+              <div class="emoji-preview">{{ emoji }}</div>
+              <div class="emoji-list">
+                <button 
+                  v-for="e in commonEmojis" 
+                  :key="e"
+                  type="button"
+                  class="emoji-option"
+                  :class="{ active: emoji === e }"
+                  @click="emoji = e"
+                >
+                  {{ e }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group date-group">
+            <label>Дата события</label>
+            <input
+              v-model="eventDate"
+              type="date"
+              required
+            />
+          </div>
+        </div>
+
         <button
           type="submit"
           class="submit-btn"
           :disabled="isSubmitting || !title.trim()"
         >
-          Создать
+          Создать событие
         </button>
       </form>
     </div>
@@ -71,6 +105,8 @@ function handleSubmit() {
   padding: 24px;
   padding-bottom: max(24px, env(safe-area-inset-bottom));
   animation: slide-up 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 .modal-header {
@@ -107,6 +143,19 @@ function handleSubmit() {
   gap: 8px;
 }
 
+.form-row {
+  display: flex;
+  gap: 16px;
+}
+
+.emoji-group {
+  flex: 1;
+}
+
+.date-group {
+  flex: 1;
+}
+
 label {
   font-size: 13px;
   font-weight: 500;
@@ -130,6 +179,56 @@ input:focus {
   background: white;
 }
 
+.emoji-selector {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.emoji-preview {
+  font-size: 32px;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f0f0;
+  border-radius: 12px;
+}
+
+.emoji-list {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  /* Hide scrollbar */
+  scrollbar-width: none; 
+  -ms-overflow-style: none;
+}
+
+.emoji-list::-webkit-scrollbar {
+  display: none;
+}
+
+.emoji-option {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 8px;
+  transition: transform 0.1s;
+}
+
+.emoji-option:hover {
+  background: #f5f5f5;
+}
+
+.emoji-option.active {
+  background: #e0e0e0;
+  transform: scale(1.1);
+}
+
 .submit-btn {
   padding: 16px;
   background: var(--tg-button-color, #3390ec);
@@ -139,6 +238,7 @@ input:focus {
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
+  margin-top: 10px;
 }
 
 .submit-btn:disabled {

@@ -102,11 +102,12 @@ function handleSubmit() {
   width: 100%;
   background: white;
   border-radius: 24px 24px 0 0;
-  padding: 24px;
+  padding: 24px; /* Consistent padding */
   padding-bottom: max(24px, env(safe-area-inset-bottom));
   animation: slide-up 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
   max-height: 90vh;
   overflow-y: auto;
+  box-sizing: border-box; /* Ensure padding doesn't add to width */
 }
 
 .modal-header {

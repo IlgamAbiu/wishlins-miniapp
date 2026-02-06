@@ -44,6 +44,7 @@ class WishlistCreate:
     title: str
     description: Optional[str] = None
     is_public: bool = False
+    is_default: bool = False
 
     def __post_init__(self):
         if not self.title or not self.title.strip():

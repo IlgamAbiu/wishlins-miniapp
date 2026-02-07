@@ -64,11 +64,14 @@ const currentComponent = computed(() => tabComponents[activeTab.value])
 html, body {
   margin: 0;
   padding: 0;
-  background-color: var(--tg-bg-color);
+  background: linear-gradient(135deg, var(--aurora-bg-1), var(--aurora-bg-2), var(--aurora-bg-3));
+  background-size: 200% 200%;
+  animation: aurora 15s ease infinite;
   color: var(--tg-text-color);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overscroll-behavior: none;
+  min-height: 100vh;
 }
 
 html, body, #app {

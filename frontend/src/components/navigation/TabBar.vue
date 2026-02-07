@@ -30,41 +30,34 @@ function handleTabSelect(tabId: string) {
 <style scoped>
 .tab-bar {
   position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  bottom: 24px; /* Detached from bottom */
+  left: 50%;
+  transform: translateX(-50%);
+  width: auto; /* Dynamic width based on content */
+  min-width: 300px; /* Minimum width for touch targets */
   z-index: 100;
+  
+  /* Floating HUD - Liquid Glass */
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(30px) saturate(180%);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15); /* Floating shadow */
+  border-radius: 40px; /* Capsule shape */
+  
+  padding: 4px; /* Inner padding for "floating" feel */
+  transition: all var(--transition-normal);
+}
 
-  /* Padding for floating effect */
-  padding: 0 12px;
-  padding-bottom: max(12px, env(safe-area-inset-bottom));
-
-  /* Smooth Transitions */
-  transition: transform 0.3s var(--liquid-ease),
-              opacity 0.3s ease;
-
-  /* Transparent background for floating effect */
-  background: transparent;
-  pointer-events: none;
+[data-theme='dark'] .tab-bar {
+  background: rgba(40, 40, 42, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .tab-bar__content {
-  /* iOS 26 Floating Pill Style */
   display: flex;
   align-items: center;
   justify-content: space-around;
-  max-width: 400px;
-  margin: 0 auto;
-  height: 64px;
-  padding: 0 8px;
-
-  /* Floating Glass Pill */
-  background: var(--glass-layer-2-bg);
-  backdrop-filter: blur(var(--glass-layer-2-blur)) saturate(180%);
-  -webkit-backdrop-filter: blur(var(--glass-layer-2-blur)) saturate(180%);
-
-  /* Pill Shape - iOS 26 Native */
-  border-radius: var(--border-radius-3xl);
 
   /* Premium Border and Shadows */
   border: 1px solid var(--glass-border-light);

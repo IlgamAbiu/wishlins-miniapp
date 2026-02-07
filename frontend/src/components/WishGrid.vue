@@ -49,7 +49,7 @@ function formatPrice(price: number | null, currency: string | null) {
       <div
         v-for="wish in wishes"
         :key="wish.id"
-        class="wish-card"
+        class="wish-card glass-card"
         @click="$emit('click', wish)"
       >
         <div class="wish-card__image-wrapper">
@@ -137,13 +137,12 @@ function formatPrice(price: number | null, currency: string | null) {
 }
 
 .wish-card {
-  background: var(--tg-bg-color);
+  /* Glassmorphism via utility */
   border-radius: var(--border-radius-lg);
   overflow: hidden;
-  box-shadow: var(--shadow-card);
-  transition: transform var(--transition-fast);
+  /* box-shadow handled by glass-card */
   cursor: pointer;
-  border: 1px solid var(--tg-border-color);
+  /* border handled by glass-card */
 }
 
 .wish-card:active {

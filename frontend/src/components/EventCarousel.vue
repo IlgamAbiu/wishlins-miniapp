@@ -38,7 +38,7 @@ function selectEvent(id: string) {
       <!-- 1. Default Event -->
       <div
         v-if="defaultEvent"
-        class="event-card"
+        class="event-card glass-card"
         :class="{ 'event-card--active': defaultEvent.id === selectedEventId }"
         @click="selectEvent(defaultEvent.id)"
       >
@@ -49,7 +49,7 @@ function selectEvent(id: string) {
       </div>
 
       <!-- 2. Add Event Button (Always second) -->
-      <button class="event-add-btn" @click="$emit('add')">
+      <button class="event-add-btn glass-card" @click="$emit('add')">
         <div class="event-add-btn__icon">+</div>
         <div class="event-add-btn__label">Новое</div>
       </button>
@@ -58,7 +58,7 @@ function selectEvent(id: string) {
       <div
         v-for="event in otherEvents"
         :key="event.id"
-        class="event-card"
+        class="event-card glass-card"
         :class="{ 'event-card--active': event.id === selectedEventId }"
         @click="selectEvent(event.id)"
       >
@@ -99,13 +99,10 @@ function selectEvent(id: string) {
   justify-content: center;
   width: 100px;
   height: 100px;
-  background: var(--tg-bg-color);
-  border-radius: var(--border-radius-xl);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* Custom subtle shadow */
+  /* Glassmorphism applied via class in template, here just sizing */
   cursor: pointer;
-  transition: all var(--transition-normal);
-  border: 2px solid transparent;
   flex-shrink: 0;
+  /* Inherit transition from glass-card utility */
 }
 
 .event-card--active {

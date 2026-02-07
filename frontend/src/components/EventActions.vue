@@ -79,7 +79,13 @@ const isDefault = computed(() => props.event.is_default)
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: var(--tg-secondary-bg-color);
+  /* Glass Icon Background */
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  
   display: flex;
   align-items: center;
   justify-content: center;
@@ -89,22 +95,25 @@ const isDefault = computed(() => props.event.is_default)
 
 .edit-btn .icon {
   color: var(--tg-button-color);
-  background: rgba(0, 136, 204, 0.1); /* Keep transparent accent */
 }
 
 .share-btn .icon {
   color: var(--color-success);
-  background: rgba(52, 199, 89, 0.1);
 }
 
 .delete-btn .icon {
   color: var(--color-error);
-  background: rgba(255, 59, 48, 0.1);
+}
+
+.action-btn:active .icon {
+  transform: scale(0.9);
+  background: rgba(255, 255, 255, 0.8);
 }
 
 .label {
   font-size: var(--font-size-caption);
-  color: var(--tg-hint-color);
+  color: var(--tg-hint-color); /* Hint color might need adjustment on Aurora */
   font-weight: 500;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5); /* Improve readability */
 }
 </style>

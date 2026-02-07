@@ -212,11 +212,11 @@ function onWishClick(wish: any) {
 <style scoped>
 .profile-view {
   height: 100vh;
-  background: var(--tg-bg-color);
+  background: transparent; /* Let Aurora shine through */
   display: flex;
   flex-direction: column;
   position: relative;
-  transition: background-color var(--transition-normal);
+  overflow: hidden; /* For blurred circles if added later */
 }
 
 .content {
@@ -231,11 +231,21 @@ function onWishClick(wish: any) {
   display: flex;
   align-items: center;
   gap: var(--spacing-md);
-  background: var(--tg-bg-color);
+  /* Liquid Glass Header */
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  
   position: sticky;
   top: 0;
   z-index: 10;
   transition: background-color var(--transition-normal);
+}
+
+[data-theme='dark'] .header {
+  background: rgba(28, 28, 30, 0.5);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .avatar {
@@ -313,23 +323,31 @@ function onWishClick(wish: any) {
   width: 100%;
   max-width: 400px;
   height: 56px;
-  background: var(--tg-button-color);
-  color: var(--tg-button-text-color);
-  border: none;
-  border-radius: var(--border-radius-xl);
+  
+  /* Aurora Button */
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: var(--tg-text-color); /* Adaptive text */
+  
+  border-radius: 28px; /* Fully rounded pill */
   font-size: 17px;
   font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  box-shadow: var(--shadow-floating);
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
   cursor: pointer;
-  transition: transform var(--transition-normal);
+  transition: transform var(--transition-normal), background var(--transition-normal);
+  
+  /* Gradient text/icon if possible, but solid is safer for contrast */
 }
 
 .main-add-btn:active {
   transform: scale(0.96);
+  background: rgba(255, 255, 255, 0.4);
 }
 
 .btn-icon {

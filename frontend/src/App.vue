@@ -39,9 +39,12 @@ const currentComponent = computed(() => tabComponents[activeTab.value])
 
   <!-- Main app when in Telegram -->
   <div v-else class="app">
-    <!-- Decorative blur circles -->
+    <!-- Decorative blur circles (light theme) -->
     <div class="blur-decoration blur-circle-blue"></div>
     <div class="blur-decoration blur-circle-purple"></div>
+
+    <!-- Mesh gradients (dark theme) -->
+    <div class="mesh-gradient"></div>
 
     <main class="app__content">
       <KeepAlive>
@@ -71,6 +74,11 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
   overscroll-behavior: none;
   min-height: 100vh;
+}
+
+[data-theme='dark'] html,
+[data-theme='dark'] body {
+  background: radial-gradient(circle at 50% 0%, #1C1C1E 0%, #0A0A0C 100%);
 }
 
 html, body, #app {
@@ -129,5 +137,30 @@ a {
   left: 0;
   right: 0;
   bottom: 0;
+}
+
+/* Mesh gradient for dark theme */
+.mesh-gradient {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  background:
+    radial-gradient(at 0% 0%, rgba(10, 132, 255, 0.1) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(88, 86, 214, 0.1) 0px, transparent 50%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+[data-theme='dark'] .mesh-gradient {
+  opacity: 1;
+}
+
+/* Hide blur circles in dark theme */
+[data-theme='dark'] .blur-decoration {
+  opacity: 0;
 }
 </style>

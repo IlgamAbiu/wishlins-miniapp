@@ -267,6 +267,11 @@ function onWishClick(wish: any) {
   position: relative;
 }
 
+[data-theme='dark'] .avatar {
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
 .avatar img {
   width: 100%;
   height: 100%;
@@ -296,6 +301,11 @@ function onWishClick(wish: any) {
   border-radius: 50%;
 }
 
+[data-theme='dark'] .avatar-status {
+  background: #30D158;
+  border: 2px solid #1C1C1E;
+}
+
 .user-info {
   flex: 1;
   display: flex;
@@ -312,12 +322,20 @@ function onWishClick(wish: any) {
   letter-spacing: -0.02em;
 }
 
+[data-theme='dark'] .user-name {
+  color: #FFFFFF;
+}
+
 .user-subtitle {
   margin: 0;
   font-size: 12px;
   font-weight: 500;
   color: #64748b;
   margin-top: 2px;
+}
+
+[data-theme='dark'] .user-subtitle {
+  color: #8E8E93;
 }
 
 .notification-btn {
@@ -328,6 +346,11 @@ function onWishClick(wish: any) {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  color: #64748b;
+}
+
+[data-theme='dark'] .notification-btn {
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .notification-btn .icon {
@@ -360,6 +383,11 @@ function onWishClick(wish: any) {
   display: flex;
   align-items: center;
   justify-content: center;
+  color: #64748b;
+}
+
+[data-theme='dark'] .action-btn {
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .action-btn .icon {
@@ -376,6 +404,10 @@ function onWishClick(wish: any) {
   color: #94a3b8;
   text-transform: uppercase;
   letter-spacing: 0.08em;
+}
+
+[data-theme='dark'] .count-label {
+  color: #6B7280;
 }
 
 /* === WISHES SECTION === */
@@ -402,6 +434,11 @@ function onWishClick(wish: any) {
   cursor: pointer;
   transition: all 0.2s ease;
   z-index: 100;
+}
+
+[data-theme='dark'] .fab-button {
+  border: 4px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 25px rgba(10, 132, 255, 0.4);
 }
 
 .fab-button:hover {

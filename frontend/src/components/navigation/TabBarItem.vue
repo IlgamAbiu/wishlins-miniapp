@@ -74,6 +74,12 @@ function handleClick() {
   padding: 14px 24px;
 }
 
+[data-theme='dark'] .tab-bar-item--active {
+  background: rgba(10, 132, 255, 0.2);
+  border: 1px solid rgba(10, 132, 255, 0.3);
+  box-shadow: none;
+}
+
 .tab-bar-item__icon {
   font-size: 24px;
   line-height: 1;
@@ -81,9 +87,18 @@ function handleClick() {
   transition: all 0.2s ease;
 }
 
+[data-theme='dark'] .tab-bar-item__icon {
+  color: #ABABAB;
+}
+
 .tab-bar-item--active .tab-bar-item__icon {
   color: white;
   filter: drop-shadow(0 0 12px rgba(255,255,255,0.3));
+}
+
+[data-theme='dark'] .tab-bar-item--active .tab-bar-item__icon {
+  color: #0A84FF;
+  filter: none;
 }
 
 .tab-bar-item__label {
@@ -92,6 +107,10 @@ function handleClick() {
   color: white;
   white-space: nowrap;
   letter-spacing: 0;
+}
+
+[data-theme='dark'] .tab-bar-item__label {
+  color: #0A84FF;
 }
 
 /* Touch feedback */
@@ -107,6 +126,10 @@ function handleClick() {
 
   .tab-bar-item:hover:not(.tab-bar-item--active) .tab-bar-item__icon {
     color: #64748b;
+  }
+
+  [data-theme='dark'] .tab-bar-item:hover:not(.tab-bar-item--active) .tab-bar-item__icon {
+    color: white;
   }
 }
 </style>

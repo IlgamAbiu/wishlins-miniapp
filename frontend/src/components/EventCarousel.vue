@@ -100,6 +100,10 @@ function selectEvent(id: string) {
   color: #64748b;
 }
 
+[data-theme='dark'] .event-pill {
+  color: rgba(255, 255, 255, 0.7);
+}
+
 .event-pill--active {
   color: var(--tg-button-color);
 }
@@ -120,6 +124,10 @@ function selectEvent(id: string) {
   cursor: pointer;
   flex-shrink: 0;
   color: #64748b;
+}
+
+[data-theme='dark'] .event-add-btn {
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .add-icon {

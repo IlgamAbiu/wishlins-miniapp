@@ -191,6 +191,11 @@ function formatPrice(price: number | null, currency: string | null) {
   color: #FF375F;
 }
 
+[data-theme='dark'] .favorite-btn {
+  background: rgba(0, 0, 0, 0.4);
+  color: #FF453A;
+}
+
 .heart-icon {
   font-size: 20px;
   filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));
@@ -209,6 +214,11 @@ function formatPrice(price: number | null, currency: string | null) {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+[data-theme='dark'] .card-image img,
+[data-theme='dark'] .small-image img {
+  filter: brightness(0.9);
 }
 
 .image-placeholder {
@@ -240,11 +250,19 @@ function formatPrice(price: number | null, currency: string | null) {
   line-height: 1.2;
 }
 
+[data-theme='dark'] .card-title {
+  color: #FFFFFF;
+}
+
 .card-source {
   margin: 4px 0 0;
   font-size: 14px;
   font-weight: 500;
   color: #64748b;
+}
+
+[data-theme='dark'] .card-source {
+  color: #9CA3AF;
 }
 
 .card-price-big {
@@ -298,6 +316,12 @@ function formatPrice(price: number | null, currency: string | null) {
   background: rgba(255, 255, 255, 0.5);
 }
 
+[data-theme='dark'] .favorite-btn-small {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.4);
+}
+
 .heart-icon-small {
   font-size: 16px;
 }
@@ -316,6 +340,10 @@ function formatPrice(price: number | null, currency: string | null) {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+[data-theme='dark'] .small-title {
+  color: #FFFFFF;
 }
 
 .small-price {

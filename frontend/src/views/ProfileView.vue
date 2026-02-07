@@ -79,15 +79,23 @@ async function handleSaveEvent(title: string, date: string, description: string)
     // Update existing
     const updated = await updateWishlist(editingEvent.value.id, {
       title,
-      eventDate: date || null
+      eventDate: date || null,
+      description: description || null
     })
     if (updated) {
       showAddEventModal.value = false
       editingEvent.value = null
     }
   } else {
-    // Create new (emoji removed, description not yet supported in backend)
-    const newWishlist = await createWishlist(title, user.value.id, true, null, date || null)
+    // Create new (emoji removed)
+    const newWishlist = await createWishlist(
+      title,
+      user.value.id,
+      true,
+      null,
+      date || null,
+      description || null
+    )
     if (newWishlist) {
       showAddEventModal.value = false
       selectedEventId.value = newWishlist.id
@@ -260,20 +268,20 @@ function pluralizeWishes(count: number): string {
           <div class="actions-buttons">
             <button
               v-if="!selectedEvent.is_default"
-              class="glass-btn action-btn"
+              class="glass-btn flex items-center justify-center h-10 w-10 rounded-xl text-slate-400"
               @click="handleEditEvent"
             >
-              <span class="icon">✏️</span>
+              <span class="material-symbols-outlined text-[18px]">edit</span>
             </button>
             <button
               v-if="!selectedEvent.is_default"
-              class="glass-btn action-btn"
+              class="glass-btn flex items-center justify-center h-10 w-10 rounded-xl text-slate-400"
               @click="handleDeleteEvent"
             >
-              <span class="icon">🗑️</span>
+              <span class="material-symbols-outlined text-[18px]">delete</span>
             </button>
-            <button class="glass-btn action-btn" @click="handleShareEvent">
-              <span class="icon">↗️</span>
+            <button class="glass-btn flex items-center justify-center h-10 w-10 rounded-xl text-slate-400" @click="handleShareEvent">
+              <span class="material-symbols-outlined text-[18px]">ios_share</span>
             </button>
           </div>
           <div class="item-count">

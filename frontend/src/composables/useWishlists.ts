@@ -43,7 +43,8 @@ export function useWishlists() {
     telegramId: number,
     isPublic: boolean = false,
     emoji?: string | null,
-    eventDate?: string | null
+    eventDate?: string | null,
+    description?: string | null
   ): Promise<Wishlist | null> {
     loading.value = true
     error.value = null
@@ -57,7 +58,8 @@ export function useWishlists() {
           title,
           is_public: isPublic,
           emoji,
-          event_date: eventDate
+          event_date: eventDate,
+          description: description || null
         })
       })
 
@@ -78,7 +80,7 @@ export function useWishlists() {
 
   async function updateWishlist(
     id: string,
-    data: { title?: string; isPublic?: boolean; emoji?: string | null; eventDate?: string | null }
+    data: { title?: string; isPublic?: boolean; emoji?: string | null; eventDate?: string | null; description?: string | null }
   ): Promise<Wishlist | null> {
     loading.value = true
     try {
@@ -89,7 +91,8 @@ export function useWishlists() {
           title: data.title,
           is_public: data.isPublic,
           emoji: data.emoji,
-          event_date: data.eventDate
+          event_date: data.eventDate,
+          description: data.description
         })
       })
 

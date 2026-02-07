@@ -44,7 +44,7 @@ function handleClick() {
     role="tab"
   >
     <span class="tab-bar-item__icon">{{ icon }}</span>
-    <span class="tab-bar-item__label">{{ tab.label }}</span>
+    <span v-if="isActive" class="tab-bar-item__label">{{ tab.label }}</span>
   </button>
 </template>
 
@@ -52,134 +52,61 @@ function handleClick() {
 .tab-bar-item {
   position: relative;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  flex: 1;
-  padding: 10px 8px;
+  gap: 10px;
+  padding: 12px;
   border: none;
   background: transparent;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  border-radius: var(--border-radius-lg);
-  overflow: visible;
-  transition: all 0.25s var(--liquid-ease);
+  border-radius: 9999px;
+  transition: all 0.2s ease;
+  min-width: 48px;
+  min-height: 48px;
 }
 
-/* iOS 26 Style: Rounded active background */
-.tab-bar-item--active::before {
-  content: '';
-  position: absolute;
-  inset: 2px;
-  background: rgba(var(--tg-button-color-rgb), 0.15);
-  border-radius: 18px;
-  animation: liquid-scale-in 0.4s var(--liquid-spring);
-  z-index: -1;
-}
-
-[data-theme='dark'] .tab-bar-item--active::before {
-  background: rgba(var(--tg-button-color-rgb), 0.2);
-}
-
-/* Ripple effect on tap */
-.tab-bar-item::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle, var(--tg-button-color) 0%, transparent 60%);
-  opacity: 0;
-  pointer-events: none;
-  border-radius: var(--border-radius-lg);
-}
-
-.tab-bar-item:active::after {
-  animation: ripple 0.6s ease-out;
-}
-
-@keyframes ripple {
-  0% {
-    transform: scale(0);
-    opacity: 0.3;
-  }
-  100% {
-    transform: scale(2.5);
-    opacity: 0;
-  }
+/* Active state - Full colored pill */
+.tab-bar-item--active {
+  background: var(--tg-button-color);
+  box-shadow: 0 4px 12px rgba(10, 13, 194, 0.2);
+  padding: 14px 24px;
 }
 
 .tab-bar-item__icon {
   font-size: 24px;
   line-height: 1;
-  color: var(--tg-hint-color);
-  transition: color 0.25s var(--liquid-ease),
-              transform 0.35s var(--liquid-spring);
-  position: relative;
-  z-index: 1;
+  color: #94a3b8;
+  transition: all 0.2s ease;
+}
+
+.tab-bar-item--active .tab-bar-item__icon {
+  color: white;
+  filter: drop-shadow(0 0 12px rgba(255,255,255,0.3));
 }
 
 .tab-bar-item__label {
-  font-size: 10px;
-  font-weight: var(--font-weight-medium);
-  color: var(--tg-hint-color);
-  transition: color 0.25s var(--liquid-ease),
-              font-weight 0.25s ease;
-  letter-spacing: -0.02em;
-  position: relative;
-  z-index: 1;
+  font-size: 14px;
+  font-weight: 700;
+  color: white;
+  white-space: nowrap;
+  letter-spacing: 0;
 }
 
-/* Active state with iOS 26 style */
-.tab-bar-item--active .tab-bar-item__icon {
-  color: var(--tg-button-color);
-  transform: scale(1.05);
-}
-
-.tab-bar-item--active .tab-bar-item__label {
-  color: var(--tg-button-color);
-  font-weight: var(--font-weight-semibold);
-}
-
-/* Touch feedback - subtle scale */
+/* Touch feedback */
 .tab-bar-item:active {
-  transform: scale(0.92);
+  transform: scale(0.95);
 }
 
 /* Hover only on non-touch devices */
 @media (hover: hover) {
   .tab-bar-item:hover:not(.tab-bar-item--active) {
-    background: rgba(128, 128, 128, 0.08);
+    background: rgba(148, 163, 184, 0.1);
   }
 
-  .tab-bar-item:hover:not(.tab-bar-item--active) .tab-bar-item__icon,
-  .tab-bar-item:hover:not(.tab-bar-item--active) .tab-bar-item__label {
-    color: var(--tg-text-color);
-    opacity: 0.8;
-  }
-
-  [data-theme='dark'] .tab-bar-item:hover:not(.tab-bar-item--active) {
-    background: rgba(255, 255, 255, 0.08);
-  }
-}
-
-/* Smooth icon change animation */
-.tab-bar-item__icon {
-  animation: none;
-}
-
-.tab-bar-item--active .tab-bar-item__icon {
-  animation: icon-pop 0.35s var(--liquid-spring);
-}
-
-@keyframes icon-pop {
-  0% {
-    transform: scale(0.9);
-  }
-  50% {
-    transform: scale(1.1);
-  }
-  100% {
-    transform: scale(1.05);
+  .tab-bar-item:hover:not(.tab-bar-item--active) .tab-bar-item__icon {
+    color: #64748b;
   }
 }
 </style>

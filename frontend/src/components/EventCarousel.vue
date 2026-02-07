@@ -35,38 +35,31 @@ function selectEvent(id: string) {
 <template>
   <div class="event-carousel">
     <div class="event-carousel__track">
-      <!-- 1. Default Event -->
-      <div
+      <!-- 1. Default Event Pill -->
+      <button
         v-if="defaultEvent"
-        class="event-card glass-card"
-        :class="{ 'event-card--active': defaultEvent.id === selectedEventId }"
+        class="event-pill"
+        :class="{ 'event-pill--active active-pill': defaultEvent.id === selectedEventId, 'glass-btn': defaultEvent.id !== selectedEventId }"
         @click="selectEvent(defaultEvent.id)"
       >
-        <div class="event-card__icon">
-          {{ defaultEvent.emoji || '🎁' }}
-        </div>
-        <div class="event-card__title">{{ defaultEvent.title }}</div>
-      </div>
-
-      <!-- 2. Add Event Button (Always second) -->
-      <button class="event-add-btn glass-card" @click="$emit('add')">
-        <div class="event-add-btn__icon">+</div>
-        <div class="event-add-btn__label">Новое</div>
+        <span class="pill-text">{{ defaultEvent.title }}</span>
       </button>
 
-      <!-- 3. Other Events -->
-      <div
+      <!-- 2. Add Event Button (Circle with +) -->
+      <button class="event-add-btn glass-btn" @click="$emit('add')">
+        <span class="add-icon">+</span>
+      </button>
+
+      <!-- 3. Other Events Pills -->
+      <button
         v-for="event in otherEvents"
         :key="event.id"
-        class="event-card glass-card"
-        :class="{ 'event-card--active': event.id === selectedEventId }"
+        class="event-pill"
+        :class="{ 'event-pill--active active-pill': event.id === selectedEventId, 'glass-btn': event.id !== selectedEventId }"
         @click="selectEvent(event.id)"
       >
-        <div class="event-card__icon">
-          {{ event.emoji || '🎉' }}
-        </div>
-        <div class="event-card__title">{{ event.title }}</div>
-      </div>
+        <span class="pill-text">{{ event.title }}</span>
+      </button>
     </div>
   </div>
 </template>
@@ -75,7 +68,7 @@ function selectEvent(id: string) {
 .event-carousel {
   width: 100%;
   overflow-x: auto;
-  padding: var(--spacing-md) 0;
+  padding: 4px 0;
   /* Hide scrollbar */
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -87,84 +80,51 @@ function selectEvent(id: string) {
 
 .event-carousel__track {
   display: flex;
-  gap: var(--spacing-sm);
-  padding: 0 var(--spacing-lg);
+  gap: 8px;
+  padding: 0 4px;
   min-width: min-content;
 }
 
-.event-card {
+/* === EVENT PILL === */
+.event-pill {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 100px;
-  height: 100px;
-  /* Glassmorphism applied via class in template, here just sizing */
+  height: 44px;
+  padding: 0 24px;
+  border-radius: 22px;
   cursor: pointer;
   flex-shrink: 0;
-  /* Inherit transition from glass-card utility */
-}
-
-.event-card--active {
-  background: var(--tg-button-color);
-  box-shadow: 0 8px 24px rgba(0, 136, 204, 0.3); /* Button color shadow */
-  transform: translateY(-2px);
-}
-
-.event-card--active .event-card__title {
-  color: var(--tg-button-text-color);
-  font-weight: 600;
-}
-
-.event-card__icon {
-  font-size: 32px;
-  margin-bottom: var(--spacing-xs);
-  transition: transform var(--transition-normal);
-}
-
-.event-card--active .event-card__icon {
-  transform: scale(1.1);
-}
-
-.event-card__title {
-  font-size: 13px;
-  color: var(--tg-text-color);
-  text-align: center;
+  transition: all 0.2s ease;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 90%;
-  transition: color var(--transition-normal);
+  color: #64748b;
 }
 
+.event-pill--active {
+  color: var(--tg-button-color);
+}
+
+.pill-text {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* === ADD BUTTON === */
 .event-add-btn {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 100px;
-  height: 100px;
-  background: rgba(255, 255, 255, 0.6); /* Translucent */
-  border: 2px dashed rgba(0, 0, 0, 0.1);
-  border-radius: var(--border-radius-xl);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
   cursor: pointer;
   flex-shrink: 0;
-  transition: all var(--transition-normal);
-  color: var(--tg-hint-color);
+  color: #64748b;
 }
 
-.event-add-btn:active {
-  transform: scale(0.95);
-  background: rgba(0, 0, 0, 0.05);
-}
-
-.event-add-btn__icon {
-  font-size: 28px;
-  margin-bottom: 4px;
+.add-icon {
+  font-size: 22px;
   font-weight: 300;
-}
-
-.event-add-btn__label {
-  font-size: 13px;
+  line-height: 1;
 }
 </style>

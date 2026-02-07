@@ -14,25 +14,25 @@
   /* === LIQUID GLASS LAYERS === */
 
   /* Layer 1: Primary Content (lightest blur) */
-  --glass-layer-1-bg: rgba(255, 255, 255, 0.72);
-  --glass-layer-1-blur: 24px;
+  --glass-layer-1-bg: rgba(255, 255, 255, 0.65);
+  --glass-layer-1-blur: 30px;
 
   /* Layer 2: Navigation & Toolbars (medium blur) */
-  --glass-layer-2-bg: rgba(255, 255, 255, 0.55);
-  --glass-layer-2-blur: 40px;
+  --glass-layer-2-bg: rgba(255, 255, 255, 0.5);
+  --glass-layer-2-blur: 30px;
 
   /* Layer 3: Modals & Overlays (heavy blur) */
   --glass-layer-3-bg: rgba(255, 255, 255, 0.40);
-  --glass-layer-3-blur: 60px;
+  --glass-layer-3-blur: 30px;
 
   /* Layer 4: Subtle Backgrounds (lightest) */
-  --glass-layer-4-bg: rgba(255, 255, 255, 0.25);
+  --glass-layer-4-bg: rgba(255, 255, 255, 0.4);
   --glass-layer-4-blur: 12px;
 
   /* === GLASS BORDERS === */
-  --glass-border-light: rgba(255, 255, 255, 0.3);
-  --glass-border-medium: rgba(255, 255, 255, 0.18);
-  --glass-border-strong: rgba(255, 255, 255, 0.5);
+  --glass-border-light: rgba(255, 255, 255, 0.6);
+  --glass-border-medium: rgba(255, 255, 255, 0.5);
+  --glass-border-strong: rgba(255, 255, 255, 0.8);
 
   /* Gradient borders for premium effect */
   --glass-border-gradient: linear-gradient(135deg,

@@ -46,32 +46,61 @@ function formatPrice(price: number | null, currency: string | null) {
 
     <!-- Grid Content -->
     <div v-else class="grid-content">
+      <!-- First Card - Large -->
       <div
-        v-for="wish in wishes"
-        :key="wish.id"
-        class="wish-card glass-card"
-        @click="$emit('click', wish)"
+        v-if="wishes.length > 0"
+        class="wish-card-large glass-card-new"
+        @click="$emit('click', wishes[0])"
       >
-        <div class="wish-card__image-wrapper">
+        <button class="favorite-btn glass-btn">
+          <span class="heart-icon">❤️</span>
+        </button>
+        <div class="card-image">
           <img
-            v-if="wish.image_url"
-            :src="wish.image_url"
+            v-if="wishes[0].image_url"
+            :src="wishes[0].image_url"
             alt="wish"
-            class="wish-card__image"
             loading="lazy"
           />
-          <div v-else class="wish-card__placeholder">
-            🎁
-          </div>
-          <div v-if="wish.price" class="wish-card__price">
-            {{ formatPrice(wish.price, wish.currency) }}
+          <div v-else class="image-placeholder">🎁</div>
+        </div>
+        <div class="card-content">
+          <div class="card-header">
+            <div>
+              <h3 class="card-title">{{ wishes[0].title }}</h3>
+              <p v-if="wishes[0].description" class="card-source">{{ wishes[0].description }}</p>
+            </div>
+            <div v-if="wishes[0].price" class="card-price-big">
+              {{ formatPrice(wishes[0].price, wishes[0].currency) }}
+            </div>
           </div>
         </div>
-        <div class="wish-card__info">
-          <h3 class="wish-card__title">{{ wish.title }}</h3>
-          <p v-if="wish.description" class="wish-card__desc">
-            {{ wish.description }}
-          </p>
+      </div>
+
+      <!-- Remaining Cards - Small Grid -->
+      <div v-if="wishes.length > 1" class="grid-small">
+        <div
+          v-for="wish in wishes.slice(1)"
+          :key="wish.id"
+          class="wish-card-small glass-card-new"
+          @click="$emit('click', wish)"
+        >
+          <div class="small-image">
+            <img
+              v-if="wish.image_url"
+              :src="wish.image_url"
+              alt="wish"
+              loading="lazy"
+            />
+            <div v-else class="image-placeholder">🎁</div>
+            <button class="favorite-btn-small glass-btn">
+              <span class="heart-icon-small">🤍</span>
+            </button>
+          </div>
+          <div class="small-content">
+            <h4 class="small-title">{{ wish.title }}</h4>
+            <p v-if="wish.price" class="small-price">{{ formatPrice(wish.price, wish.currency) }}</p>
+          </div>
         </div>
       </div>
     </div>
@@ -131,82 +160,169 @@ function formatPrice(price: number | null, currency: string | null) {
 
 /* Grid Layout */
 .grid-content {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--spacing-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-.wish-card {
-  /* Glassmorphism via utility */
-  border-radius: var(--border-radius-lg);
-  overflow: hidden;
-  /* box-shadow handled by glass-card */
-  cursor: pointer;
-  /* border handled by glass-card */
-}
-
-.wish-card:active {
-  transform: scale(0.98);
-}
-
-.wish-card__image-wrapper {
+/* === LARGE CARD === */
+.wish-card-large {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   position: relative;
-  aspect-ratio: 1;
-  background: var(--tg-secondary-bg-color);
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.favorite-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.6);
+  color: #FF375F;
 }
 
-.wish-card__image {
+.heart-icon {
+  font-size: 20px;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));
+}
+
+.card-image {
+  width: 100%;
+  height: 208px;
+  border-radius: 32px;
+  overflow: hidden;
+  background: var(--tg-secondary-bg-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.card-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.wish-card__placeholder {
-  font-size: 32px;
-  opacity: 0.5;
+.image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  opacity: 0.3;
 }
 
-.wish-card__price {
+.card-content {
+  padding: 0 4px 4px;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.card-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.2;
+}
+
+.card-source {
+  margin: 4px 0 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.card-price-big {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--tg-button-color);
+  white-space: nowrap;
+}
+
+/* === SMALL CARDS GRID === */
+.grid-small {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.wish-card-small {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.small-image {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 28px;
+  overflow: hidden;
+  background: var(--tg-secondary-bg-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.small-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.favorite-btn-small {
   position: absolute;
-  bottom: 8px;
-  right: 8px;
-  background: rgba(0, 0, 0, 0.6);
-  color: white;
-  padding: 4px 8px;
-  border-radius: var(--border-radius-sm);
-  font-size: var(--font-size-caption);
-  font-weight: 600;
-  backdrop-filter: blur(4px);
+  top: 10px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.5);
 }
 
-.wish-card__info {
-  padding: var(--spacing-sm);
+.heart-icon-small {
+  font-size: 16px;
 }
 
-.wish-card__title {
-  font-size: var(--font-size-secondary);
-  font-weight: 600;
-  margin: 0 0 4px;
+.small-content {
+  padding: 0 6px 2px;
+}
+
+.small-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
   line-height: 1.3;
-  color: var(--tg-text-color);
-  
-  /* Truncate to 2 lines */
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-.wish-card__desc {
-  font-size: var(--font-size-caption);
-  color: var(--tg-hint-color);
-  margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.small-price {
+  margin: 4px 0 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--tg-button-color);
 }
 
 

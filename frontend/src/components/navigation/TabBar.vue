@@ -30,69 +30,35 @@ function handleTabSelect(tabId: string) {
 <style scoped>
 .tab-bar {
   position: fixed;
-  bottom: 24px; /* Detached from bottom */
+  bottom: 24px;
   left: 50%;
   transform: translateX(-50%);
-  width: auto; /* Dynamic width based on content */
-  min-width: 300px; /* Minimum width for touch targets */
+  width: 92%;
+  max-width: 480px;
   z-index: 100;
-  
-  /* Floating HUD - Liquid Glass */
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(30px) saturate(180%);
-  -webkit-backdrop-filter: blur(30px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15); /* Floating shadow */
-  border-radius: 40px; /* Capsule shape */
-  
-  padding: 4px; /* Inner padding for "floating" feel */
-  transition: all var(--transition-normal);
-}
-
-[data-theme='dark'] .tab-bar {
-  background: rgba(40, 40, 42, 0.75);
-  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .tab-bar__content {
   display: flex;
   align-items: center;
-  justify-content: space-around;
+  justify-content: space-between;
+  padding: 8px;
+  gap: 8px;
 
-  /* Premium Border and Shadows */
-  border: 1px solid var(--glass-border-light);
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.12),
-    0 2px 8px rgba(0, 0, 0, 0.08),
-    var(--glass-inner-glow);
+  /* Glass Panel Style */
+  background: var(--glass-panel-bg);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+  border-radius: 9999px;
 
-  /* GPU Acceleration */
-  transform: translateZ(0);
-
-  /* Enable pointer events on content */
-  pointer-events: auto;
+  transition: all var(--transition-normal);
 }
 
-/* Responsive adjustments */
-@media (min-width: 375px) {
-  .tab-bar__content {
-    max-width: 420px;
-    padding: 0 12px;
-  }
-}
-
-@media (min-width: 428px) {
-  .tab-bar__content {
-    max-width: 450px;
-    padding: 0 16px;
-  }
-}
-
-/* Dark theme adjustments for better contrast */
 [data-theme='dark'] .tab-bar__content {
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.4),
-    0 2px 8px rgba(0, 0, 0, 0.3),
-    var(--glass-inner-glow);
+  background: rgba(40, 40, 42, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 </style>

@@ -39,8 +39,9 @@ const currentComponent = computed(() => tabComponents[activeTab.value])
 
   <!-- Main app when in Telegram -->
   <div v-else class="app">
-    <!-- Праздничный фон с блестками -->
-    <FestiveBackground />
+    <!-- Decorative blur circles -->
+    <div class="blur-decoration blur-circle-blue"></div>
+    <div class="blur-decoration blur-circle-purple"></div>
 
     <main class="app__content">
       <KeepAlive>
@@ -64,9 +65,7 @@ const currentComponent = computed(() => tabComponents[activeTab.value])
 html, body {
   margin: 0;
   padding: 0;
-  background: linear-gradient(135deg, var(--aurora-bg-1), var(--aurora-bg-2), var(--aurora-bg-3));
-  background-size: 200% 200%;
-  animation: aurora 15s ease infinite;
+  background: radial-gradient(circle at 0% 0%, var(--aurora-bg-1) 0%, var(--aurora-bg-2) 50%, var(--aurora-bg-3) 100%);
   color: var(--tg-text-color);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

@@ -136,37 +136,53 @@ function onWishClick(wish: any) {
     </div>
 
     <div v-else class="content">
-      <!-- Header -->
-      <header class="header">
-        <div class="avatar">
-           <img v-if="user?.photo_url" :src="user.photo_url" alt="avatar" />
-           <div v-else class="avatar-placeholder">{{ userDisplayName.charAt(0) }}</div>
+      <!-- Header with glass-panel -->
+      <header class="header-section">
+        <div class="glass-panel header-panel">
+          <div class="avatar-wrapper">
+            <div class="avatar">
+              <img v-if="user?.photo_url" :src="user.photo_url" alt="avatar" />
+              <div v-else class="avatar-placeholder">{{ userDisplayName.charAt(0) }}</div>
+              <div class="avatar-status"></div>
+            </div>
+          </div>
+          <div class="user-info">
+            <h1 class="user-name">{{ userDisplayName }}</h1>
+            <p class="user-subtitle">Saving for a dream ✨</p>
+          </div>
+          <button class="glass-btn notification-btn">
+            <span class="icon">🔔</span>
+          </button>
         </div>
-        <div class="user-info">
-          <h1>{{ userDisplayName }}</h1>
-          <span class="username">@{{ user?.username }}</span>
+
+        <!-- Events Carousel -->
+        <div class="carousel-wrapper">
+          <EventCarousel
+            :events="wishlists"
+            :selected-event-id="selectedEventId"
+            @select="handleEventSelect"
+            @add="openCreateEventModal"
+          />
+        </div>
+
+        <!-- Event Actions Row -->
+        <div v-if="selectedEvent" class="actions-row">
+          <div class="actions-buttons">
+            <button class="glass-btn action-btn" @click="handleEditEvent">
+              <span class="icon">✏️</span>
+            </button>
+            <button class="glass-btn action-btn" @click="handleDeleteEvent">
+              <span class="icon">🗑️</span>
+            </button>
+            <button class="glass-btn action-btn" @click="handleShareEvent">
+              <span class="icon">↗️</span>
+            </button>
+          </div>
+          <div class="item-count">
+            <span class="count-label">{{ wishes.length }} items</span>
+          </div>
         </div>
       </header>
-
-      <!-- Events Carousel -->
-      <section class="events-section">
-        <EventCarousel
-          :events="wishlists"
-          :selected-event-id="selectedEventId"
-          @select="handleEventSelect"
-          @add="openCreateEventModal"
-        />
-      </section>
-
-      <!-- Event Actions (Edit/Share/Delete) -->
-      <EventActions
-        v-if="selectedEvent"
-        :event="selectedEvent"
-        :can-delete="true"
-        @edit="handleEditEvent"
-        @share="handleShareEvent"
-        @delete="handleDeleteEvent"
-      />
 
       <!-- Data Status/Grid -->
       <section class="wishes-section">
@@ -179,13 +195,10 @@ function onWishClick(wish: any) {
          />
       </section>
 
-      <!-- Floating Sticky Button -->
-      <div class="sticky-footer">
-        <button class="main-add-btn" @click="showAddWishModal = true">
-          <span class="btn-icon">+</span>
-          Добавить желание
-        </button>
-      </div>
+      <!-- Floating FAB Button -->
+      <button class="fab-button" @click="showAddWishModal = true">
+        <span class="fab-icon">+</span>
+      </button>
 
       <!-- Modals -->
       <Teleport to="body">
@@ -212,49 +225,46 @@ function onWishClick(wish: any) {
 <style scoped>
 .profile-view {
   height: 100vh;
-  background: transparent; /* Let Aurora shine through */
+  background: transparent;
   display: flex;
   flex-direction: column;
   position: relative;
-  overflow: hidden; /* For blurred circles if added later */
 }
 
 .content {
   flex: 1;
   overflow-y: auto;
-  padding-bottom: 100px; /* Space for sticky button */
+  padding-bottom: 120px;
   -webkit-overflow-scrolling: touch;
 }
 
-.header {
-  padding: var(--spacing-md) var(--spacing-lg);
+/* === HEADER SECTION === */
+.header-section {
+  padding: 20px 20px 0;
   display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  /* Liquid Glass Header */
-  background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-  
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  transition: background-color var(--transition-normal);
+  flex-direction: column;
+  gap: 24px;
 }
 
-[data-theme='dark'] .header {
-  background: rgba(28, 28, 30, 0.5);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+.header-panel {
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.avatar-wrapper {
+  position: relative;
 }
 
 .avatar {
   width: 56px;
   height: 56px;
-  border-radius: var(--border-radius-xl);
+  border-radius: 50%;
   overflow: hidden;
-  box-shadow: var(--shadow-card);
-  border: 1px solid var(--tg-border-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 2px solid white;
+  position: relative;
 }
 
 .avatar img {
@@ -275,84 +285,136 @@ function onWishClick(wish: any) {
   font-weight: 700;
 }
 
+.avatar-status {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 14px;
+  height: 14px;
+  background: #34C759;
+  border: 2px solid white;
+  border-radius: 50%;
+}
+
 .user-info {
+  flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
-.user-info h1 {
+.user-name {
   margin: 0;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
-  color: var(--tg-text-color, #000);
+  color: #111118;
   line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 
-.username {
-  color: var(--tg-hint-color);
-  font-size: var(--font-size-secondary);
-  font-weight: 400;
+.user-subtitle {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748b;
+  margin-top: 2px;
 }
 
-.events-section {
-  padding-top: 10px;
-  margin-bottom: 10px;
-}
-
-.wishes-section {
-  min-height: 200px;
-  padding-top: 10px;
-}
-
-.sticky-footer {
-  position: fixed;
-  bottom: 90px; /* Above TabBar */
-  left: 0;
-  right: 0;
-  padding: 0 var(--spacing-lg);
-  z-index: 100;
-  display: flex;
-  justify-content: center;
-  pointer-events: none;
-  padding-bottom: env(safe-area-inset-bottom);
-}
-
-.main-add-btn {
-  pointer-events: auto;
-  width: 100%;
-  max-width: 400px;
-  height: 56px;
-  
-  /* Aurora Button */
-  background: rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  color: var(--tg-text-color); /* Adaptive text */
-  
-  border-radius: 28px; /* Fully rounded pill */
-  font-size: 17px;
-  font-weight: 600;
+.notification-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+  flex-shrink: 0;
+}
+
+.notification-btn .icon {
+  font-size: 20px;
+}
+
+/* === CAROUSEL WRAPPER === */
+.carousel-wrapper {
+  margin: 0 -20px;
+  padding: 0 20px;
+}
+
+/* === ACTIONS ROW === */
+.actions-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 4px;
+}
+
+.actions-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.action-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-btn .icon {
+  font-size: 18px;
+}
+
+.item-count {
+  text-align: right;
+}
+
+.count-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* === WISHES SECTION === */
+.wishes-section {
+  min-height: 200px;
+  margin-top: 20px;
+}
+
+/* === FAB BUTTON === */
+.fab-button {
+  position: fixed;
+  bottom: 100px;
+  right: 20px;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--tg-button-color);
+  color: white;
+  border: 4px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 24px rgba(10, 13, 194, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  transition: transform var(--transition-normal), background var(--transition-normal);
-  
-  /* Gradient text/icon if possible, but solid is safer for contrast */
+  transition: all 0.2s ease;
+  z-index: 100;
 }
 
-.main-add-btn:active {
-  transform: scale(0.96);
-  background: rgba(255, 255, 255, 0.4);
+.fab-button:hover {
+  transform: scale(1.05);
 }
 
-.btn-icon {
-  font-size: 24px;
-  font-weight: 400;
+.fab-button:active {
+  transform: scale(0.95);
+}
+
+.fab-icon {
+  font-size: 36px;
+  font-weight: 300;
   line-height: 1;
 }
 

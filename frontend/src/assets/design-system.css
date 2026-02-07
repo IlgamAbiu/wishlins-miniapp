@@ -4,21 +4,21 @@
   --tg-secondary-bg-color: #F5F5F5;
   --tg-text-color: #000000;
   --tg-hint-color: #666666;
-  --tg-link-color: #0088CC;
-  --tg-button-color: #0088CC;
+  --tg-link-color: #0a0dc2;
+  --tg-button-color: #0a0dc2;
   --tg-button-text-color: #FFFFFF;
   --tg-header-bg-color: #FFFFFF;
-  --tg-accent-text-color: #0088CC;
+  --tg-accent-text-color: #0a0dc2;
   --tg-border-color: #E0E0E0;
   --tg-destructive-text-color: #FF3B30;
   --tg-section-bg-color: #FFFFFF;
   --tg-section-header-text-color: #666666;
   --tg-subtitle-text-color: #999999;
 
-  /* Aurora Pastel Harmony Gradients */
-  --aurora-bg-1: #E8D9FF;
-  --aurora-bg-2: #FFD7E8;
-  --aurora-bg-3: #C9F2FF;
+  /* Radial Gradient Background Colors */
+  --aurora-bg-1: #e6e9ff;
+  --aurora-bg-2: #f0f2f5;
+  --aurora-bg-3: #eef2ff;
 
   /* Status Colors */
   --color-error: #FF3B30;
@@ -31,7 +31,7 @@
   --color-success-rgb: 52, 199, 89;
 
   /* Typography */
-  --font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+  --font-family-base: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
   --font-size-h1: 24px;
   --font-size-h2: 20px;
   --font-size-body: 16px;
@@ -46,13 +46,13 @@
   --spacing-xl: 32px;
 
   /* Layout - iOS 26 Native Radii */
-  --border-radius-xs: 6px;
-  --border-radius-sm: 10px;
-  --border-radius-md: 14px;
-  --border-radius-lg: 18px;
-  --border-radius-xl: 22px;
-  --border-radius-2xl: 28px;
-  --border-radius-3xl: 34px;
+  --border-radius-xs: 8px;
+  --border-radius-sm: 12px;
+  --border-radius-md: 16px;
+  --border-radius-lg: 24px;
+  --border-radius-xl: 32px;
+  --border-radius-2xl: 40px;
+  --border-radius-3xl: 48px;
   --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.08);
   --shadow-floating: 0 4px 16px rgba(0, 0, 0, 0.12);
 
@@ -72,9 +72,15 @@
 
   /* Glassmorphism - Thick Refractive Glass */
   --glass-bg: rgba(255, 255, 255, 0.65);
-  --glass-border: rgba(255, 255, 255, 0.4);
+  --glass-border: rgba(255, 255, 255, 0.6);
   --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
-  --glass-blur: 20px;
+  --glass-blur: 30px;
+
+  /* Glass variations */
+  --glass-panel-bg: rgba(255, 255, 255, 0.65);
+  --glass-card-bg: rgba(255, 255, 255, 0.5);
+  --glass-btn-bg: rgba(255, 255, 255, 0.4);
+  --glass-card-shadow: inset 0 0 20px rgba(255, 255, 255, 0.5), 0 4px 6px rgba(0,0,0,0.02);
 }
 
 /* Dark Theme Glass */
@@ -151,17 +157,14 @@ body {
   margin: 0;
   padding: 0;
   font-family: var(--font-family-base);
-  background: linear-gradient(180deg,
-      #fef9ff 0%,
-      #fff5f8 25%,
-      #fff9fc 50%,
-      #f8f9ff 75%,
-      #fef9ff 100%);
-  background-attachment: fixed;
+  background: radial-gradient(circle at 0% 0%, #e6e9ff 0%, #f0f2f5 50%, #eef2ff 100%);
+  min-height: 100vh;
   color: var(--tg-text-color);
   font-size: var(--font-size-body);
   line-height: 1.5;
   transition: background 0.5s ease, color var(--transition-normal);
+  position: relative;
+  overflow-x: hidden;
 }
 
 h1,
@@ -340,4 +343,77 @@ select:focus {
 [data-theme='dark'] .floating-hud {
   background: rgba(30, 30, 32, 0.75);
   border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* === NEW GLASS MORPHISM STYLES === */
+
+/* Glass Panel - Headers, Navigation */
+.glass-panel {
+  background: var(--glass-panel-bg);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  border-radius: var(--border-radius-3xl);
+}
+
+/* Glass Card - Content Cards */
+.glass-card-new {
+  background: var(--glass-card-bg);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: var(--glass-card-shadow);
+  border-radius: var(--border-radius-3xl);
+  transition: transform 0.2s ease;
+}
+
+/* Glass Button - Interactive Elements */
+.glass-btn {
+  background: var(--glass-btn-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.glass-btn:active {
+  background: rgba(255, 255, 255, 0.7);
+  transform: scale(0.96);
+}
+
+/* Active Pill - For carousel pills */
+.active-pill {
+  background: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 12px rgba(10, 13, 194, 0.08), inset 0 0 10px rgba(255,255,255,0.8);
+}
+
+/* Decorative Blur Circles */
+.blur-decoration {
+  position: fixed;
+  pointer-events: none;
+  z-index: 0;
+  mix-blend-mode: multiply;
+  filter: blur(100px);
+  opacity: 0.2;
+}
+
+.blur-circle-blue {
+  top: -10%;
+  right: -10%;
+  width: 60vh;
+  height: 60vh;
+  background: #93b5ff;
+  border-radius: 50%;
+}
+
+.blur-circle-purple {
+  bottom: -10%;
+  left: -10%;
+  width: 60vh;
+  height: 60vh;
+  background: #d4a5ff;
+  border-radius: 50%;
 }

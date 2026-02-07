@@ -68,9 +68,7 @@ function selectEvent(id: string) {
 .event-carousel {
   width: 100%;
   overflow-x: auto;
-  /* Increased padding to prevent shadow and glow clipping */
-  padding: 12px 0;
-  margin: -8px 0;
+  padding: 4px 0;
   /* Hide scrollbar */
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -83,8 +81,7 @@ function selectEvent(id: string) {
 .event-carousel__track {
   display: flex;
   gap: 8px;
-  /* Increased horizontal padding to prevent shadow clipping on sides */
-  padding: 0 12px;
+  padding: 0 4px;
   min-width: min-content;
 }
 
@@ -101,6 +98,12 @@ function selectEvent(id: string) {
   transition: all 0.2s ease;
   white-space: nowrap;
   color: #64748b;
+  /* Reduced shadow to prevent clipping */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme='dark'] .event-pill {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
 }
 
 [data-theme='dark'] .event-pill {
@@ -127,6 +130,12 @@ function selectEvent(id: string) {
   cursor: pointer;
   flex-shrink: 0;
   color: #64748b;
+  /* Reduced shadow to prevent clipping */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme='dark'] .event-add-btn {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
 }
 
 [data-theme='dark'] .event-add-btn {

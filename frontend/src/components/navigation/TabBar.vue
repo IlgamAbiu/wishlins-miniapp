@@ -34,16 +34,24 @@ function handleTabSelect(tabId: string) {
   left: 0;
   right: 0;
   z-index: 100;
-  background: var(--tg-bg-color, #ffffff);
-  border-top: 0.5px solid var(--tg-hint-color, #e0e0e0);
+  
+  /* Glassmorphism */
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border-top: 1px solid var(--glass-border);
+  
+  padding-bottom: env(safe-area-inset-bottom);
+  transition: all var(--transition-normal);
 }
 
 .tab-bar__content {
   display: flex;
-  align-items: stretch;
+  align-items: center;
   justify-content: space-around;
   max-width: 500px;
   margin: 0 auto;
-  padding: 0 8px;
+  height: var(--tab-bar-height);
+  padding: 0 var(--spacing-sm);
 }
 </style>

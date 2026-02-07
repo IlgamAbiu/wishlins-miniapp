@@ -60,22 +60,34 @@
 
 /* === DARK THEME OVERRIDES === */
 [data-theme='dark'] {
-  /* Glass Layers - Dark Mode */
-  --glass-layer-1-bg: rgba(28, 28, 30, 0.85);
-  --glass-layer-2-bg: rgba(28, 28, 30, 0.70);
-  --glass-layer-3-bg: rgba(28, 28, 30, 0.55);
-  --glass-layer-4-bg: rgba(28, 28, 30, 0.40);
+  /* === GLASS LAYERS - ULTRA TRANSPARENT (from new.txt) === */
 
-  /* Glass Borders - Dark Mode */
-  --glass-border-light: rgba(255, 255, 255, 0.12);
-  --glass-border-medium: rgba(255, 255, 255, 0.08);
-  --glass-border-strong: rgba(255, 255, 255, 0.18);
+  /* Layer 1: glass-panel - Headers, Navigation */
+  --glass-layer-1-bg: rgba(255, 255, 255, 0.03);
+  --glass-layer-1-blur: 40px;
+
+  /* Layer 2: glass-card - Content Cards */
+  --glass-layer-2-bg: rgba(255, 255, 255, 0.04);
+  --glass-layer-2-blur: 30px;
+
+  /* Layer 3: Modals & Overlays */
+  --glass-layer-3-bg: rgba(255, 255, 255, 0.05);
+  --glass-layer-3-blur: 30px;
+
+  /* Layer 4: glass-btn - Interactive Elements */
+  --glass-layer-4-bg: rgba(255, 255, 255, 0.06);
+  --glass-layer-4-blur: 12px;
+
+  /* === GLASS BORDERS === */
+  --glass-border-light: rgba(255, 255, 255, 0.08);
+  --glass-border-medium: rgba(255, 255, 255, 0.10);
+  --glass-border-strong: rgba(255, 255, 255, 0.12);
 
   --glass-border-gradient: linear-gradient(135deg,
-    rgba(255, 255, 255, 0.15) 0%,
-    rgba(255, 255, 255, 0.05) 100%);
+    rgba(255, 255, 255, 0.10) 0%,
+    rgba(255, 255, 255, 0.03) 100%);
 
-  /* Glass Shadows - Dark Mode (stronger for depth) */
+  /* === GLASS SHADOWS === */
   --glass-shadow-xs: 0 1px 8px rgba(0, 0, 0, 0.2);
   --glass-shadow-sm: 0 2px 16px rgba(0, 0, 0, 0.3);
   --glass-shadow-md: 0 4px 24px rgba(0, 0, 0, 0.4);
@@ -83,9 +95,9 @@
   --glass-shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.6);
   --glass-shadow-2xl: 0 24px 64px rgba(0, 0, 0, 0.7);
 
-  /* Inner Glow - Dark Mode (subtle) */
-  --glass-inner-glow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  --glass-inner-glow-strong: inset 0 1px 2px rgba(255, 255, 255, 0.15);
+  /* Inner Glow */
+  --glass-inner-glow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+  --glass-inner-glow-strong: inset 0 1px 2px rgba(255, 255, 255, 0.05);
 }
 
 /* === GLASS UTILITY CLASSES === */
@@ -238,4 +250,11 @@
   -webkit-backdrop-filter: none !important;
   background: var(--tg-secondary-bg-color) !important;
   border: 1px solid var(--tg-border-color) !important;
+}
+
+/* === DARK THEME ACTIVE STATES === */
+[data-theme='dark'] .glass-layer-4:active {
+  background: rgba(255, 255, 255, 0.10);
+  transform: scale(0.96);
+  transition: all 0.2s ease;
 }

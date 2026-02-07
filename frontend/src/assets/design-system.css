@@ -85,47 +85,70 @@
 
 /* Dark Theme */
 [data-theme='dark'] {
-  /* Colors - Dark Theme */
-  --tg-bg-color: #0A0A0C;
-  --tg-secondary-bg-color: #1C1C1E;
-  --tg-text-color: #FFFFFF;
-  --tg-hint-color: #ABABAB;
-  --tg-link-color: #0A84FF;
-  --tg-button-color: #0A84FF;
+  /* === DEEP DARK THEME (from new.txt) === */
+
+  /* Background Colors */
+  --tg-bg-color: #030308;
+  --tg-secondary-bg-color: #1a1a3a;
+  --tg-text-color: #f8fafc;
+  --tg-hint-color: #94a3b8;
+  --tg-subtitle-text-color: #94a3b8;
+
+  /* Primary Color - Indigo */
+  --tg-button-color: #4f46e5;
   --tg-button-text-color: #FFFFFF;
-  --tg-header-bg-color: #1C1C1E;
-  --tg-accent-text-color: #0A84FF;
-  --tg-border-color: rgba(255, 255, 255, 0.1);
+  --tg-accent-text-color: #4f46e5;
+  --tg-link-color: #4f46e5;
+  --tg-button-color-rgb: 79, 70, 229;
+
+  /* Header & Sections */
+  --tg-header-bg-color: #030308;
+  --tg-section-bg-color: #1a1a3a;
+  --tg-section-header-text-color: #94a3b8;
+
+  /* Border */
+  --tg-border-color: rgba(255, 255, 255, 0.08);
+
+  /* Destructive */
   --tg-destructive-text-color: #FF453A;
-  --tg-section-bg-color: #1C1C1E;
-  --tg-section-header-text-color: #ABABAB;
-  --tg-subtitle-text-color: #8E8E93;
+
+  /* Radial Gradient Background */
+  --aurora-bg-1: #1a1a3a;
+  --aurora-bg-2: #030308;
+  --aurora-bg-3: #030308;
+
+  /* Status Colors */
+  --color-error: #FF453A;
+  --color-success: #10b981;
+  --color-warning: #FF9500;
 
   /* RGB Color Values - Dark Theme */
-  --tg-button-color-rgb: 10, 132, 255;
   --color-error-rgb: 255, 69, 58;
-  --color-success-rgb: 48, 209, 88;
+  --color-success-rgb: 16, 185, 129;
 
-  /* Background - Dark Mode */
-  --aurora-bg-1: #1C1C1E;
-  --aurora-bg-2: #0A0A0C;
-  --aurora-bg-3: #1C1C1E;
-
-  /* Glass - Dark Mode */
-  --glass-bg: rgba(28, 28, 30, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.1);
+  /* Glass - Dark Mode (Ultra Transparent) */
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.08);
   --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
-  --glass-blur: 20px;
+  --glass-blur: 40px;
 
   /* Glass variations - Dark Mode */
-  --glass-panel-bg: rgba(28, 28, 30, 0.7);
-  --glass-card-bg: rgba(28, 28, 30, 0.8);
-  --glass-btn-bg: rgba(255, 255, 255, 0.08);
-  --glass-card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+  --glass-panel-bg: rgba(255, 255, 255, 0.03);
+  --glass-card-bg: rgba(255, 255, 255, 0.04);
+  --glass-btn-bg: rgba(255, 255, 255, 0.06);
+  --glass-card-shadow: inset 0 0 20px rgba(255, 255, 255, 0.02), 0 8px 24px rgba(0, 0, 0, 0.4);
 
-  /* Status Colors - Dark Mode */
-  --color-error: #FF453A;
-  --color-success: #30D158;
+  /* === GLASS BORDERS - NEW === */
+  --glass-border-light: rgba(255, 255, 255, 0.08);
+  --glass-border-medium: rgba(255, 255, 255, 0.10);
+  --glass-border-strong: rgba(255, 255, 255, 0.12);
+
+  /* === GLASS SHADOWS - NEW === */
+  --glass-shadow-xs: 0 2px 8px rgba(0, 0, 0, 0.2);
+  --glass-shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.3);
+  --glass-shadow-md: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --glass-shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.5);
+  --glass-shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.6);
 }
 
 /* Glass Utility Class */
@@ -137,48 +160,15 @@
   box-shadow: var(--glass-shadow);
 }
 
-/* Dark Theme Overrides - applied when Telegram sends dark theme params */
-[data-theme='dark'] {
-  --tg-bg-color: #1C1C1E;
-  --tg-secondary-bg-color: #2C2C2E;
-  --tg-text-color: #FFFFFF;
-  --tg-hint-color: #ABABAB;
-  --tg-link-color: #0088CC;
-  --tg-button-color: #0088CC;
-  --tg-button-text-color: #FFFFFF;
-  --tg-header-bg-color: #1C1C1E;
-  --tg-accent-text-color: #0088CC;
-  --tg-border-color: #3A3A3C;
-  --tg-destructive-text-color: #FF453A;
-  --tg-section-bg-color: #1C1C1E;
-  --tg-section-header-text-color: #ABABAB;
-  --tg-subtitle-text-color: #8E8E93;
-
-  --color-error: #FF453A;
-  --color-success: #30D158;
-
-  /* RGB Color Values - Dark Theme */
-  --tg-button-color-rgb: 10, 132, 255;
-  --color-error-rgb: 255, 69, 58;
-  --color-success-rgb: 48, 209, 88;
-
-  /* Dark gradient backgrounds */
-  --gradient-festive: linear-gradient(135deg, #434343 0%, #000000 100%);
-  --gradient-sunset: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
-  --gradient-candy: linear-gradient(135deg, #232526 0%, #414345 100%);
-  --gradient-ocean: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
-  --gradient-sky: linear-gradient(180deg, #232526 0%, #414345 100%);
-  --gradient-pastel: linear-gradient(135deg, #434343 0%, #000000 100%);
-}
-
+/* Dark Theme Body Background */
 [data-theme='dark'] body {
-  background: linear-gradient(180deg,
-      #1a1a1c 0%,
-      #1e1e20 25%,
-      #1c1c1e 50%,
-      #1a1a1c 75%,
-      #1e1e20 100%);
+  background: radial-gradient(circle at 50% 0%,
+    #1a1a3a 0%,
+    #030308 60%,
+    #030308 100%);
   background-attachment: fixed;
+  min-height: 100vh;
+  color: #f8fafc;
 }
 
 /* Global Reset & Base Styles */
@@ -429,9 +419,11 @@ select:focus {
 }
 
 [data-theme='dark'] .active-pill {
-  background: rgba(10, 132, 255, 0.2);
-  border: 1px solid rgba(10, 132, 255, 0.5);
-  box-shadow: 0 0 20px rgba(10, 132, 255, 0.25);
+  background: rgba(79, 70, 229, 0.15);
+  border: 1px solid rgba(79, 70, 229, 0.4);
+  box-shadow: 0 0 20px rgba(79, 70, 229, 0.3),
+              0 4px 12px rgba(0, 0, 0, 0.4);
+  color: #f8fafc;
 }
 
 /* Decorative Blur Circles */
@@ -460,4 +452,108 @@ select:focus {
   height: 60vh;
   background: #d4a5ff;
   border-radius: 50%;
+}
+
+/* === ETHEREAL GLOW EFFECT === */
+.ethereal-glow {
+  position: relative;
+  z-index: 1;
+}
+
+.ethereal-glow::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: 50%;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle,
+    rgba(79, 70, 229, 0.15) 0%,
+    rgba(79, 70, 229, 0.05) 40%,
+    transparent 70%);
+  filter: blur(40px);
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+[data-theme='dark'] .ethereal-glow::before {
+  opacity: 1;
+}
+
+/* Ethereal Glow for Active Elements */
+.ethereal-glow-active {
+  position: relative;
+}
+
+.ethereal-glow-active::after {
+  content: '';
+  position: absolute;
+  inset: -20px;
+  background: radial-gradient(circle at center,
+    rgba(79, 70, 229, 0.2) 0%,
+    transparent 60%);
+  filter: blur(30px);
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0;
+}
+
+[data-theme='dark'] .ethereal-glow-active::after {
+  opacity: 1;
+}
+
+/* === DECORATIVE BACKGROUND BLOBS === */
+.bg-blob {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0;
+  pointer-events: none;
+  z-index: -1;
+  mix-blend-mode: screen;
+  transition: opacity 0.5s ease;
+}
+
+[data-theme='dark'] .bg-blob {
+  opacity: 0.12;
+}
+
+.bg-blob-1 {
+  top: 5%;
+  right: -10%;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, #4f46e5 0%, transparent 70%);
+}
+
+.bg-blob-2 {
+  bottom: 15%;
+  left: -15%;
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, #6366f1 0%, transparent 70%);
+}
+
+/* Floating animation for blobs */
+@keyframes blob-float {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(30px, -30px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+}
+
+[data-theme='dark'] .bg-blob-1 {
+  animation: blob-float 20s ease-in-out infinite;
+}
+
+[data-theme='dark'] .bg-blob-2 {
+  animation: blob-float 25s ease-in-out infinite reverse;
 }

@@ -150,15 +150,18 @@ function getDaysUntilEvent(eventDate: string | null): string | null {
 }
 
 [data-theme='dark'] .event-pill {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
-}
-
-[data-theme='dark'] .event-pill {
-  color: rgba(255, 255, 255, 0.7);
+  color: #94a3b8;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
 }
 
 .event-pill--active {
-  color: var(--tg-button-color);
+  color: #111118;
+  font-weight: 600;
+}
+
+[data-theme='dark'] .event-pill--active {
+  color: #f8fafc;
+  font-weight: 600;
 }
 
 .pill-text {
@@ -178,7 +181,7 @@ function getDaysUntilEvent(eventDate: string | null): string | null {
 }
 
 [data-theme='dark'] .pill-date-overlay {
-  color: #0A84FF;
+  color: #4f46e5;
 }
 
 /* === ADD BUTTON === */
@@ -197,11 +200,8 @@ function getDaysUntilEvent(eventDate: string | null): string | null {
 }
 
 [data-theme='dark'] .event-add-btn {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
-}
-
-[data-theme='dark'] .event-add-btn {
-  color: rgba(255, 255, 255, 0.7);
+  color: #94a3b8;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
 }
 
 .add-icon {

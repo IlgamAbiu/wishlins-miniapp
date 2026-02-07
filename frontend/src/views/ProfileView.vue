@@ -221,6 +221,10 @@ function pluralizeWishes(count: number): string {
 
 <template>
   <div class="profile-view">
+    <!-- Background Decorative Blobs -->
+    <div class="bg-blob bg-blob-1"></div>
+    <div class="bg-blob bg-blob-2"></div>
+
     <!-- Not in Telegram -->
     <div v-if="!isInTelegram" class="not-telegram">
       <p>Only works in Telegram</p>
@@ -351,6 +355,7 @@ function pluralizeWishes(count: number): string {
   display: flex;
   flex-direction: column;
   position: relative;
+  isolation: isolate;
 }
 
 .content {
@@ -397,7 +402,7 @@ function pluralizeWishes(count: number): string {
 
 [data-theme='dark'] .avatar {
   border: 2px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
 .avatar img {
@@ -430,8 +435,8 @@ function pluralizeWishes(count: number): string {
 }
 
 [data-theme='dark'] .avatar-status {
-  background: #30D158;
-  border: 2px solid #1C1C1E;
+  background: #10b981;
+  border: 2px solid #030308;
 }
 
 .user-info {
@@ -451,7 +456,7 @@ function pluralizeWishes(count: number): string {
 }
 
 [data-theme='dark'] .user-name {
-  color: #FFFFFF;
+  color: #f8fafc;
 }
 
 .user-subtitle {
@@ -463,7 +468,7 @@ function pluralizeWishes(count: number): string {
 }
 
 [data-theme='dark'] .user-subtitle {
-  color: #8E8E93;
+  color: #94a3b8;
 }
 
 /* === CAROUSEL WRAPPER === */
@@ -522,8 +527,8 @@ function pluralizeWishes(count: number): string {
 }
 
 [data-theme='dark'] .action-btn {
-  color: rgba(255, 255, 255, 0.7);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+  color: rgba(248, 250, 252, 0.7);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
 }
 
 .item-count {
@@ -569,8 +574,20 @@ function pluralizeWishes(count: number): string {
 }
 
 [data-theme='dark'] .fab-button {
-  border: 4px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 0 25px rgba(10, 132, 255, 0.4);
+  background: #4f46e5;
+  border: 4px solid rgba(79, 70, 229, 0.2);
+  box-shadow: 0 0 30px rgba(79, 70, 229, 0.5),
+              0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme='dark'] .fab-button:hover {
+  box-shadow: 0 0 40px rgba(79, 70, 229, 0.7),
+              0 8px 24px rgba(0, 0, 0, 0.5);
+  transform: scale(1.05);
+}
+
+[data-theme='dark'] .fab-button:active {
+  transform: scale(0.95);
 }
 
 .fab-button:hover {
@@ -596,5 +613,37 @@ function pluralizeWishes(count: number): string {
 .v-enter-from,
 .v-leave-to {
   opacity: 0;
+}
+
+/* === BACKGROUND BLOBS === */
+.bg-blob {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 0;
+  mix-blend-mode: screen;
+  transition: opacity 0.5s ease;
+}
+
+[data-theme='dark'] .bg-blob {
+  opacity: 0.12;
+}
+
+.bg-blob-1 {
+  top: 5%;
+  right: -10%;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, #4f46e5 0%, transparent 70%);
+}
+
+.bg-blob-2 {
+  bottom: 15%;
+  left: -15%;
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, #6366f1 0%, transparent 70%);
 }
 </style>

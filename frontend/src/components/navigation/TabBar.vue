@@ -63,8 +63,8 @@ function handleTabSelect(tabId: string) {
   backdrop-filter: blur(var(--glass-layer-2-blur)) saturate(180%);
   -webkit-backdrop-filter: blur(var(--glass-layer-2-blur)) saturate(180%);
 
-  /* Pill Shape */
-  border-radius: 32px;
+  /* Pill Shape - iOS 26 Native */
+  border-radius: var(--border-radius-3xl);
 
   /* Premium Border and Shadows */
   border: 1px solid var(--glass-border-light);

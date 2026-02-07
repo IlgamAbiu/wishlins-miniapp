@@ -62,7 +62,7 @@ function handleClick() {
   background: transparent;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  border-radius: 20px;
+  border-radius: var(--border-radius-lg);
   overflow: visible;
   transition: all 0.25s var(--liquid-ease);
 }
@@ -90,7 +90,7 @@ function handleClick() {
   background: radial-gradient(circle, var(--tg-button-color) 0%, transparent 60%);
   opacity: 0;
   pointer-events: none;
-  border-radius: 20px;
+  border-radius: var(--border-radius-lg);
 }
 
 .tab-bar-item:active::after {

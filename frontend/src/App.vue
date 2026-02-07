@@ -8,6 +8,7 @@ import { useNavigation } from '@/composables/useNavigation'
 import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
 import { TabBar } from '@/components/navigation'
 import BlockedScreen from '@/components/BlockedScreen.vue'
+import FestiveBackground from '@/components/ui/FestiveBackground.vue'
 
 // Lazy load views
 const ProfileView = defineAsyncComponent(() => import('@/views/ProfileView.vue'))
@@ -38,6 +39,9 @@ const currentComponent = computed(() => tabComponents[activeTab.value])
 
   <!-- Main app when in Telegram -->
   <div v-else class="app">
+    <!-- Праздничный фон с блестками -->
+    <FestiveBackground />
+
     <main class="app__content">
       <KeepAlive>
         <component :is="currentComponent" :key="activeTab" />
@@ -107,12 +111,14 @@ a {
   flex-direction: column;
   height: 100%;
   overflow: hidden;
+  position: relative;
 }
 
 .app__content {
   flex: 1;
   overflow: hidden;
   position: relative;
+  z-index: 1;
 }
 
 .app__content > * {

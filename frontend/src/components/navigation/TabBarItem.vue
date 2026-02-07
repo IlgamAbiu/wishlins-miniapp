@@ -55,19 +55,34 @@ function handleClick() {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 2px;
   flex: 1;
-  padding: 8px 4px;
+  padding: 10px 8px;
   border: none;
   background: transparent;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  min-height: 56px;
-  overflow: hidden;
-  transition: all 0.2s var(--liquid-ease);
+  border-radius: 20px;
+  overflow: visible;
+  transition: all 0.25s var(--liquid-ease);
 }
 
-/* Ripple effect container */
+/* iOS 26 Style: Rounded active background */
+.tab-bar-item--active::before {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  background: rgba(var(--tg-button-color-rgb), 0.15);
+  border-radius: 18px;
+  animation: liquid-scale-in 0.4s var(--liquid-spring);
+  z-index: -1;
+}
+
+[data-theme='dark'] .tab-bar-item--active::before {
+  background: rgba(var(--tg-button-color-rgb), 0.2);
+}
+
+/* Ripple effect on tap */
 .tab-bar-item::after {
   content: '';
   position: absolute;
@@ -75,7 +90,7 @@ function handleClick() {
   background: radial-gradient(circle, var(--tg-button-color) 0%, transparent 60%);
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.3s ease;
+  border-radius: 20px;
 }
 
 .tab-bar-item:active::after {
@@ -85,34 +100,39 @@ function handleClick() {
 @keyframes ripple {
   0% {
     transform: scale(0);
-    opacity: 0.4;
+    opacity: 0.3;
   }
   100% {
-    transform: scale(3);
+    transform: scale(2.5);
     opacity: 0;
   }
 }
 
 .tab-bar-item__icon {
-  font-size: 22px;
+  font-size: 24px;
   line-height: 1;
   color: var(--tg-hint-color);
-  transition: color 0.2s var(--liquid-ease),
-              transform 0.3s var(--liquid-spring);
+  transition: color 0.25s var(--liquid-ease),
+              transform 0.35s var(--liquid-spring);
+  position: relative;
+  z-index: 1;
 }
 
 .tab-bar-item__label {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: var(--font-weight-medium);
   color: var(--tg-hint-color);
-  transition: color 0.2s var(--liquid-ease);
-  letter-spacing: -0.01em;
+  transition: color 0.25s var(--liquid-ease),
+              font-weight 0.25s ease;
+  letter-spacing: -0.02em;
+  position: relative;
+  z-index: 1;
 }
 
-/* Active state with liquid animation */
+/* Active state with iOS 26 style */
 .tab-bar-item--active .tab-bar-item__icon {
   color: var(--tg-button-color);
-  animation: liquid-scale-in 0.3s var(--liquid-spring);
+  transform: scale(1.05);
 }
 
 .tab-bar-item--active .tab-bar-item__label {
@@ -120,32 +140,46 @@ function handleClick() {
   font-weight: var(--font-weight-semibold);
 }
 
-/* Active indicator pill at bottom */
-.tab-bar-item--active::before {
-  content: '';
-  position: absolute;
-  bottom: 2px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 32px;
-  height: 3px;
-  background: var(--tg-button-color);
-  border-radius: 2px 2px 0 0;
-  box-shadow: 0 -2px 8px rgba(var(--tg-button-color-rgb), 0.4);
-  animation: liquid-scale-in 0.3s var(--liquid-spring);
-}
-
-/* Touch feedback */
+/* Touch feedback - subtle scale */
 .tab-bar-item:active {
-  transform: scale(0.95);
+  transform: scale(0.92);
 }
 
 /* Hover only on non-touch devices */
 @media (hover: hover) {
+  .tab-bar-item:hover:not(.tab-bar-item--active) {
+    background: rgba(128, 128, 128, 0.08);
+  }
+
   .tab-bar-item:hover:not(.tab-bar-item--active) .tab-bar-item__icon,
   .tab-bar-item:hover:not(.tab-bar-item--active) .tab-bar-item__label {
     color: var(--tg-text-color);
-    opacity: 0.7;
+    opacity: 0.8;
+  }
+
+  [data-theme='dark'] .tab-bar-item:hover:not(.tab-bar-item--active) {
+    background: rgba(255, 255, 255, 0.08);
+  }
+}
+
+/* Smooth icon change animation */
+.tab-bar-item__icon {
+  animation: none;
+}
+
+.tab-bar-item--active .tab-bar-item__icon {
+  animation: icon-pop 0.35s var(--liquid-spring);
+}
+
+@keyframes icon-pop {
+  0% {
+    transform: scale(0.9);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1.05);
   }
 }
 </style>

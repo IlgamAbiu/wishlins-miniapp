@@ -8,8 +8,8 @@
   <div class="friends-view">
     <div class="placeholder">
       <div class="placeholder__icon">👥</div>
-      <h2 class="placeholder__title">Friends</h2>
-      <p class="placeholder__text">Placeholder for Friends content</p>
+      <h2 class="placeholder__title">Друзья</h2>
+      <p class="placeholder__text">Здесь будут желания ваших друзей</p>
     </div>
   </div>
 </template>
@@ -20,29 +20,40 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--tg-secondary-bg-color, #f5f5f5);
+  padding: var(--spacing-lg);
 }
 
 .placeholder {
   text-align: center;
-  padding: 40px 20px;
+  padding: var(--spacing-xl) var(--spacing-lg);
+  animation: liquid-scale-in 0.5s var(--liquid-spring);
 }
 
 .placeholder__icon {
   font-size: 64px;
-  margin-bottom: 16px;
+  margin-bottom: var(--spacing-md);
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
 }
 
 .placeholder__title {
-  margin: 0 0 8px;
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--tg-text-color, #000000);
+  margin: 0 0 var(--spacing-sm);
+  font-size: var(--font-size-title-1);
+  font-weight: var(--font-weight-bold);
+  color: var(--tg-text-color);
 }
 
 .placeholder__text {
   margin: 0;
-  font-size: 15px;
-  color: var(--tg-hint-color, #999999);
+  font-size: var(--font-size-subhead);
+  color: var(--tg-hint-color);
 }
 </style>

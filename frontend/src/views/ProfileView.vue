@@ -258,7 +258,7 @@ function pluralizeWishes(count: number): string {
         <div v-if="selectedEvent?.description" class="event-description-wrapper">
           <div class="event-description glass-card-new">
             <p class="description-text">
-              «{{ selectedEvent.description }}»
+              {{ selectedEvent.description }}
             </p>
           </div>
         </div>
@@ -267,7 +267,6 @@ function pluralizeWishes(count: number): string {
         <div v-if="selectedEvent" class="actions-row">
           <div class="actions-buttons">
             <button
-              v-if="!selectedEvent.is_default"
               class="glass-btn flex items-center justify-center h-10 w-10 rounded-xl text-slate-400"
               @click="handleEditEvent"
             >
@@ -477,7 +476,6 @@ function pluralizeWishes(count: number): string {
 
 /* === EVENT DESCRIPTION === */
 .event-description-wrapper {
-  padding: 0 20px;
   margin-top: 16px;
 }
 

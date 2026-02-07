@@ -108,6 +108,50 @@ export function useWishes() {
         }
     }
 
+    async function moveWishesToWishlist(
+        fromWishlistId: string,
+        toWishlistId: string,
+        telegramId: number
+    ): Promise<boolean> {
+        loading.value = true
+        try {
+            // Fetch wishes from source wishlist
+            const response = await fetch(`${API_BASE_URL}/wishes?wishlist_id=${fromWishlistId}`)
+            if (!response.ok) {
+                throw new Error('Failed to fetch wishes')
+            }
+
+            const wishesToMove: Wish[] = await response.json()
+
+            // Update each wish to move it to the target wishlist
+            const updatePromises = wishesToMove.map(wish =>
+                fetch(`${API_BASE_URL}/wishes/${wish.id}?telegram_id=${telegramId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        wishlist_id: toWishlistId
+                    }),
+                })
+            )
+
+            const results = await Promise.all(updatePromises)
+
+            // Check if all updates were successful
+            if (results.some(r => !r.ok)) {
+                throw new Error('Failed to move some wishes')
+            }
+
+            return true
+        } catch (err) {
+            error.value = err instanceof Error ? err.message : 'Failed to move wishes'
+            return false
+        } finally {
+            loading.value = false
+        }
+    }
+
     return {
         wishes,
         loading,
@@ -115,6 +159,7 @@ export function useWishes() {
         fetchWishes,
         createWish,
         deleteWish,
-        updateWish
+        updateWish,
+        moveWishesToWishlist
     }
 }

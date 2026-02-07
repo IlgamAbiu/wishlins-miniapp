@@ -12,17 +12,20 @@ import WishGrid from '@/components/WishGrid.vue'
 import AddWishModal from '@/components/AddWishModal.vue'
 import AddEventModal from '@/components/AddEventModal.vue'
 import EditProfileTextModal from '@/components/EditProfileTextModal.vue'
+import DeleteEventModal from '@/components/DeleteEventModal.vue'
 
 const { isInTelegram, user, userDisplayName } = useTelegramWebApp()
 const { wishlists, fetchWishlists, createWishlist, updateWishlist, deleteWishlist } = useWishlists()
-const { wishes, loading: wishesLoading, error: wishesError, fetchWishes, createWish } = useWishes()
+const { wishes, loading: wishesLoading, error: wishesError, fetchWishes, createWish, moveWishesToWishlist } = useWishes()
 const { updateProfileText, getUserByTelegramId } = useUser()
 
 const selectedEventId = ref<string | null>(null)
 const showAddWishModal = ref(false)
 const showAddEventModal = ref(false)
 const showEditProfileModal = ref(false)
+const showDeleteEventModal = ref(false)
 const editingEvent = ref<any>(null) // Event being edited
+const eventToDelete = ref<any>(null) // Event being deleted
 const profileText = ref('Saving for a dream ✨')
 
 const selectedEvent = computed(() => 
@@ -98,14 +101,51 @@ function handleEditEvent() {
   showAddEventModal.value = true
 }
 
-async function handleDeleteEvent() {
-  if (!selectedEvent.value || !confirm('Удалить это событие и все желания в нем?')) return
-  
-  const success = await deleteWishlist(selectedEvent.value.id)
-  if (success) {
-    // Select default event
-    const defaultEvent = wishlists.value.find(w => w.is_default)
-    if (defaultEvent) selectedEventId.value = defaultEvent.id
+function handleDeleteEvent() {
+  if (!selectedEvent.value) return
+
+  // Check if event has wishes
+  if (wishes.value.length > 0) {
+    // Show modal with options
+    eventToDelete.value = selectedEvent.value
+    showDeleteEventModal.value = true
+  } else {
+    // Delete immediately if no wishes
+    confirmDeleteEvent(false)
+  }
+}
+
+async function confirmDeleteEvent(moveWishes: boolean) {
+  if (!eventToDelete.value && !selectedEvent.value) return
+
+  const eventId = (eventToDelete.value || selectedEvent.value).id
+
+  try {
+    // If user wants to move wishes, move them to default wishlist first
+    if (moveWishes && wishes.value.length > 0 && user.value) {
+      const defaultEvent = wishlists.value.find(w => w.is_default)
+      if (defaultEvent) {
+        const moved = await moveWishesToWishlist(eventId, defaultEvent.id, user.value.id)
+        if (!moved) {
+          alert('Не удалось переместить желания')
+          return
+        }
+      }
+    }
+
+    // Delete the wishlist
+    const success = await deleteWishlist(eventId)
+    if (success) {
+      showDeleteEventModal.value = false
+      eventToDelete.value = null
+
+      // Select default event
+      const defaultEvent = wishlists.value.find(w => w.is_default)
+      if (defaultEvent) selectedEventId.value = defaultEvent.id
+    }
+  } catch (err) {
+    console.error('Failed to delete event:', err)
+    alert('Произошла ошибка при удалении события')
   }
 }
 
@@ -199,10 +239,18 @@ function pluralizeWishes(count: number): string {
         <!-- Event Actions Row -->
         <div v-if="selectedEvent" class="actions-row">
           <div class="actions-buttons">
-            <button class="glass-btn action-btn" @click="handleEditEvent">
+            <button
+              v-if="!selectedEvent.is_default"
+              class="glass-btn action-btn"
+              @click="handleEditEvent"
+            >
               <span class="icon">✏️</span>
             </button>
-            <button class="glass-btn action-btn" @click="handleDeleteEvent">
+            <button
+              v-if="!selectedEvent.is_default"
+              class="glass-btn action-btn"
+              @click="handleDeleteEvent"
+            >
               <span class="icon">🗑️</span>
             </button>
             <button class="glass-btn action-btn" @click="handleShareEvent">
@@ -253,6 +301,13 @@ function pluralizeWishes(count: number): string {
            :initial-text="profileText"
            @close="showEditProfileModal = false"
            @submit="handleSaveProfileText"
+         />
+         <DeleteEventModal
+           v-if="showDeleteEventModal && eventToDelete"
+           :event-title="eventToDelete.title"
+           :wishes-count="wishes.length"
+           @close="showDeleteEventModal = false; eventToDelete = null"
+           @confirm="confirmDeleteEvent"
          />
       </Teleport>
     </div>

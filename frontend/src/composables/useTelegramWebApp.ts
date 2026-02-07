@@ -135,6 +135,12 @@ export function useTelegramWebApp() {
       // Expand the Mini App to full height
       webapp.value.expand()
 
+      // Set theme attribute on html element based on Telegram's colorScheme
+      const colorScheme = webapp.value.colorScheme
+      if (colorScheme) {
+        document.documentElement.setAttribute('data-theme', colorScheme)
+      }
+
       // Apply Telegram theme colors to CSS variables
       const theme = webapp.value.themeParams
       if (theme.bg_color) {
@@ -157,6 +163,18 @@ export function useTelegramWebApp() {
       }
       if (theme.secondary_bg_color) {
         document.documentElement.style.setProperty('--tg-secondary-bg-color', theme.secondary_bg_color)
+      }
+    } else {
+      // For local development: detect system preference or use URL parameter
+      const urlParams = new URLSearchParams(window.location.search)
+      const themeParam = urlParams.get('theme')
+
+      if (themeParam === 'dark' || themeParam === 'light') {
+        document.documentElement.setAttribute('data-theme', themeParam)
+      } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.setAttribute('data-theme', 'dark')
+      } else {
+        document.documentElement.setAttribute('data-theme', 'light')
       }
     }
 

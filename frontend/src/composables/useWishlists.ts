@@ -42,7 +42,6 @@ export function useWishlists() {
     title: string,
     telegramId: number,
     isPublic: boolean = false,
-    emoji?: string | null,
     eventDate?: string | null,
     description?: string | null
   ): Promise<Wishlist | null> {
@@ -57,7 +56,6 @@ export function useWishlists() {
         body: JSON.stringify({
           title,
           is_public: isPublic,
-          emoji,
           event_date: eventDate,
           description: description || null
         })
@@ -80,7 +78,7 @@ export function useWishlists() {
 
   async function updateWishlist(
     id: string,
-    data: { title?: string; isPublic?: boolean; emoji?: string | null; eventDate?: string | null; description?: string | null }
+    data: { title?: string; isPublic?: boolean; eventDate?: string | null; description?: string | null }
   ): Promise<Wishlist | null> {
     loading.value = true
     try {
@@ -90,7 +88,6 @@ export function useWishlists() {
         body: JSON.stringify({
           title: data.title,
           is_public: data.isPublic,
-          emoji: data.emoji,
           event_date: data.eventDate,
           description: data.description
         })

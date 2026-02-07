@@ -56,6 +56,8 @@ async def get_user_wishlists_by_telegram_id(
                 description=w.description,
                 is_public=w.is_public,
                 is_default=w.is_default,
+                emoji=w.emoji,
+                event_date=w.event_date,
                 created_at=w.created_at,
                 updated_at=w.updated_at,
             )
@@ -205,13 +207,6 @@ async def update_wishlist(
     request: WishlistUpdateRequest,
     wishlist_service: WishlistServiceDep,
 ) -> WishlistResponse:
-    wishlist = await wishlist_service.get_wishlist_by_id(wishlist_id)
-    if wishlist and wishlist.is_default:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Cannot update default wishlist",
-        )
-
     wishlist_data = WishlistUpdate(
         title=request.title,
         description=request.description,

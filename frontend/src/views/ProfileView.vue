@@ -87,12 +87,11 @@ async function handleSaveEvent(title: string, date: string, description: string)
       editingEvent.value = null
     }
   } else {
-    // Create new (emoji removed)
+    // Create new
     const newWishlist = await createWishlist(
       title,
       user.value.id,
       true,
-      null,
       date || null,
       description || null
     )
@@ -267,19 +266,19 @@ function pluralizeWishes(count: number): string {
         <div v-if="selectedEvent" class="actions-row">
           <div class="actions-buttons">
             <button
-              class="glass-btn flex items-center justify-center h-10 w-10 rounded-xl text-slate-400"
+              class="glass-btn action-btn"
               @click="handleEditEvent"
             >
               <span class="material-symbols-outlined text-[18px]">edit</span>
             </button>
             <button
               v-if="!selectedEvent.is_default"
-              class="glass-btn flex items-center justify-center h-10 w-10 rounded-xl text-slate-400"
+              class="glass-btn action-btn"
               @click="handleDeleteEvent"
             >
               <span class="material-symbols-outlined text-[18px]">delete</span>
             </button>
-            <button class="glass-btn flex items-center justify-center h-10 w-10 rounded-xl text-slate-400" @click="handleShareEvent">
+            <button class="glass-btn action-btn" @click="handleShareEvent">
               <span class="material-symbols-outlined text-[18px]">ios_share</span>
             </button>
           </div>
@@ -365,7 +364,7 @@ function pluralizeWishes(count: number): string {
   padding: 20px 20px 0;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
 }
 
 .header-panel {
@@ -476,7 +475,7 @@ function pluralizeWishes(count: number): string {
 
 /* === EVENT DESCRIPTION === */
 .event-description-wrapper {
-  margin-top: 16px;
+  /* margin controlled by parent gap */
 }
 
 .event-description {
@@ -511,21 +510,19 @@ function pluralizeWishes(count: number): string {
 }
 
 .action-btn {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #64748b;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
 }
 
 [data-theme='dark'] .action-btn {
-  color: rgba(255, 255, 255, 0.6);
-}
-
-.action-btn .icon {
-  font-size: 18px;
+  color: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
 }
 
 .item-count {

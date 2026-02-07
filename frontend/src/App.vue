@@ -49,35 +49,18 @@ const currentComponent = computed(() => tabComponents[activeTab.value])
 </template>
 
 <style>
-/* ============================================================================
-   Global Styles
-   ============================================================================ */
+/* Global Styles are now handled in design-system.css */
+/* We keep reset here or move to design-system.css completely */
 
 :root {
-  /* Default theme colors */
-  --tg-bg-color: #ffffff;
-  --tg-text-color: #000000;
-  --tg-hint-color: #999999;
-  --tg-link-color: #3390ec;
-  --tg-button-color: #3390ec;
-  --tg-button-text-color: #ffffff;
-  --tg-secondary-bg-color: #f5f5f5;
-
   /* Tab bar height */
   --tab-bar-height: 56px;
-}
-
-* {
-  box-sizing: border-box;
 }
 
 html, body {
   margin: 0;
   padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  font-size: 16px;
-  line-height: 1.5;
-  background-color: var(--tg-secondary-bg-color);
+  background-color: var(--tg-bg-color);
   color: var(--tg-text-color);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -92,22 +75,6 @@ html, body, #app {
 a {
   color: var(--tg-link-color);
   text-decoration: none;
-}
-
-a:hover {
-  text-decoration: underline;
-}
-
-button {
-  font-family: inherit;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 0;
-  height: 0;
 }
 </style>
 

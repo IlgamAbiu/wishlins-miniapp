@@ -80,22 +80,23 @@ function formatPrice(price: number | null, currency: string | null) {
 </template>
 
 <style scoped>
+/* Scoped styles - Design System Refactor */
 .wish-grid {
-  padding: 0 20px 80px; /* Bottom padding for floating button */
+  padding: 0 var(--spacing-lg) 100px; /* Enhanced bottom padding */
 }
 
 /* Loading */
 .grid-loading {
   display: flex;
   justify-content: center;
-  padding: 40px;
+  padding: var(--spacing-xl);
 }
 
 .spinner {
   width: 32px;
   height: 32px;
   border: 3px solid rgba(0, 0, 0, 0.1);
-  border-top-color: var(--tg-button-color, #3390ec);
+  border-top-color: var(--tg-button-color);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -110,39 +111,39 @@ function formatPrice(price: number | null, currency: string | null) {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 60px 20px;
+  padding: 60px var(--spacing-lg);
   text-align: center;
-  background: white;
-  border-radius: 20px;
-  margin-top: 20px;
+  background: var(--tg-bg-color);
+  border-radius: var(--border-radius-xl);
+  margin-top: var(--spacing-lg);
+  box-shadow: var(--shadow-card);
 }
 
 .empty-icon {
   font-size: 48px;
-  margin-bottom: 16px;
+  margin-bottom: var(--spacing-md);
 }
 
 .empty-text {
-  color: var(--tg-hint-color, #999);
-  margin-bottom: 24px;
+  color: var(--tg-hint-color);
+  margin-bottom: var(--spacing-lg);
 }
-
-
 
 /* Grid Layout */
 .grid-content {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  gap: var(--spacing-sm);
 }
 
 .wish-card {
-  background: white;
-  border-radius: 16px;
+  background: var(--tg-bg-color);
+  border-radius: var(--border-radius-lg);
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  transition: transform 0.2s;
+  box-shadow: var(--shadow-card);
+  transition: transform var(--transition-fast);
   cursor: pointer;
+  border: 1px solid var(--tg-border-color);
 }
 
 .wish-card:active {
@@ -152,7 +153,7 @@ function formatPrice(price: number | null, currency: string | null) {
 .wish-card__image-wrapper {
   position: relative;
   aspect-ratio: 1;
-  background: #f0f2f5;
+  background: var(--tg-secondary-bg-color);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -176,21 +177,22 @@ function formatPrice(price: number | null, currency: string | null) {
   background: rgba(0, 0, 0, 0.6);
   color: white;
   padding: 4px 8px;
-  border-radius: 8px;
-  font-size: 12px;
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-caption);
   font-weight: 600;
   backdrop-filter: blur(4px);
 }
 
 .wish-card__info {
-  padding: 12px;
+  padding: var(--spacing-sm);
 }
 
 .wish-card__title {
-  font-size: 14px;
+  font-size: var(--font-size-secondary);
   font-weight: 600;
   margin: 0 0 4px;
   line-height: 1.3;
+  color: var(--tg-text-color);
   
   /* Truncate to 2 lines */
   display: -webkit-box;
@@ -200,8 +202,8 @@ function formatPrice(price: number | null, currency: string | null) {
 }
 
 .wish-card__desc {
-  font-size: 12px;
-  color: var(--tg-hint-color, #999);
+  font-size: var(--font-size-caption);
+  color: var(--tg-hint-color);
   margin: 0;
   white-space: nowrap;
   overflow: hidden;

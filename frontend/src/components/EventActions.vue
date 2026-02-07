@@ -50,20 +50,20 @@ const isDefault = computed(() => props.event.is_default)
 .event-actions {
   display: flex;
   justify-content: center;
-  gap: 24px;
-  margin-bottom: 24px;
-  padding: 0 20px;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+  padding: 0 var(--spacing-lg);
 }
 
 .action-btn {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: var(--spacing-xs);
   background: none;
   border: none;
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: opacity var(--transition-normal);
 }
 
 .action-btn:active {
@@ -79,32 +79,32 @@ const isDefault = computed(() => props.event.is_default)
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: #f0f2f5;
+  background: var(--tg-secondary-bg-color);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 20px;
-  transition: all 0.2s;
+  transition: all var(--transition-normal);
 }
 
 .edit-btn .icon {
-  color: var(--tg-button-color, #3390ec);
-  background: rgba(51, 144, 236, 0.1);
+  color: var(--tg-button-color);
+  background: rgba(0, 136, 204, 0.1); /* Keep transparent accent */
 }
 
 .share-btn .icon {
-  color: #28cd41; /* Green */
-  background: rgba(40, 205, 65, 0.1);
+  color: var(--color-success);
+  background: rgba(52, 199, 89, 0.1);
 }
 
 .delete-btn .icon {
-  color: #ff3b30; /* Red */
+  color: var(--color-error);
   background: rgba(255, 59, 48, 0.1);
 }
 
 .label {
-  font-size: 12px;
-  color: var(--tg-hint-color, #999);
+  font-size: var(--font-size-caption);
+  color: var(--tg-hint-color);
   font-weight: 500;
 }
 </style>

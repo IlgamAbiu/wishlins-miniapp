@@ -212,10 +212,11 @@ function onWishClick(wish: any) {
 <style scoped>
 .profile-view {
   height: 100vh;
-  background: var(--tg-bg-color, #ffffff);
+  background: var(--tg-bg-color);
   display: flex;
   flex-direction: column;
   position: relative;
+  transition: background-color var(--transition-normal);
 }
 
 .content {
@@ -226,23 +227,24 @@ function onWishClick(wish: any) {
 }
 
 .header {
-  padding: 16px 20px;
+  padding: var(--spacing-md) var(--spacing-lg);
   display: flex;
   align-items: center;
-  gap: 16px;
-  background: var(--tg-bg-color, white);
+  gap: var(--spacing-md);
+  background: var(--tg-bg-color);
   position: sticky;
   top: 0;
   z-index: 10;
+  transition: background-color var(--transition-normal);
 }
 
 .avatar {
   width: 56px;
   height: 56px;
-  border-radius: 20px;
+  border-radius: var(--border-radius-xl);
   overflow: hidden;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(0,0,0,0.05);
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--tg-border-color);
 }
 
 .avatar img {
@@ -278,9 +280,9 @@ function onWishClick(wish: any) {
 }
 
 .username {
-  color: var(--tg-hint-color, #8e8e93);
-  font-size: 14px;
-  font-weight: 500;
+  color: var(--tg-hint-color);
+  font-size: var(--font-size-secondary);
+  font-weight: 400;
 }
 
 .events-section {
@@ -295,34 +297,35 @@ function onWishClick(wish: any) {
 
 .sticky-footer {
   position: fixed;
-  bottom: 90px; /* Above TabBar (56px) + spacing */
+  bottom: 90px; /* Above TabBar */
   left: 0;
   right: 0;
-  padding: 0 20px;
+  padding: 0 var(--spacing-lg);
   z-index: 100;
   display: flex;
   justify-content: center;
-  pointer-events: none; /* Let clicks pass through area */
+  pointer-events: none;
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 .main-add-btn {
-  pointer-events: auto; /* Re-enable clicks on button */
+  pointer-events: auto;
   width: 100%;
   max-width: 400px;
   height: 56px;
-  background: var(--tg-button-color, #007AFF);
-  color: var(--tg-button-text-color, white);
+  background: var(--tg-button-color);
+  color: var(--tg-button-text-color);
   border: none;
-  border-radius: 16px;
+  border-radius: var(--border-radius-xl);
   font-size: 17px;
   font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  box-shadow: 0 12px 24px rgba(0, 122, 255, 0.3);
+  box-shadow: var(--shadow-floating);
   cursor: pointer;
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: transform var(--transition-normal);
 }
 
 .main-add-btn:active {

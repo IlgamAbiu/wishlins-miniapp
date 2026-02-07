@@ -75,7 +75,7 @@ function selectEvent(id: string) {
 .event-carousel {
   width: 100%;
   overflow-x: auto;
-  padding: 16px 0;
+  padding: var(--spacing-md) 0;
   /* Hide scrollbar */
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -87,8 +87,8 @@ function selectEvent(id: string) {
 
 .event-carousel__track {
   display: flex;
-  gap: 12px;
-  padding: 0 20px;
+  gap: var(--spacing-sm);
+  padding: 0 var(--spacing-lg);
   min-width: min-content;
 }
 
@@ -99,30 +99,30 @@ function selectEvent(id: string) {
   justify-content: center;
   width: 100px;
   height: 100px;
-  background: white;
-  border-radius: 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  background: var(--tg-bg-color);
+  border-radius: var(--border-radius-xl);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* Custom subtle shadow */
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: all var(--transition-normal);
   border: 2px solid transparent;
   flex-shrink: 0;
 }
 
 .event-card--active {
-  background: var(--tg-button-color, #3390ec);
-  box-shadow: 0 8px 24px rgba(51, 144, 236, 0.3);
+  background: var(--tg-button-color);
+  box-shadow: 0 8px 24px rgba(0, 136, 204, 0.3); /* Button color shadow */
   transform: translateY(-2px);
 }
 
 .event-card--active .event-card__title {
-  color: white;
+  color: var(--tg-button-text-color);
   font-weight: 600;
 }
 
 .event-card__icon {
   font-size: 32px;
-  margin-bottom: 8px;
-  transition: transform 0.2s;
+  margin-bottom: var(--spacing-xs);
+  transition: transform var(--transition-normal);
 }
 
 .event-card--active .event-card__icon {
@@ -131,13 +131,13 @@ function selectEvent(id: string) {
 
 .event-card__title {
   font-size: 13px;
-  color: var(--tg-text-color, #222);
+  color: var(--tg-text-color);
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 90%;
-  transition: color 0.2s;
+  transition: color var(--transition-normal);
 }
 
 .event-add-btn {
@@ -147,13 +147,13 @@ function selectEvent(id: string) {
   justify-content: center;
   width: 100px;
   height: 100px;
-  background: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.6); /* Translucent */
   border: 2px dashed rgba(0, 0, 0, 0.1);
-  border-radius: 20px;
+  border-radius: var(--border-radius-xl);
   cursor: pointer;
   flex-shrink: 0;
-  transition: all 0.2s;
-  color: var(--tg-hint-color, #999);
+  transition: all var(--transition-normal);
+  color: var(--tg-hint-color);
 }
 
 .event-add-btn:active {

@@ -1,0 +1,158 @@
+:root {
+  /* Colors - Light Theme (Default) */
+  --tg-bg-color: #FFFFFF;
+  --tg-secondary-bg-color: #F5F5F5;
+  --tg-text-color: #000000;
+  --tg-hint-color: #666666;
+  --tg-link-color: #0088CC;
+  --tg-button-color: #0088CC;
+  --tg-button-text-color: #FFFFFF;
+  --tg-header-bg-color: #FFFFFF;
+  --tg-accent-text-color: #0088CC;
+  --tg-border-color: #E0E0E0;
+  --tg-destructive-text-color: #FF3B30;
+  --tg-section-bg-color: #FFFFFF;
+  --tg-section-header-text-color: #666666;
+  --tg-subtitle-text-color: #999999;
+
+  /* Status Colors */
+  --color-error: #FF3B30;
+  --color-success: #34C759;
+  --color-warning: #FF9500;
+
+  /* Typography */
+  --font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+  --font-size-h1: 24px;
+  --font-size-h2: 20px;
+  --font-size-body: 16px;
+  --font-size-secondary: 14px;
+  --font-size-caption: 12px;
+
+  /* Spacing */
+  --spacing-xs: 8px;
+  --spacing-sm: 12px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+
+  /* Layout */
+  --border-radius-sm: 8px;
+  --border-radius-md: 12px;
+  --border-radius-lg: 16px;
+  --border-radius-xl: 24px;
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-floating: 0 4px 16px rgba(0, 0, 0, 0.12);
+
+  /* Transitions */
+  --transition-fast: 0.1s ease-out;
+  --transition-normal: 0.2s ease-out;
+  --transition-slow: 0.3s ease-out;
+}
+
+/* Dark Theme Overrides - applied when Telegram sends dark theme params */
+[data-theme='dark'] {
+  --tg-bg-color: #1C1C1E;
+  --tg-secondary-bg-color: #2C2C2E;
+  --tg-text-color: #FFFFFF;
+  --tg-hint-color: #ABABAB;
+  --tg-link-color: #0088CC;
+  --tg-button-color: #0088CC;
+  --tg-button-text-color: #FFFFFF;
+  --tg-header-bg-color: #1C1C1E;
+  --tg-accent-text-color: #0088CC;
+  --tg-border-color: #3A3A3C;
+  --tg-destructive-text-color: #FF453A;
+  --tg-section-bg-color: #1C1C1E;
+  --tg-section-header-text-color: #ABABAB;
+  --tg-subtitle-text-color: #8E8E93;
+
+  --color-error: #FF453A;
+  --color-success: #30D158;
+}
+
+/* Global Reset & Base Styles */
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-family-base);
+  background-color: var(--tg-bg-color);
+  color: var(--tg-text-color);
+  font-size: var(--font-size-body);
+  line-height: 1.5;
+  transition: background-color var(--transition-normal), color var(--transition-normal);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+h1 { font-size: var(--font-size-h1); }
+h2 { font-size: var(--font-size-h2); }
+
+p {
+  margin: 0 0 var(--spacing-sm) 0;
+}
+
+button {
+  font-family: inherit;
+}
+
+/* Clean Input Styles */
+input, textarea, select {
+  font-family: inherit;
+  font-size: var(--font-size-body);
+  color: var(--tg-text-color);
+  background: var(--tg-secondary-bg-color);
+  border: 1px solid transparent;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius-md);
+  width: 100%;
+  transition: border-color var(--transition-normal), background-color var(--transition-normal);
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--tg-button-color);
+  background: var(--tg-bg-color);
+}
+
+/* Component Classes */
+.btn-primary {
+  background-color: var(--tg-button-color);
+  color: var(--tg-button-text-color);
+  border: none;
+  border-radius: var(--border-radius-lg);
+  padding: 14px var(--spacing-lg);
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-primary:active {
+  opacity: 0.8;
+  transform: scale(0.98);
+}
+
+.btn-secondary {
+  background-color: var(--tg-secondary-bg-color);
+  color: var(--tg-text-color);
+  border: none;
+  border-radius: var(--border-radius-lg);
+  padding: 12px var(--spacing-lg);
+  font-weight: 500;
+  cursor: pointer;
+}

@@ -318,6 +318,7 @@ function pluralizeWishes(count: number): string {
              date: editingEvent.event_date,
              description: editingEvent.description || ''
            } : undefined"
+           :is-default-event="editingEvent?.is_default || false"
            @close="showAddEventModal = false"
            @submit="handleSaveEvent"
          />
@@ -480,7 +481,7 @@ function pluralizeWishes(count: number): string {
 
 .event-description {
   padding: 16px;
-  border-radius: 16px;
+  border-radius: 22px;
 }
 
 .description-text {

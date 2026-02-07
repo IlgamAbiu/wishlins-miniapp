@@ -11,6 +11,7 @@ const props = defineProps<{
     date: string | null
     description?: string | null
   }
+  isDefaultEvent?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -92,7 +93,7 @@ function onInputFocus(event: FocusEvent) {
           />
         </div>
 
-        <div class="form-group">
+        <div v-if="!isDefaultEvent" class="form-group">
           <label>Дата события (необязательно)</label>
           <div class="date-picker-wrapper">
             <button

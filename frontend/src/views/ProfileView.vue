@@ -72,23 +72,22 @@ async function handleEventSelect(id: string) {
   selectedEventId.value = id
 }
 
-async function handleSaveEvent(title: string, emoji: string, date: string) {
+async function handleSaveEvent(title: string, date: string, description: string) {
   if (!user.value) return
-  
+
   if (editingEvent.value) {
     // Update existing
     const updated = await updateWishlist(editingEvent.value.id, {
       title,
-      emoji,
-      eventDate: date
+      eventDate: date || null
     })
     if (updated) {
       showAddEventModal.value = false
       editingEvent.value = null
     }
   } else {
-    // Create new
-    const newWishlist = await createWishlist(title, user.value.id, true, emoji, date)
+    // Create new (emoji removed, description not yet supported in backend)
+    const newWishlist = await createWishlist(title, user.value.id, true, null, date || null)
     if (newWishlist) {
       showAddEventModal.value = false
       selectedEventId.value = newWishlist.id
@@ -247,6 +246,15 @@ function pluralizeWishes(count: number): string {
           />
         </div>
 
+        <!-- Event Description (if exists) -->
+        <div v-if="selectedEvent?.description" class="event-description-wrapper">
+          <div class="event-description glass-card-new">
+            <p class="description-text">
+              «{{ selectedEvent.description }}»
+            </p>
+          </div>
+        </div>
+
         <!-- Event Actions Row -->
         <div v-if="selectedEvent" class="actions-row">
           <div class="actions-buttons">
@@ -301,8 +309,8 @@ function pluralizeWishes(count: number): string {
            v-if="showAddEventModal"
            :initial-data="editingEvent ? {
              title: editingEvent.title,
-             emoji: editingEvent.emoji,
-             date: editingEvent.event_date
+             date: editingEvent.event_date,
+             description: editingEvent.description || ''
            } : undefined"
            @close="showAddEventModal = false"
            @submit="handleSaveEvent"
@@ -457,6 +465,30 @@ function pluralizeWishes(count: number): string {
   padding: 0 20px;
   /* Prevent shadow clipping in carousel */
   overflow: visible;
+}
+
+/* === EVENT DESCRIPTION === */
+.event-description-wrapper {
+  padding: 0 20px;
+  margin-top: 16px;
+}
+
+.event-description {
+  padding: 16px;
+  border-radius: 16px;
+}
+
+.description-text {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #64748b;
+  font-weight: 400;
+  font-style: italic;
+}
+
+[data-theme='dark'] .description-text {
+  color: #9CA3AF;
 }
 
 /* === ACTIONS ROW === */

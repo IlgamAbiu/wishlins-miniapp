@@ -44,6 +44,11 @@ class UserModel(Base):
         String(512),
         nullable=True,
     )
+    profile_text: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+        server_default="Saving for a dream ✨",
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),

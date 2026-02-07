@@ -118,10 +118,13 @@ function onInputFocus(event: FocusEvent) {
 </template>
 
 <style scoped>
+/* Reuse styles or import from a common file if possible */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   display: flex;
   align-items: flex-end; /* Bottom sheet */
   z-index: 1000;
@@ -130,52 +133,65 @@ function onInputFocus(event: FocusEvent) {
 
 .modal-content {
   width: 100%;
-  background: white;
-  border-radius: 24px 24px 0 0;
-  padding: 24px;
+  background: var(--tg-bg-color);
+  border-radius: var(--border-radius-xl) var(--border-radius-xl) 0 0;
+  padding: var(--spacing-lg);
   max-height: 90vh;
   overflow-y: auto;
   animation: slide-up 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-  padding-bottom: max(24px, env(safe-area-inset-bottom));
+  padding-bottom: max(var(--spacing-lg), env(safe-area-inset-bottom));
+  box-shadow: 0 -4px 24px rgba(0,0,0,0.1);
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: var(--spacing-lg);
 }
 
 .modal-header h3 {
   margin: 0;
-  font-size: 20px;
+  font-size: var(--font-size-h2);
   font-weight: 700;
+  color: var(--tg-text-color);
 }
 
 .close-btn {
-  background: none;
+  background: rgba(128, 128, 128, 0.1);
   border: none;
-  font-size: 20px;
-  color: var(--tg-hint-color, #999);
-  padding: 8px;
+  font-size: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
+  color: var(--tg-hint-color);
+  transition: background-color var(--transition-fast);
+}
+
+.close-btn:active {
+  background: rgba(128, 128, 128, 0.2);
 }
 
 .wish-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--spacing-lg);
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--spacing-xs);
 }
 
 .form-row {
   display: flex;
-  gap: 12px;
+  gap: var(--spacing-md);
 }
 
 .form-row .form-group {
@@ -183,50 +199,43 @@ function onInputFocus(event: FocusEvent) {
 }
 
 .currency-group {
-  flex: 0 0 80px;
+  flex: 0 0 90px;
 }
 
 label {
   font-size: 13px;
   font-weight: 500;
-  color: var(--tg-hint-color, #777);
+  color: var(--tg-hint-color);
   margin-left: 4px;
 }
 
+/* Inputs are globally styled, overrides here */
 input, select, textarea {
+  /* Ensure consistent width */
   width: 100%;
-  padding: 12px 16px;
-  border: 1px solid #eee;
-  border-radius: 12px;
-  font-size: 16px;
-  background: #f9f9f9;
-  transition: all 0.2s;
-  font-family: inherit;
-  box-sizing: border-box; /* Crucial for inputs */
-}
-
-input:focus, select:focus, textarea:focus {
-  outline: none;
-  border-color: var(--tg-button-color, #3390ec);
-  background: white;
 }
 
 .submit-btn {
-  margin-top: 16px;
+  margin-top: var(--spacing-sm);
   padding: 16px;
-  background: var(--tg-button-color, #3390ec);
-  color: white;
+  background: var(--tg-button-color);
+  color: var(--tg-button-text-color);
   border: none;
-  border-radius: 14px;
+  border-radius: var(--border-radius-lg);
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+}
+
+.submit-btn:active {
+  transform: scale(0.98);
 }
 
 .submit-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
 }
 
 @keyframes fade-in {

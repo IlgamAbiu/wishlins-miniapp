@@ -1,0 +1,548 @@
+/**
+ * Liquid Glass Animations
+ * Apple iOS 26 Inspired Fluid Animations
+ *
+ * Features:
+ * - Liquid scale animations with spring physics
+ * - Slide animations with parallax
+ * - Glass morph effects
+ * - Shimmer and ripple effects
+ * - Stagger animation utilities
+ * - Parallax layers
+ */
+
+/* === LIQUID ANIMATIONS === */
+
+/* Liquid Scale In - Entrance with Spring */
+@keyframes liquid-scale-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Liquid Scale Out - Exit with Fade */
+@keyframes liquid-scale-out {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+/* Liquid Slide Up - Bottom Sheet Style */
+@keyframes liquid-slide-up {
+  0% {
+    opacity: 0;
+    transform: translateY(40px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Liquid Slide Down - Exit Animation */
+@keyframes liquid-slide-down {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(40px) scale(0.96);
+  }
+}
+
+/* Liquid Slide Left - Page Transition */
+@keyframes liquid-slide-left {
+  0% {
+    opacity: 0;
+    transform: translateX(60px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Liquid Slide Right - Back Navigation */
+@keyframes liquid-slide-right {
+  0% {
+    opacity: 0;
+    transform: translateX(-60px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Fade In */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Fade Out */
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* === GLASS MORPH EFFECTS === */
+
+/* Glass Morph - Breathing Effect */
+@keyframes glass-morph {
+  0%, 100% {
+    backdrop-filter: blur(24px) saturate(180%);
+  }
+  50% {
+    backdrop-filter: blur(32px) saturate(200%);
+  }
+}
+
+/* Glass Pulse - Subtle Glow */
+@keyframes glass-pulse {
+  0%, 100% {
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  }
+  50% {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), inset 0 1px 2px rgba(255, 255, 255, 0.6);
+  }
+}
+
+/* === SHIMMER EFFECT === */
+
+/* Shimmer - Loading Skeleton */
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+/* Shimmer Gradient Background */
+.shimmer {
+  background: linear-gradient(90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    rgba(255, 255, 255, 0) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite ease-in-out;
+}
+
+[data-theme='dark'] .shimmer {
+  background: linear-gradient(90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0) 100%);
+}
+
+/* === RIPPLE EFFECT === */
+
+/* Ripple - Touch Feedback */
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* === SPIN ANIMATIONS === */
+
+/* Spin - Loading Spinner */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Spin Slow - Decorative */
+@keyframes spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* === BOUNCE EFFECTS === */
+
+/* Bounce - Playful Entrance */
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Elastic Bounce - Spring Effect */
+@keyframes elastic-bounce {
+  0% {
+    transform: scale(1);
+  }
+  20% {
+    transform: scale(0.9);
+  }
+  40% {
+    transform: scale(1.1);
+  }
+  60% {
+    transform: scale(0.98);
+  }
+  80% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* === UTILITY ANIMATION CLASSES === */
+
+/* Apply Animations */
+.animate-liquid-in {
+  animation: liquid-scale-in 0.5s var(--liquid-spring) both;
+}
+
+.animate-liquid-out {
+  animation: liquid-scale-out 0.3s var(--liquid-ease) both;
+}
+
+.animate-slide-up {
+  animation: liquid-slide-up 0.6s var(--liquid-ease) both;
+}
+
+.animate-slide-down {
+  animation: liquid-slide-down 0.4s var(--liquid-ease) both;
+}
+
+.animate-slide-left {
+  animation: liquid-slide-left 0.4s var(--liquid-ease) both;
+}
+
+.animate-slide-right {
+  animation: liquid-slide-right 0.4s var(--liquid-ease) both;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease both;
+}
+
+.animate-fade-out {
+  animation: fade-out 0.2s ease both;
+}
+
+.animate-glass-morph {
+  animation: glass-morph 3s ease-in-out infinite;
+}
+
+.animate-glass-pulse {
+  animation: glass-pulse 2s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite ease-in-out;
+}
+
+.animate-spin {
+  animation: spin 0.8s linear infinite;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 3s linear infinite;
+}
+
+.animate-bounce {
+  animation: bounce 1s ease-in-out infinite;
+}
+
+.animate-elastic {
+  animation: elastic-bounce 0.6s var(--liquid-bounce) both;
+}
+
+/* === STAGGER ANIMATIONS === */
+
+/* Stagger Children - Sequential Entrance */
+.stagger-children > * {
+  animation: liquid-scale-in 0.4s var(--liquid-spring) both;
+}
+
+.stagger-children > *:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.stagger-children > *:nth-child(2) {
+  animation-delay: 0.05s;
+}
+
+.stagger-children > *:nth-child(3) {
+  animation-delay: 0.1s;
+}
+
+.stagger-children > *:nth-child(4) {
+  animation-delay: 0.15s;
+}
+
+.stagger-children > *:nth-child(5) {
+  animation-delay: 0.2s;
+}
+
+.stagger-children > *:nth-child(6) {
+  animation-delay: 0.25s;
+}
+
+.stagger-children > *:nth-child(7) {
+  animation-delay: 0.3s;
+}
+
+.stagger-children > *:nth-child(8) {
+  animation-delay: 0.35s;
+}
+
+.stagger-children > *:nth-child(9) {
+  animation-delay: 0.4s;
+}
+
+.stagger-children > *:nth-child(10) {
+  animation-delay: 0.45s;
+}
+
+/* Faster Stagger */
+.stagger-fast > * {
+  animation: liquid-scale-in 0.3s var(--liquid-spring) both;
+}
+
+.stagger-fast > *:nth-child(n) {
+  animation-delay: calc(var(--stagger-index, 0) * 0.03s);
+}
+
+/* === PARALLAX LAYERS === */
+
+.parallax-layer {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Slow parallax layer (background) */
+.parallax-slow {
+  transform: translateY(calc(var(--scroll-y, 0) * 0.3px));
+}
+
+/* Medium parallax layer */
+.parallax-medium {
+  transform: translateY(calc(var(--scroll-y, 0) * 0.5px));
+}
+
+/* Fast parallax layer (foreground) */
+.parallax-fast {
+  transform: translateY(calc(var(--scroll-y, 0) * 0.7px));
+}
+
+/* === INTERACTION ANIMATIONS === */
+
+/* Tap Scale - Touch Feedback */
+.tap-scale {
+  transition: transform 0.15s var(--liquid-ease);
+}
+
+.tap-scale:active {
+  transform: scale(0.96);
+}
+
+/* Hover Lift - Subtle Elevation */
+.hover-lift {
+  transition: transform 0.2s var(--liquid-ease), box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+}
+
+/* Focus Ring - Accessibility */
+.focus-ring:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(var(--tg-button-color-rgb, 0, 136, 204), 0.2);
+}
+
+/* === TRANSITION UTILITIES === */
+
+/* Default Transition */
+.transition {
+  transition: all var(--transition-normal);
+}
+
+/* Fast Transition */
+.transition-fast {
+  transition: all var(--transition-fast);
+}
+
+/* Slow Transition */
+.transition-slow {
+  transition: all var(--transition-slow);
+}
+
+/* Specific Property Transitions */
+.transition-transform {
+  transition: transform var(--transition-normal);
+}
+
+.transition-opacity {
+  transition: opacity var(--transition-normal);
+}
+
+.transition-colors {
+  transition: background-color var(--transition-normal), color var(--transition-normal), border-color var(--transition-normal);
+}
+
+/* === PERFORMANCE OPTIMIZATIONS === */
+
+/* GPU Acceleration */
+.gpu-accelerate {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Smooth Scroll */
+.smooth-scroll {
+  scroll-behavior: smooth;
+}
+
+/* === ACCESSIBILITY - REDUCED MOTION === */
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Disable parallax */
+  .parallax-layer,
+  .parallax-slow,
+  .parallax-medium,
+  .parallax-fast {
+    transform: none !important;
+  }
+
+  /* Keep essential feedback */
+  .tap-scale:active {
+    opacity: 0.8;
+  }
+}
+
+/* === LOADING STATES === */
+
+/* Skeleton Loading */
+.skeleton {
+  background: linear-gradient(90deg,
+    var(--tg-secondary-bg-color) 0%,
+    var(--glass-border-light) 50%,
+    var(--tg-secondary-bg-color) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite ease-in-out;
+  border-radius: var(--border-radius-md);
+}
+
+/* Pulse Loading */
+.pulse {
+  animation: glass-pulse 2s ease-in-out infinite;
+}
+
+/* === SPECIAL EFFECTS === */
+
+/* Floating Animation - Gentle Hover */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Glow Effect */
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(var(--tg-button-color-rgb, 0, 136, 204), 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(var(--tg-button-color-rgb, 0, 136, 204), 0.5);
+  }
+}
+
+.animate-glow {
+  animation: glow 2s ease-in-out infinite;
+}
+
+/* Heartbeat */
+@keyframes heartbeat {
+  0%, 100% {
+    transform: scale(1);
+  }
+  10%, 30% {
+    transform: scale(0.9);
+  }
+  20%, 40% {
+    transform: scale(1.1);
+  }
+}
+
+.animate-heartbeat {
+  animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+/* === PAGE TRANSITIONS === */
+
+/* Page Enter */
+.page-enter-active {
+  animation: liquid-slide-left 0.4s var(--liquid-ease);
+}
+
+/* Page Leave */
+.page-leave-active {
+  animation: fade-out 0.2s ease;
+}
+
+/* Modal Enter */
+.modal-enter-active {
+  animation: liquid-slide-up 0.4s var(--liquid-ease);
+}
+
+/* Modal Leave */
+.modal-leave-active {
+  animation: liquid-slide-down 0.3s var(--liquid-ease);
+}

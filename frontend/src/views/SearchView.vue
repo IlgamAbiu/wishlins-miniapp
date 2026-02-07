@@ -1,24 +1,24 @@
 <script setup lang="ts">
 /**
- * FriendsView - Friends tab placeholder.
+ * SearchView - Search tab placeholder.
  */
 </script>
 
 <template>
-  <div class="friends-view">
+  <div class="search-view">
     <div class="placeholder">
       <div class="placeholder__icon-wrapper">
-        <div class="placeholder__icon">🎁</div>
-        <div class="placeholder__sparkle">🌟</div>
+        <div class="placeholder__icon">🔍</div>
+        <div class="placeholder__sparkle">✨</div>
       </div>
-      <h2 class="placeholder__title">Друзья</h2>
-      <p class="placeholder__text">Желания ваших друзей появятся здесь</p>
+      <h2 class="placeholder__title">Поиск желаний</h2>
+      <p class="placeholder__text">Найдите идеальный подарок</p>
     </div>
   </div>
 </template>
 
 <style scoped>
-.friends-view {
+.search-view {
   height: 100%;
   display: flex;
   align-items: center;
@@ -43,35 +43,35 @@
 
 .placeholder__icon {
   font-size: 72px;
-  animation: gift-bounce 2.5s ease-in-out infinite;
-  filter: drop-shadow(0 4px 12px rgba(255, 105, 180, 0.3));
+  animation: float 3s ease-in-out infinite;
+  filter: drop-shadow(0 4px 12px rgba(147, 112, 219, 0.3));
 }
 
 .placeholder__sparkle {
   position: absolute;
-  top: -12px;
-  right: -12px;
-  font-size: 28px;
-  animation: sparkle-rotate 3s ease-in-out infinite;
+  top: -10px;
+  right: -10px;
+  font-size: 24px;
+  animation: sparkle 2s ease-in-out infinite;
 }
 
-@keyframes gift-bounce {
+@keyframes float {
   0%, 100% {
-    transform: translateY(0) scale(1);
+    transform: translateY(0) rotate(0deg);
   }
   50% {
-    transform: translateY(-10px) scale(1.05);
+    transform: translateY(-12px) rotate(5deg);
   }
 }
 
-@keyframes sparkle-rotate {
+@keyframes sparkle {
   0%, 100% {
     opacity: 1;
     transform: scale(1) rotate(0deg);
   }
   50% {
-    opacity: 0.7;
-    transform: scale(1.3) rotate(180deg);
+    opacity: 0.6;
+    transform: scale(1.2) rotate(180deg);
   }
 }
 
@@ -79,14 +79,14 @@
   margin: 0 0 var(--spacing-sm);
   font-size: var(--font-size-title-1);
   font-weight: var(--font-weight-bold);
-  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 [data-theme='dark'] .placeholder__title {
-  background: linear-gradient(135deg, #ffb3d9 0%, #ffe89e 100%);
+  background: linear-gradient(135deg, #a8b5ff 0%, #c4a4ff 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

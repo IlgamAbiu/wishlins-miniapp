@@ -31,6 +31,10 @@ class UserService:
         """Get user by Telegram ID."""
         return await self._repository.get_by_telegram_id(telegram_id)
 
+    async def update_user_profile(self, telegram_id: int, data: UserUpdate) -> Optional[User]:
+        """Update user profile by Telegram ID."""
+        return await self._repository.update_by_telegram_id(telegram_id, data)
+
     async def register_or_update_user(self, data: UserCreate) -> tuple[User, bool]:
         """
         Register a new user or update existing one.

@@ -2,28 +2,44 @@
 /**
  * ProfileView - User profile with Events (Wishlists) and Wishes.
  */
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
 import { useWishlists } from '@/composables/useWishlists'
 import { useWishes } from '@/composables/useWishes'
+import { useUser } from '@/composables/useUser'
 import EventCarousel from '@/components/EventCarousel.vue'
 import WishGrid from '@/components/WishGrid.vue'
 import AddWishModal from '@/components/AddWishModal.vue'
 import AddEventModal from '@/components/AddEventModal.vue'
+import EditProfileTextModal from '@/components/EditProfileTextModal.vue'
 
 const { isInTelegram, user, userDisplayName } = useTelegramWebApp()
-const { wishlists, fetchWishlists, createWishlist } = useWishlists() // Assuming createWishlist exists in useWishlists or will be added
+const { wishlists, fetchWishlists, createWishlist, updateWishlist, deleteWishlist } = useWishlists()
 const { wishes, loading: wishesLoading, error: wishesError, fetchWishes, createWish } = useWishes()
+const { updateProfileText, getUserByTelegramId } = useUser()
 
 const selectedEventId = ref<string | null>(null)
 const showAddWishModal = ref(false)
 const showAddEventModal = ref(false)
+const showEditProfileModal = ref(false)
+const editingEvent = ref<any>(null) // Event being edited
+const profileText = ref('Saving for a dream ✨')
+
+const selectedEvent = computed(() => 
+  wishlists.value.find(w => w.id === selectedEventId.value)
+)
 
 // Initial Data Fetch
 async function initData() {
   if (user.value) {
+    // Load user profile data including profile_text
+    const userData = await getUserByTelegramId(user.value.id)
+    if (userData && userData.profile_text) {
+      profileText.value = userData.profile_text
+    }
+
     await fetchWishlists(user.value.id)
-    
+
     // Select default event or first one
     if (wishlists.value.length > 0) {
       const defaultEvent = wishlists.value.find(w => w.is_default)
@@ -48,15 +64,58 @@ async function handleEventSelect(id: string) {
   selectedEventId.value = id
 }
 
-async function handleAddEvent(title: string, emoji: string, date: string) {
+async function handleSaveEvent(title: string, emoji: string, date: string) {
   if (!user.value) return
   
-  const newWishlist = await createWishlist(title, user.value.id, true, emoji, date)
+  if (editingEvent.value) {
+    // Update existing
+    const updated = await updateWishlist(editingEvent.value.id, {
+      title,
+      emoji,
+      eventDate: date
+    })
+    if (updated) {
+      showAddEventModal.value = false
+      editingEvent.value = null
+    }
+  } else {
+    // Create new
+    const newWishlist = await createWishlist(title, user.value.id, true, emoji, date)
+    if (newWishlist) {
+      showAddEventModal.value = false
+      selectedEventId.value = newWishlist.id
+    }
+  }
+}
+
+function openCreateEventModal() {
+  editingEvent.value = null
+  showAddEventModal.value = true
+}
+
+function handleEditEvent() {
+  editingEvent.value = selectedEvent.value
+  showAddEventModal.value = true
+}
+
+async function handleDeleteEvent() {
+  if (!selectedEvent.value || !confirm('Удалить это событие и все желания в нем?')) return
   
-  if (newWishlist) {
-    showAddEventModal.value = false
-    // Select the new event
-    selectedEventId.value = newWishlist.id
+  const success = await deleteWishlist(selectedEvent.value.id)
+  if (success) {
+    // Select default event
+    const defaultEvent = wishlists.value.find(w => w.is_default)
+    if (defaultEvent) selectedEventId.value = defaultEvent.id
+  }
+}
+
+function handleShareEvent() {
+  // TODO: Implement real sharing
+  console.log('Sharing event:', selectedEvent.value?.id)
+  if (window.Telegram?.WebApp) {
+      window.Telegram.WebApp.showAlert('Ссылка на событие скопирована!')
+  } else {
+      alert('Ссылка скопирована! (тест)')
   }
 }
 
@@ -77,6 +136,30 @@ function onWishClick(wish: any) {
   // TODO: Open detailed wish view or edit modal
   console.log("Clicked wish", wish)
 }
+
+function handleEditProfile() {
+  showEditProfileModal.value = true
+}
+
+async function handleSaveProfileText(text: string) {
+  if (!user.value) return
+
+  const success = await updateProfileText(user.value.id, text)
+  if (success) {
+    profileText.value = text
+    showEditProfileModal.value = false
+  }
+}
+
+// Склонение слова "желание"
+function pluralizeWishes(count: number): string {
+  const cases = [2, 0, 1, 1, 1, 2]
+  const titles = ['желание', 'желания', 'желаний']
+  const index = (count % 100 > 4 && count % 100 < 20)
+    ? 2
+    : cases[Math.min(count % 10, 5)]
+  return `${count} ${titles[index]}`
+}
 </script>
 
 <template>
@@ -87,27 +170,50 @@ function onWishClick(wish: any) {
     </div>
 
     <div v-else class="content">
-      <!-- Header -->
-      <header class="header">
-        <div class="avatar">
-           <img v-if="user?.photo_url" :src="user.photo_url" alt="avatar" />
-           <div v-else class="avatar-placeholder">{{ userDisplayName.charAt(0) }}</div>
+      <!-- Header with glass-panel -->
+      <header class="header-section">
+        <div class="glass-panel header-panel" @click="handleEditProfile">
+          <div class="avatar-wrapper">
+            <div class="avatar">
+              <img v-if="user?.photo_url" :src="user.photo_url" alt="avatar" />
+              <div v-else class="avatar-placeholder">{{ userDisplayName.charAt(0) }}</div>
+              <div class="avatar-status"></div>
+            </div>
+          </div>
+          <div class="user-info">
+            <h1 class="user-name">{{ userDisplayName }}</h1>
+            <p class="user-subtitle">{{ profileText }}</p>
+          </div>
         </div>
-        <div class="user-info">
-          <h1>{{ userDisplayName }}</h1>
-          <span class="username">@{{ user?.username }}</span>
+
+        <!-- Events Carousel -->
+        <div class="carousel-wrapper">
+          <EventCarousel
+            :events="wishlists"
+            :selected-event-id="selectedEventId"
+            @select="handleEventSelect"
+            @add="openCreateEventModal"
+          />
+        </div>
+
+        <!-- Event Actions Row -->
+        <div v-if="selectedEvent" class="actions-row">
+          <div class="actions-buttons">
+            <button class="glass-btn action-btn" @click="handleEditEvent">
+              <span class="icon">✏️</span>
+            </button>
+            <button class="glass-btn action-btn" @click="handleDeleteEvent">
+              <span class="icon">🗑️</span>
+            </button>
+            <button class="glass-btn action-btn" @click="handleShareEvent">
+              <span class="icon">↗️</span>
+            </button>
+          </div>
+          <div class="item-count">
+            <span class="count-label">{{ pluralizeWishes(wishes.length) }}</span>
+          </div>
         </div>
       </header>
-
-      <!-- Events Carousel -->
-      <section class="events-section">
-        <EventCarousel
-          :events="wishlists"
-          :selected-event-id="selectedEventId"
-          @select="handleEventSelect"
-          @add="showAddEventModal = true"
-        />
-      </section>
 
       <!-- Data Status/Grid -->
       <section class="wishes-section">
@@ -120,13 +226,10 @@ function onWishClick(wish: any) {
          />
       </section>
 
-      <!-- Floating Sticky Button -->
-      <div class="sticky-footer">
-        <button class="main-add-btn" @click="showAddWishModal = true">
-          <span class="btn-icon">+</span>
-          Добавить желание
-        </button>
-      </div>
+      <!-- Floating FAB Button -->
+      <button class="fab-button" @click="showAddWishModal = true">
+        <span class="fab-icon">+</span>
+      </button>
 
       <!-- Modals -->
       <Teleport to="body">
@@ -137,8 +240,19 @@ function onWishClick(wish: any) {
          />
          <AddEventModal
            v-if="showAddEventModal"
+           :initial-data="editingEvent ? {
+             title: editingEvent.title,
+             emoji: editingEvent.emoji,
+             date: editingEvent.event_date
+           } : undefined"
            @close="showAddEventModal = false"
-           @submit="handleAddEvent"
+           @submit="handleSaveEvent"
+         />
+         <EditProfileTextModal
+           v-if="showEditProfileModal"
+           :initial-text="profileText"
+           @close="showEditProfileModal = false"
+           @submit="handleSaveProfileText"
          />
       </Teleport>
     </div>
@@ -148,7 +262,7 @@ function onWishClick(wish: any) {
 <style scoped>
 .profile-view {
   height: 100vh;
-  background: var(--tg-bg-color, #ffffff);
+  background: transparent;
   display: flex;
   flex-direction: column;
   position: relative;
@@ -157,28 +271,48 @@ function onWishClick(wish: any) {
 .content {
   flex: 1;
   overflow-y: auto;
-  padding-bottom: 100px; /* Space for sticky button */
+  padding-bottom: 120px;
   -webkit-overflow-scrolling: touch;
 }
 
-.header {
-  padding: 16px 20px;
+/* === HEADER SECTION === */
+.header-section {
+  padding: 20px 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.header-panel {
+  padding: 16px;
   display: flex;
   align-items: center;
   gap: 16px;
-  background: var(--tg-bg-color, white);
-  position: sticky;
-  top: 0;
-  z-index: 10;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.header-panel:active {
+  transform: scale(0.98);
+}
+
+.avatar-wrapper {
+  position: relative;
 }
 
 .avatar {
   width: 56px;
   height: 56px;
-  border-radius: 20px;
+  border-radius: 50%;
   overflow: hidden;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(0,0,0,0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 2px solid white;
+  position: relative;
+}
+
+[data-theme='dark'] .avatar {
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .avatar img {
@@ -199,75 +333,149 @@ function onWishClick(wish: any) {
   font-weight: 700;
 }
 
+.avatar-status {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 14px;
+  height: 14px;
+  background: #34C759;
+  border: 2px solid white;
+  border-radius: 50%;
+}
+
+[data-theme='dark'] .avatar-status {
+  background: #30D158;
+  border: 2px solid #1C1C1E;
+}
+
 .user-info {
+  flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
-.user-info h1 {
+.user-name {
   margin: 0;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
-  color: var(--tg-text-color, #000);
+  color: #111118;
   line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 
-.username {
-  color: var(--tg-hint-color, #8e8e93);
-  font-size: 14px;
+[data-theme='dark'] .user-name {
+  color: #FFFFFF;
+}
+
+.user-subtitle {
+  margin: 0;
+  font-size: 12px;
   font-weight: 500;
+  color: #64748b;
+  margin-top: 2px;
 }
 
-.events-section {
-  padding-top: 10px;
-  margin-bottom: 10px;
+[data-theme='dark'] .user-subtitle {
+  color: #8E8E93;
 }
 
-.wishes-section {
-  min-height: 200px;
-  padding-top: 10px;
-}
-
-.sticky-footer {
-  position: fixed;
-  bottom: 90px; /* Above TabBar (56px) + spacing */
-  left: 0;
-  right: 0;
+/* === CAROUSEL WRAPPER === */
+.carousel-wrapper {
+  margin: 0 -20px;
   padding: 0 20px;
-  z-index: 100;
-  display: flex;
-  justify-content: center;
-  pointer-events: none; /* Let clicks pass through area */
 }
 
-.main-add-btn {
-  pointer-events: auto; /* Re-enable clicks on button */
-  width: 100%;
-  max-width: 400px;
-  height: 56px;
-  background: var(--tg-button-color, #007AFF);
-  color: var(--tg-button-text-color, white);
-  border: none;
-  border-radius: 16px;
-  font-size: 17px;
-  font-weight: 600;
+/* === ACTIONS ROW === */
+.actions-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 4px;
+}
+
+.actions-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.action-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  box-shadow: 0 12px 24px rgba(0, 122, 255, 0.3);
+  color: #64748b;
+}
+
+[data-theme='dark'] .action-btn {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.action-btn .icon {
+  font-size: 18px;
+}
+
+.item-count {
+  text-align: right;
+}
+
+.count-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+[data-theme='dark'] .count-label {
+  color: #6B7280;
+}
+
+/* === WISHES SECTION === */
+.wishes-section {
+  min-height: 200px;
+  margin-top: 20px;
+}
+
+/* === FAB BUTTON === */
+.fab-button {
+  position: fixed;
+  bottom: 100px;
+  right: 20px;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--tg-button-color);
+  color: white;
+  border: 4px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 24px rgba(10, 13, 194, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: all 0.2s ease;
+  z-index: 100;
 }
 
-.main-add-btn:active {
-  transform: scale(0.96);
+[data-theme='dark'] .fab-button {
+  border: 4px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 25px rgba(10, 132, 255, 0.4);
 }
 
-.btn-icon {
-  font-size: 24px;
-  font-weight: 400;
+.fab-button:hover {
+  transform: scale(1.05);
+}
+
+.fab-button:active {
+  transform: scale(0.95);
+}
+
+.fab-icon {
+  font-size: 36px;
+  font-weight: 300;
   line-height: 1;
 }
 

@@ -40,6 +40,7 @@ class UserResponse(BaseModel):
     first_name: str = Field(..., description="User's first name")
     last_name: Optional[str] = Field(None, description="User's last name")
     avatar_url: Optional[str] = Field(None, description="User's avatar URL")
+    profile_text: Optional[str] = Field(None, description="User's profile text/status")
     created_at: datetime = Field(..., description="Account creation timestamp")
     updated_at: datetime = Field(..., description="Last update timestamp")
 
@@ -80,6 +81,20 @@ class UserRegisterResponse(BaseModel):
                     "updated_at": "2024-01-15T10:30:00Z",
                 },
                 "is_new_user": True,
+            }
+        }
+    }
+
+
+class UserUpdateRequest(BaseModel):
+    """Request schema for updating user profile."""
+
+    profile_text: str = Field(..., min_length=1, max_length=100, description="User's profile text/status")
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "profile_text": "Saving for a dream ✨"
             }
         }
     }

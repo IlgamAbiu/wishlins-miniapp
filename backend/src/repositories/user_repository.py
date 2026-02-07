@@ -58,6 +58,8 @@ class UserRepository:
             update_data["last_name"] = data.last_name
         if data.avatar_url is not None:
             update_data["avatar_url"] = data.avatar_url
+        if data.profile_text is not None:
+            update_data["profile_text"] = data.profile_text
 
         if not update_data:
             return await self.get_by_id(user_id)
@@ -85,6 +87,8 @@ class UserRepository:
             update_data["last_name"] = data.last_name
         if data.avatar_url is not None:
             update_data["avatar_url"] = data.avatar_url
+        if data.profile_text is not None:
+            update_data["profile_text"] = data.profile_text
 
         if not update_data:
             return await self.get_by_telegram_id(telegram_id)
@@ -109,6 +113,7 @@ class UserRepository:
             first_name=model.first_name,
             last_name=model.last_name,
             avatar_url=model.avatar_url,
+            profile_text=model.profile_text,
             created_at=model.created_at,
             updated_at=model.updated_at,
         )

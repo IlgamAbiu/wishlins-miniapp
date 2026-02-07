@@ -3,17 +3,32 @@
  * Add Event Modal.
  * Bottom sheet to add a new event (wishlist).
  */
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+
+const props = defineProps<{
+  initialData?: {
+    title: string
+    emoji: string | null
+    date: string | null
+  }
+}>()
 
 const emit = defineEmits<{
   (e: 'close'): void
   (e: 'submit', title: string, emoji: string, date: string): void
 }>()
 
-const title = ref('')
-const emoji = ref('🎉')
-const eventDate = ref('')
+const title = ref(props.initialData?.title || '')
+const emoji = ref(props.initialData?.emoji || '🎉')
+// Format date for input type="date" (YYYY-MM-DD)
+const formatDate = (isoString?: string | null) => {
+  if (!isoString) return ''
+  return isoString.split('T')[0]
+}
+const eventDate = ref(formatDate(props.initialData?.date))
+
 const isSubmitting = ref(false)
+const isEditMode = computed(() => !!props.initialData)
 
 const commonEmojis = ['🎉', '🎂', '🎄', '💍', '🍼', '🏠', '🎓', '✈️', '💼', '🎁']
 
@@ -35,7 +50,7 @@ function onInputFocus(event: FocusEvent) {
   <div class="modal-overlay" @click.self="$emit('close')">
     <div class="modal-content">
       <div class="modal-header">
-        <h3>Новое событие</h3>
+        <h3>{{ isEditMode ? 'Редактировать событие' : 'Новое событие' }}</h3>
         <button class="close-btn" @click="$emit('close')">✕</button>
       </div>
 
@@ -88,7 +103,7 @@ function onInputFocus(event: FocusEvent) {
           class="submit-btn"
           :disabled="isSubmitting || !title.trim()"
         >
-          Создать событие
+          {{ isEditMode ? 'Сохранить изменения' : 'Создать событие' }}
         </button>
       </form>
     </div>
@@ -97,10 +112,13 @@ function onInputFocus(event: FocusEvent) {
 
 <style scoped>
 /* Reuse styles from AddWishModal or make global later */
+/* Reuse styles from AddWishModal or make global later */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   display: flex;
   align-items: flex-end;
   z-index: 1000;
@@ -109,54 +127,73 @@ function onInputFocus(event: FocusEvent) {
 
 .modal-content {
   width: 100%;
-  background: white;
-  border-radius: 24px 24px 0 0;
-  padding: 24px; /* Consistent padding */
-  padding-bottom: max(24px, env(safe-area-inset-bottom));
+  background: var(--tg-bg-color);
+  border-radius: var(--border-radius-xl) var(--border-radius-xl) 0 0;
+  padding: var(--spacing-lg);
+  padding-bottom: max(var(--spacing-lg), env(safe-area-inset-bottom));
   animation: slide-up 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
   max-height: 90vh;
   overflow-y: auto;
-  box-sizing: border-box; /* Ensure padding doesn't add to width */
+  box-shadow: 0 -4px 24px rgba(0,0,0,0.1);
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: var(--spacing-lg);
 }
 
 .modal-header h3 {
   margin: 0;
-  font-size: 20px;
+  font-size: var(--font-size-h2);
   font-weight: 700;
+  color: var(--tg-text-color);
 }
 
 .close-btn {
-  background: none;
+  background: rgba(128, 128, 128, 0.1);
   border: none;
-  font-size: 20px;
-  padding: 8px;
+  font-size: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  color: #999;
+  color: var(--tg-hint-color);
+  transition: background-color var(--transition-fast);
+}
+
+.close-btn:active {
+  background: rgba(128, 128, 128, 0.2);
 }
 
 .event-form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--spacing-lg);
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--spacing-xs);
 }
 
 .form-row {
   display: flex;
-  flex-direction: column;
-  gap: 20px;
+  flex-direction: column; /* Stack on mobile */
+  gap: var(--spacing-lg);
+}
+
+/* Tablet/Desktop layout */
+@media (min-width: 600px) {
+  .form-row {
+    flex-direction: row;
+  }
 }
 
 .emoji-group {
@@ -170,31 +207,20 @@ function onInputFocus(event: FocusEvent) {
 label {
   font-size: 13px;
   font-weight: 500;
-  color: #777;
+  color: var(--tg-hint-color);
   margin-left: 4px;
 }
 
+/* Inputs are styled globally in design-system.css, 
+   but we can add specific overrides if needed */
 input {
+  /* Ensure global styles apply correctly */
   width: 100%;
-  padding: 14px 16px;
-  border: 1px solid #eee;
-  border-radius: 12px;
-  font-size: 16px;
-  background: #f9f9f9;
-  box-sizing: border-box;
-  appearance: none;
-  -webkit-appearance: none;
-}
-
-input:focus {
-  outline: none;
-  border-color: var(--tg-button-color, #3390ec);
-  background: white;
 }
 
 .emoji-selector {
   display: flex;
-  gap: 10px;
+  gap: var(--spacing-sm);
   align-items: center;
 }
 
@@ -205,16 +231,16 @@ input:focus {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f0f0f0;
-  border-radius: 12px;
+  background: var(--tg-secondary-bg-color);
+  border-radius: var(--border-radius-md);
+  flex-shrink: 0;
 }
 
 .emoji-list {
   display: flex;
-  gap: 8px;
+  gap: var(--spacing-xs);
   overflow-x: auto;
   padding-bottom: 4px;
-  /* Hide scrollbar */
   scrollbar-width: none; 
   -ms-overflow-style: none;
 }
@@ -228,34 +254,41 @@ input:focus {
   border: none;
   font-size: 24px;
   cursor: pointer;
-  padding: 4px;
-  border-radius: 8px;
-  transition: transform 0.1s;
+  padding: 8px;
+  border-radius: var(--border-radius-md);
+  transition: transform var(--transition-fast), background-color var(--transition-fast);
 }
 
 .emoji-option:hover {
-  background: #f5f5f5;
+  background: var(--tg-secondary-bg-color);
 }
 
 .emoji-option.active {
-  background: #e0e0e0;
+  background: var(--tg-secondary-bg-color);
   transform: scale(1.1);
+  border: 1px solid var(--tg-border-color);
 }
 
 .submit-btn {
   padding: 16px;
-  background: var(--tg-button-color, #3390ec);
-  color: white;
+  background: var(--tg-button-color);
+  color: var(--tg-button-text-color);
   border: none;
-  border-radius: 14px;
+  border-radius: var(--border-radius-lg);
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
-  margin-top: 10px;
+  margin-top: var(--spacing-sm);
+  transition: transform var(--transition-fast), opacity var(--transition-fast);
+}
+
+.submit-btn:active {
+  transform: scale(0.98);
 }
 
 .submit-btn:disabled {
   opacity: 0.5;
+  transform: none;
 }
 
 @keyframes fade-in {

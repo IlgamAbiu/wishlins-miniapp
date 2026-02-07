@@ -1,0 +1,256 @@
+/**
+ * Festive Design - Праздничные эффекты для приложения о подарках
+ * Воздушный, легкий дизайн с градиентами
+ */
+
+/* === ГРАДИЕНТНЫЕ ЗАГОЛОВКИ === */
+.gradient-title {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-title--candy {
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-title--sunset {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-title--ocean {
+  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Dark theme gradient titles */
+[data-theme='dark'] .gradient-title {
+  background: linear-gradient(135deg, #a8b5ff 0%, #c4a4ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+[data-theme='dark'] .gradient-title--candy {
+  background: linear-gradient(135deg, #ffb3d9 0%, #ffe89e 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* === ГРАДИЕНТНЫЕ КНОПКИ === */
+.btn-gradient {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  transition: all 0.3s var(--liquid-ease);
+}
+
+.btn-gradient:hover {
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+  transform: translateY(-2px);
+}
+
+.btn-gradient:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* === ПРАЗДНИЧНЫЕ КАРТОЧКИ === */
+.festive-card {
+  background: var(--glass-layer-1-bg);
+  backdrop-filter: blur(var(--glass-layer-1-blur)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--glass-layer-1-blur)) saturate(180%);
+  border: 1px solid var(--glass-border-light);
+  border-radius: var(--border-radius-2xl);
+  box-shadow: var(--glass-shadow-md), var(--glass-inner-glow);
+  position: relative;
+  overflow: hidden;
+}
+
+.festive-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.1) 50%,
+    transparent 70%
+  );
+  animation: shine 3s infinite;
+}
+
+@keyframes shine {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* === ПЛАВАЮЩИЕ ИКОНКИ === */
+.floating-icon {
+  display: inline-block;
+  animation: float-gentle 3s ease-in-out infinite;
+}
+
+@keyframes float-gentle {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(5deg);
+  }
+}
+
+/* === БЛЕСТЯЩИЙ ЭФФЕКТ === */
+.sparkle-text {
+  position: relative;
+  display: inline-block;
+}
+
+.sparkle-text::after {
+  content: '✨';
+  position: absolute;
+  top: -8px;
+  right: -20px;
+  font-size: 16px;
+  animation: sparkle-pulse 2s ease-in-out infinite;
+}
+
+@keyframes sparkle-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.3) rotate(180deg);
+  }
+}
+
+/* === ГРАДИЕНТНЫЕ ГРАНИЦЫ === */
+.gradient-border {
+  position: relative;
+  background: var(--glass-layer-1-bg);
+  backdrop-filter: blur(var(--glass-layer-1-blur));
+  -webkit-backdrop-filter: blur(var(--glass-layer-1-blur));
+  border-radius: var(--border-radius-2xl);
+  overflow: hidden;
+}
+
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #fa709a 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+/* === ВОЗДУШНЫЕ ТЕНИ === */
+.shadow-soft {
+  box-shadow:
+    0 2px 10px rgba(147, 112, 219, 0.1),
+    0 8px 30px rgba(250, 112, 154, 0.15);
+}
+
+.shadow-dreamy {
+  box-shadow:
+    0 4px 20px rgba(102, 126, 234, 0.15),
+    0 10px 40px rgba(118, 75, 162, 0.1);
+}
+
+/* === ПУЛЬСИРУЮЩИЙ ЭФФЕКТ === */
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(147, 112, 219, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(147, 112, 219, 0.6);
+  }
+}
+
+/* === ПРАЗДНИЧНЫЙ ФОНОВЫЙ УЗОР === */
+.pattern-dots {
+  background-image: radial-gradient(circle, rgba(147, 112, 219, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.pattern-confetti {
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(250, 112, 154, 0.15) 2px, transparent 2px),
+    radial-gradient(circle at 60% 70%, rgba(102, 126, 234, 0.15) 2px, transparent 2px),
+    radial-gradient(circle at 80% 20%, rgba(254, 225, 64, 0.15) 2px, transparent 2px);
+  background-size: 50px 50px, 60px 60px, 40px 40px;
+  background-position: 0 0, 20px 20px, 10px 30px;
+}
+
+/* === iOS 26 НАТИВНЫЕ РАДИУСЫ === */
+.ios-radius-sm {
+  border-radius: var(--border-radius-sm);
+}
+
+.ios-radius-md {
+  border-radius: var(--border-radius-md);
+}
+
+.ios-radius-lg {
+  border-radius: var(--border-radius-lg);
+}
+
+.ios-radius-xl {
+  border-radius: var(--border-radius-xl);
+}
+
+.ios-radius-2xl {
+  border-radius: var(--border-radius-2xl);
+}
+
+.ios-radius-3xl {
+  border-radius: var(--border-radius-3xl);
+}
+
+/* === ПРАЗДНИЧНЫЕ ЭМОДЗИ === */
+.emoji-gift {
+  filter: drop-shadow(0 2px 8px rgba(255, 105, 180, 0.4));
+}
+
+.emoji-sparkle {
+  filter: drop-shadow(0 2px 8px rgba(147, 112, 219, 0.4));
+}
+
+.emoji-star {
+  filter: drop-shadow(0 2px 8px rgba(254, 225, 64, 0.4));
+}
+
+/* === REDUCED MOTION === */
+@media (prefers-reduced-motion: reduce) {
+  .festive-card::before,
+  .floating-icon,
+  .sparkle-text::after,
+  .pulse-glow {
+    animation: none;
+  }
+}

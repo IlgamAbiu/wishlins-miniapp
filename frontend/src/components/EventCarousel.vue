@@ -35,38 +35,31 @@ function selectEvent(id: string) {
 <template>
   <div class="event-carousel">
     <div class="event-carousel__track">
-      <!-- 1. Default Event -->
-      <div
+      <!-- 1. Default Event Pill -->
+      <button
         v-if="defaultEvent"
-        class="event-card"
-        :class="{ 'event-card--active': defaultEvent.id === selectedEventId }"
+        class="event-pill"
+        :class="{ 'event-pill--active active-pill': defaultEvent.id === selectedEventId, 'glass-btn': defaultEvent.id !== selectedEventId }"
         @click="selectEvent(defaultEvent.id)"
       >
-        <div class="event-card__icon">
-          {{ defaultEvent.emoji || '🎁' }}
-        </div>
-        <div class="event-card__title">{{ defaultEvent.title }}</div>
-      </div>
-
-      <!-- 2. Add Event Button (Always second) -->
-      <button class="event-add-btn" @click="$emit('add')">
-        <div class="event-add-btn__icon">+</div>
-        <div class="event-add-btn__label">Новое</div>
+        <span class="pill-text">{{ defaultEvent.title }}</span>
       </button>
 
-      <!-- 3. Other Events -->
-      <div
+      <!-- 2. Add Event Button (Circle with +) -->
+      <button class="event-add-btn glass-btn" @click="$emit('add')">
+        <span class="add-icon">+</span>
+      </button>
+
+      <!-- 3. Other Events Pills -->
+      <button
         v-for="event in otherEvents"
         :key="event.id"
-        class="event-card"
-        :class="{ 'event-card--active': event.id === selectedEventId }"
+        class="event-pill"
+        :class="{ 'event-pill--active active-pill': event.id === selectedEventId, 'glass-btn': event.id !== selectedEventId }"
         @click="selectEvent(event.id)"
       >
-        <div class="event-card__icon">
-          {{ event.emoji || '🎉' }}
-        </div>
-        <div class="event-card__title">{{ event.title }}</div>
-      </div>
+        <span class="pill-text">{{ event.title }}</span>
+      </button>
     </div>
   </div>
 </template>
@@ -75,7 +68,7 @@ function selectEvent(id: string) {
 .event-carousel {
   width: 100%;
   overflow-x: auto;
-  padding: 16px 0;
+  padding: 4px 0;
   /* Hide scrollbar */
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -87,87 +80,59 @@ function selectEvent(id: string) {
 
 .event-carousel__track {
   display: flex;
-  gap: 12px;
-  padding: 0 20px;
+  gap: 8px;
+  padding: 0 4px;
   min-width: min-content;
 }
 
-.event-card {
+/* === EVENT PILL === */
+.event-pill {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 100px;
-  height: 100px;
-  background: white;
-  border-radius: 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  height: 44px;
+  padding: 0 24px;
+  border-radius: 22px;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
-  border: 2px solid transparent;
   flex-shrink: 0;
-}
-
-.event-card--active {
-  background: var(--tg-button-color, #3390ec);
-  box-shadow: 0 8px 24px rgba(51, 144, 236, 0.3);
-  transform: translateY(-2px);
-}
-
-.event-card--active .event-card__title {
-  color: white;
-  font-weight: 600;
-}
-
-.event-card__icon {
-  font-size: 32px;
-  margin-bottom: 8px;
-  transition: transform 0.2s;
-}
-
-.event-card--active .event-card__icon {
-  transform: scale(1.1);
-}
-
-.event-card__title {
-  font-size: 13px;
-  color: var(--tg-text-color, #222);
-  text-align: center;
+  transition: all 0.2s ease;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 90%;
-  transition: color 0.2s;
+  color: #64748b;
 }
 
+[data-theme='dark'] .event-pill {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.event-pill--active {
+  color: var(--tg-button-color);
+}
+
+.pill-text {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* === ADD BUTTON === */
 .event-add-btn {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 100px;
-  height: 100px;
-  background: rgba(255, 255, 255, 0.6);
-  border: 2px dashed rgba(0, 0, 0, 0.1);
-  border-radius: 20px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
   cursor: pointer;
   flex-shrink: 0;
-  transition: all 0.2s;
-  color: var(--tg-hint-color, #999);
+  color: #64748b;
 }
 
-.event-add-btn:active {
-  transform: scale(0.95);
-  background: rgba(0, 0, 0, 0.05);
+[data-theme='dark'] .event-add-btn {
+  color: rgba(255, 255, 255, 0.7);
 }
 
-.event-add-btn__icon {
-  font-size: 28px;
-  margin-bottom: 4px;
+.add-icon {
+  font-size: 22px;
   font-weight: 300;
-}
-
-.event-add-btn__label {
-  font-size: 13px;
+  line-height: 1;
 }
 </style>

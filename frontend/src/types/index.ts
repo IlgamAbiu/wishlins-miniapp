@@ -5,8 +5,11 @@
 
 /**
  * Available tabs in the application.
+ * - profile: Мои желания (My Wishes)
+ * - friends: Друзья (Friends)
+ * - search: Поиск (Search)
  */
-export type TabId = 'feed' | 'profile' | 'friends'
+export type TabId = 'profile' | 'friends' | 'search'
 
 /**
  * Tab configuration for the Tab Bar.

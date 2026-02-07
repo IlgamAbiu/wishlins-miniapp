@@ -2,12 +2,13 @@
 /**
  * TabBarItem - Individual tab button in the Tab Bar.
  *
- * Architecture:
- * - Pure presentational component
- * - No business logic, only renders UI
- * - Emits events for parent to handle
+ * Enhanced with:
+ * - Haptic feedback on selection
+ * - Liquid scale animations
+ * - Ripple effect on tap
  */
 import { computed } from 'vue'
+import { useHaptic } from '@/composables/useHaptic'
 import type { TabConfig } from '@/types'
 
 interface Props {
@@ -20,9 +21,15 @@ const emit = defineEmits<{
   select: [tabId: string]
 }>()
 
+const { selection } = useHaptic()
+
 const icon = computed(() => props.isActive ? props.tab.activeIcon : props.tab.icon)
 
 function handleClick() {
+  // Trigger haptic feedback
+  selection()
+
+  // Emit select event
   emit('select', props.tab.id)
 }
 </script>
@@ -43,6 +50,7 @@ function handleClick() {
 
 <style scoped>
 .tab-bar-item {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -53,45 +61,91 @@ function handleClick() {
   border: none;
   background: transparent;
   cursor: pointer;
-  transition: all 0.2s ease;
   -webkit-tap-highlight-color: transparent;
-  min-height: 50px;
+  min-height: 56px;
+  overflow: hidden;
+  transition: all 0.2s var(--liquid-ease);
+}
+
+/* Ripple effect container */
+.tab-bar-item::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, var(--tg-button-color) 0%, transparent 60%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.tab-bar-item:active::after {
+  animation: ripple 0.6s ease-out;
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(3);
+    opacity: 0;
+  }
 }
 
 .tab-bar-item__icon {
-  font-size: 20px;
+  font-size: 22px;
   line-height: 1;
-  color: var(--tg-hint-color, #999999);
-  transition: color 0.2s ease, transform 0.2s ease;
+  color: var(--tg-hint-color);
+  transition: color 0.2s var(--liquid-ease),
+              transform 0.3s var(--liquid-spring);
 }
 
 .tab-bar-item__label {
-  font-size: 10px;
-  font-weight: 500;
-  color: var(--tg-hint-color, #999999);
-  transition: color 0.2s ease;
+  font-size: 11px;
+  font-weight: var(--font-weight-medium);
+  color: var(--tg-hint-color);
+  transition: color 0.2s var(--liquid-ease);
+  letter-spacing: -0.01em;
 }
 
+/* Active state with liquid animation */
 .tab-bar-item--active .tab-bar-item__icon {
-  color: var(--tg-button-color, #3390ec);
-  transform: scale(1.1);
+  color: var(--tg-button-color);
+  animation: liquid-scale-in 0.3s var(--liquid-spring);
 }
 
 .tab-bar-item--active .tab-bar-item__label {
-  color: var(--tg-button-color, #3390ec);
+  color: var(--tg-button-color);
+  font-weight: var(--font-weight-semibold);
 }
 
+/* Active indicator pill at bottom */
+.tab-bar-item--active::before {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 3px;
+  background: var(--tg-button-color);
+  border-radius: 2px 2px 0 0;
+  box-shadow: 0 -2px 8px rgba(var(--tg-button-color-rgb), 0.4);
+  animation: liquid-scale-in 0.3s var(--liquid-spring);
+}
+
+/* Touch feedback */
 .tab-bar-item:active {
-  opacity: 0.7;
+  transform: scale(0.95);
 }
 
 /* Hover only on non-touch devices */
 @media (hover: hover) {
-  .tab-bar-item:hover:not(.tab-bar-item--active) {
-    .tab-bar-item__icon,
-    .tab-bar-item__label {
-      color: var(--tg-text-color, #000000);
-    }
+  .tab-bar-item:hover:not(.tab-bar-item--active) .tab-bar-item__icon,
+  .tab-bar-item:hover:not(.tab-bar-item--active) .tab-bar-item__label {
+    color: var(--tg-text-color);
+    opacity: 0.7;
   }
 }
 </style>

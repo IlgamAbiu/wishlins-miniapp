@@ -10,18 +10,18 @@ import { TabBar } from '@/components/navigation'
 import BlockedScreen from '@/components/BlockedScreen.vue'
 
 // Lazy load views
-const FeedView = defineAsyncComponent(() => import('@/views/FeedView.vue'))
 const ProfileView = defineAsyncComponent(() => import('@/views/ProfileView.vue'))
 const FriendsView = defineAsyncComponent(() => import('@/views/FriendsView.vue'))
+const SearchView = defineAsyncComponent(() => import('@/views/SearchView.vue'))
 
 const { activeTab } = useNavigation()
 const { isReady, isInTelegram } = useTelegramWebApp()
 
 // Map tab IDs to components
 const tabComponents = {
-  feed: FeedView,
   profile: ProfileView,
   friends: FriendsView,
+  search: SearchView,
 }
 
 const currentComponent = computed(() => tabComponents[activeTab.value])

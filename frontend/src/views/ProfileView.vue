@@ -6,6 +6,7 @@ import { ref, watch, computed } from 'vue'
 import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
 import { useWishlists } from '@/composables/useWishlists'
 import { useWishes } from '@/composables/useWishes'
+import { useUser } from '@/composables/useUser'
 import EventCarousel from '@/components/EventCarousel.vue'
 import WishGrid from '@/components/WishGrid.vue'
 import AddWishModal from '@/components/AddWishModal.vue'
@@ -15,6 +16,7 @@ import EditProfileTextModal from '@/components/EditProfileTextModal.vue'
 const { isInTelegram, user, userDisplayName } = useTelegramWebApp()
 const { wishlists, fetchWishlists, createWishlist, updateWishlist, deleteWishlist } = useWishlists()
 const { wishes, loading: wishesLoading, error: wishesError, fetchWishes, createWish } = useWishes()
+const { updateProfileText, getUserByTelegramId } = useUser()
 
 const selectedEventId = ref<string | null>(null)
 const showAddWishModal = ref(false)
@@ -30,8 +32,14 @@ const selectedEvent = computed(() =>
 // Initial Data Fetch
 async function initData() {
   if (user.value) {
+    // Load user profile data including profile_text
+    const userData = await getUserByTelegramId(user.value.id)
+    if (userData && userData.profile_text) {
+      profileText.value = userData.profile_text
+    }
+
     await fetchWishlists(user.value.id)
-    
+
     // Select default event or first one
     if (wishlists.value.length > 0) {
       const defaultEvent = wishlists.value.find(w => w.is_default)
@@ -133,10 +141,14 @@ function handleEditProfile() {
   showEditProfileModal.value = true
 }
 
-function handleSaveProfileText(text: string) {
-  profileText.value = text
-  showEditProfileModal.value = false
-  // TODO: Save to backend if needed
+async function handleSaveProfileText(text: string) {
+  if (!user.value) return
+
+  const success = await updateProfileText(user.value.id, text)
+  if (success) {
+    profileText.value = text
+    showEditProfileModal.value = false
+  }
 }
 
 // Склонение слова "желание"

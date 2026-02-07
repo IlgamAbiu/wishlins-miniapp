@@ -68,7 +68,9 @@ function selectEvent(id: string) {
 .event-carousel {
   width: 100%;
   overflow-x: auto;
-  padding: 4px 0;
+  /* Increased padding to prevent shadow and glow clipping */
+  padding: 12px 0;
+  margin: -8px 0;
   /* Hide scrollbar */
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -81,7 +83,8 @@ function selectEvent(id: string) {
 .event-carousel__track {
   display: flex;
   gap: 8px;
-  padding: 0 4px;
+  /* Increased horizontal padding to prevent shadow clipping on sides */
+  padding: 0 12px;
   min-width: min-content;
 }
 

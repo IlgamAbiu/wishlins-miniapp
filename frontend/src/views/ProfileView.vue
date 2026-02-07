@@ -13,6 +13,7 @@ import AddWishModal from '@/components/AddWishModal.vue'
 import AddEventModal from '@/components/AddEventModal.vue'
 import EditProfileTextModal from '@/components/EditProfileTextModal.vue'
 import DeleteEventModal from '@/components/DeleteEventModal.vue'
+import EventLimitModal from '@/components/EventLimitModal.vue'
 
 const { isInTelegram, user, userDisplayName } = useTelegramWebApp()
 const { wishlists, fetchWishlists, createWishlist, updateWishlist, deleteWishlist } = useWishlists()
@@ -24,9 +25,13 @@ const showAddWishModal = ref(false)
 const showAddEventModal = ref(false)
 const showEditProfileModal = ref(false)
 const showDeleteEventModal = ref(false)
+const showEventLimitModal = ref(false)
 const editingEvent = ref<any>(null) // Event being edited
 const eventToDelete = ref<any>(null) // Event being deleted
 const profileText = ref('Saving for a dream ✨')
+
+// Event limit constant
+const MAX_EVENTS = 5
 
 const selectedEvent = computed(() => 
   wishlists.value.find(w => w.id === selectedEventId.value)
@@ -92,6 +97,12 @@ async function handleSaveEvent(title: string, emoji: string, date: string) {
 }
 
 function openCreateEventModal() {
+  // Check event limit (max 5 events)
+  if (wishlists.value.length >= MAX_EVENTS) {
+    showEventLimitModal.value = true
+    return
+  }
+
   editingEvent.value = null
   showAddEventModal.value = true
 }
@@ -309,6 +320,10 @@ function pluralizeWishes(count: number): string {
            @close="showDeleteEventModal = false; eventToDelete = null"
            @confirm="confirmDeleteEvent"
          />
+         <EventLimitModal
+           v-if="showEventLimitModal"
+           @close="showEventLimitModal = false"
+         />
       </Teleport>
     </div>
   </div>
@@ -440,6 +455,8 @@ function pluralizeWishes(count: number): string {
 .carousel-wrapper {
   margin: 0 -20px;
   padding: 0 20px;
+  /* Prevent shadow clipping in carousel */
+  overflow: visible;
 }
 
 /* === ACTIONS ROW === */

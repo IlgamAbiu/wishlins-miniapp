@@ -2,15 +2,15 @@
 /**
  * ProfileView - User profile with Events (Wishlists) and Wishes.
  */
-import { ref, watch, onMounted, computed } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
 import { useWishlists } from '@/composables/useWishlists'
 import { useWishes } from '@/composables/useWishes'
 import EventCarousel from '@/components/EventCarousel.vue'
-import EventActions from '@/components/EventActions.vue'
 import WishGrid from '@/components/WishGrid.vue'
 import AddWishModal from '@/components/AddWishModal.vue'
 import AddEventModal from '@/components/AddEventModal.vue'
+import EditProfileTextModal from '@/components/EditProfileTextModal.vue'
 
 const { isInTelegram, user, userDisplayName } = useTelegramWebApp()
 const { wishlists, fetchWishlists, createWishlist, updateWishlist, deleteWishlist } = useWishlists()
@@ -19,7 +19,9 @@ const { wishes, loading: wishesLoading, error: wishesError, fetchWishes, createW
 const selectedEventId = ref<string | null>(null)
 const showAddWishModal = ref(false)
 const showAddEventModal = ref(false)
+const showEditProfileModal = ref(false)
 const editingEvent = ref<any>(null) // Event being edited
+const profileText = ref('Saving for a dream ✨')
 
 const selectedEvent = computed(() => 
   wishlists.value.find(w => w.id === selectedEventId.value)
@@ -126,6 +128,26 @@ function onWishClick(wish: any) {
   // TODO: Open detailed wish view or edit modal
   console.log("Clicked wish", wish)
 }
+
+function handleEditProfile() {
+  showEditProfileModal.value = true
+}
+
+function handleSaveProfileText(text: string) {
+  profileText.value = text
+  showEditProfileModal.value = false
+  // TODO: Save to backend if needed
+}
+
+// Склонение слова "желание"
+function pluralizeWishes(count: number): string {
+  const cases = [2, 0, 1, 1, 1, 2]
+  const titles = ['желание', 'желания', 'желаний']
+  const index = (count % 100 > 4 && count % 100 < 20)
+    ? 2
+    : cases[Math.min(count % 10, 5)]
+  return `${count} ${titles[index]}`
+}
 </script>
 
 <template>
@@ -138,7 +160,7 @@ function onWishClick(wish: any) {
     <div v-else class="content">
       <!-- Header with glass-panel -->
       <header class="header-section">
-        <div class="glass-panel header-panel">
+        <div class="glass-panel header-panel" @click="handleEditProfile">
           <div class="avatar-wrapper">
             <div class="avatar">
               <img v-if="user?.photo_url" :src="user.photo_url" alt="avatar" />
@@ -148,11 +170,8 @@ function onWishClick(wish: any) {
           </div>
           <div class="user-info">
             <h1 class="user-name">{{ userDisplayName }}</h1>
-            <p class="user-subtitle">Saving for a dream ✨</p>
+            <p class="user-subtitle">{{ profileText }}</p>
           </div>
-          <button class="glass-btn notification-btn">
-            <span class="icon">🔔</span>
-          </button>
         </div>
 
         <!-- Events Carousel -->
@@ -179,7 +198,7 @@ function onWishClick(wish: any) {
             </button>
           </div>
           <div class="item-count">
-            <span class="count-label">{{ wishes.length }} items</span>
+            <span class="count-label">{{ pluralizeWishes(wishes.length) }}</span>
           </div>
         </div>
       </header>
@@ -209,13 +228,19 @@ function onWishClick(wish: any) {
          />
          <AddEventModal
            v-if="showAddEventModal"
-           :initial-data="editingEvent ? { 
-             title: editingEvent.title, 
-             emoji: editingEvent.emoji, 
-             date: editingEvent.event_date 
+           :initial-data="editingEvent ? {
+             title: editingEvent.title,
+             emoji: editingEvent.emoji,
+             date: editingEvent.event_date
            } : undefined"
            @close="showAddEventModal = false"
            @submit="handleSaveEvent"
+         />
+         <EditProfileTextModal
+           v-if="showEditProfileModal"
+           :initial-text="profileText"
+           @close="showEditProfileModal = false"
+           @submit="handleSaveProfileText"
          />
       </Teleport>
     </div>
@@ -251,6 +276,12 @@ function onWishClick(wish: any) {
   display: flex;
   align-items: center;
   gap: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.header-panel:active {
+  transform: scale(0.98);
 }
 
 .avatar-wrapper {
@@ -338,25 +369,6 @@ function onWishClick(wish: any) {
   color: #8E8E93;
 }
 
-.notification-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  color: #64748b;
-}
-
-[data-theme='dark'] .notification-btn {
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.notification-btn .icon {
-  font-size: 20px;
-}
-
 /* === CAROUSEL WRAPPER === */
 .carousel-wrapper {
   margin: 0 -20px;
@@ -379,7 +391,7 @@ function onWishClick(wish: any) {
 .action-btn {
   width: 40px;
   height: 40px;
-  border-radius: 12px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;

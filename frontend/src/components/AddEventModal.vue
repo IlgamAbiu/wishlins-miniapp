@@ -256,7 +256,8 @@ input, textarea {
 
 .clear-description-btn {
   position: absolute;
-  top: 8px;
+  top: 50%;
+  transform: translateY(-50%);
   right: 8px;
   width: 24px;
   height: 24px;
@@ -279,7 +280,7 @@ input, textarea {
 }
 
 .clear-description-btn:active {
-  transform: scale(0.95);
+  transform: translateY(-50%) scale(0.95);
 }
 
 [data-theme='dark'] .clear-description-btn {

@@ -496,6 +496,7 @@ function pluralizeWishes(count: number): string {
   color: #64748b;
   font-weight: 400;
   font-style: italic;
+  white-space: pre-line;
 }
 
 [data-theme='dark'] .description-text {

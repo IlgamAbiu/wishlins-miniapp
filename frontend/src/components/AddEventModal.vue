@@ -58,10 +58,17 @@ function clearDate() {
   eventDate.value = ''
 }
 
+function clearDescription() {
+  description.value = ''
+}
+
 function handleSubmit() {
   if (!title.value.trim()) return
   isSubmitting.value = true
-  emit('submit', title.value, eventDate.value || '', description.value)
+  // Send empty string for empty date and description (will be converted to null in parent)
+  const cleanDate = eventDate.value?.trim() || ''
+  const cleanDescription = description.value?.trim() || ''
+  emit('submit', title.value.trim(), cleanDate, cleanDescription)
 }
 
 function onInputFocus(event: FocusEvent) {
@@ -96,8 +103,7 @@ function onInputFocus(event: FocusEvent) {
         <div v-if="!isDefaultEvent" class="form-group">
           <label>Дата события (необязательно)</label>
           <div class="date-picker-wrapper">
-            <button
-              type="button"
+            <div
               class="date-picker-btn"
               :class="{ 'has-date': eventDate }"
               @click="handleDateClick"
@@ -108,11 +114,11 @@ function onInputFocus(event: FocusEvent) {
                 v-if="eventDate"
                 type="button"
                 class="clear-date-btn"
-                @click.stop="clearDate"
+                @click.stop.prevent="clearDate"
               >
                 ✕
               </button>
-            </button>
+            </div>
             <input
               ref="dateInput"
               v-model="eventDate"
@@ -125,12 +131,23 @@ function onInputFocus(event: FocusEvent) {
 
         <div class="form-group">
           <label>Описание события (необязательно)</label>
-          <textarea
-            v-model="description"
-            rows="3"
-            placeholder="В этом году я решил сменить стиль, поэтому буду рад всему минималистичному"
-            @focus="onInputFocus"
-          ></textarea>
+          <div class="textarea-wrapper">
+            <textarea
+              v-model="description"
+              rows="3"
+              placeholder="В этом году я решил сменить стиль, поэтому буду рад всему минималистичному"
+              @focus="onInputFocus"
+            ></textarea>
+            <button
+              v-if="description.trim()"
+              type="button"
+              class="clear-description-btn"
+              @click="clearDescription"
+              title="Очистить описание"
+            >
+              ✕
+            </button>
+          </div>
         </div>
 
         <button
@@ -232,6 +249,47 @@ input, textarea {
   width: 100%;
 }
 
+/* Textarea wrapper with clear button */
+.textarea-wrapper {
+  position: relative;
+}
+
+.clear-description-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.1);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--tg-hint-color);
+  flex-shrink: 0;
+  transition: all 0.2s;
+  z-index: 1;
+}
+
+.clear-description-btn:hover {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.clear-description-btn:active {
+  transform: scale(0.95);
+}
+
+[data-theme='dark'] .clear-description-btn {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme='dark'] .clear-description-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
 /* Date Picker Button */
 .date-picker-wrapper {
   position: relative;
@@ -251,6 +309,9 @@ input, textarea {
   color: var(--tg-hint-color);
   font-size: 15px;
   position: relative;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .date-picker-btn.has-date {

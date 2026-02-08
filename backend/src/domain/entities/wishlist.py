@@ -5,8 +5,18 @@ Pure Python dataclasses with no framework dependencies.
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Union
 from uuid import UUID
+
+
+class _Unset:
+    """Sentinel class to distinguish between None and unset values in updates."""
+    def __repr__(self) -> str:
+        return "UNSET"
+
+
+# Singleton sentinel value
+UNSET = _Unset()
 
 
 @dataclass
@@ -59,10 +69,14 @@ class WishlistCreate:
 
 @dataclass
 class WishlistUpdate:
-    """Data for updating an existing wishlist."""
+    """Data for updating an existing wishlist.
 
-    title: Optional[str] = None
-    description: Optional[str] = None
-    is_public: Optional[bool] = None
-    emoji: Optional[str] = None
-    event_date: Optional[datetime] = None
+    Uses UNSET sentinel to distinguish between fields that should not be updated
+    and fields that should be set to None/null.
+    """
+
+    title: Union[str, _Unset] = UNSET
+    description: Union[Optional[str], _Unset] = UNSET
+    is_public: Union[bool, _Unset] = UNSET
+    emoji: Union[Optional[str], _Unset] = UNSET
+    event_date: Union[Optional[datetime], _Unset] = UNSET

@@ -15,7 +15,7 @@ from src.api.schemas import (
     WishlistResponse,
     WishlistListResponse,
 )
-from src.domain.entities import WishlistCreate, WishlistUpdate
+from src.domain.entities import WishlistCreate, WishlistUpdate, UNSET
 
 router = APIRouter(prefix="/wishlists", tags=["wishlists"])
 
@@ -207,12 +207,16 @@ async def update_wishlist(
     request: WishlistUpdateRequest,
     wishlist_service: WishlistServiceDep,
 ) -> WishlistResponse:
+    # Only pass fields that were actually set in the request
+    # Use UNSET for fields that were not provided to avoid overwriting them
+    fields_set = request.model_fields_set
+
     wishlist_data = WishlistUpdate(
-        title=request.title,
-        description=request.description,
-        is_public=request.is_public,
-        emoji=request.emoji,
-        event_date=request.event_date,
+        title=request.title if "title" in fields_set else UNSET,
+        description=request.description if "description" in fields_set else UNSET,
+        is_public=request.is_public if "is_public" in fields_set else UNSET,
+        emoji=request.emoji if "emoji" in fields_set else UNSET,
+        event_date=request.event_date if "event_date" in fields_set else UNSET,
     )
 
     wishlist = await wishlist_service.update_wishlist(wishlist_id, wishlist_data)

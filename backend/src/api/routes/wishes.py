@@ -83,6 +83,8 @@ async def create_wish(
             image_url=request.image_url,
             price=request.price,
             currency=request.currency,
+            priority=request.priority,
+            store=request.store,
         )
         return await service.create_wish(wish_data)
     except ValueError as e:
@@ -134,6 +136,8 @@ async def update_wish(
             price=request.price,
             currency=request.currency,
             is_booked=request.is_booked,
+            priority=request.priority,
+            store=request.store,
         )
         return await service.update_wish(wish_id, update_data)
     except ValueError as e:

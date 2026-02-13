@@ -4,8 +4,15 @@ Wish domain entity.
 
 from dataclasses import dataclass
 from datetime import datetime
+from enum import Enum
 from typing import Optional
 from uuid import UUID
+
+
+class WishPriority(str, Enum):
+    """Priority levels for wishes."""
+    JUST_WANT = "just_want"
+    REALLY_WANT = "really_want"
 
 
 @dataclass
@@ -21,6 +28,8 @@ class Wish:
     price: Optional[float]
     currency: Optional[str]
     is_booked: bool
+    priority: WishPriority
+    store: Optional[str]
     created_at: datetime
     updated_at: datetime
 
@@ -36,6 +45,8 @@ class Wish:
             "price": self.price,
             "currency": self.currency,
             "is_booked": self.is_booked,
+            "priority": self.priority.value,
+            "store": self.store,
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
         }
@@ -52,10 +63,14 @@ class WishCreate:
     image_url: Optional[str] = None
     price: Optional[float] = None
     currency: Optional[str] = "RUB"
+    priority: WishPriority = WishPriority.JUST_WANT
+    store: Optional[str] = None
 
     def __post_init__(self):
         if not self.title or not self.title.strip():
             raise ValueError("title is required and cannot be empty")
+        if not isinstance(self.priority, WishPriority):
+            raise ValueError("priority must be a valid WishPriority enum value")
 
 
 @dataclass
@@ -69,3 +84,5 @@ class WishUpdate:
     price: Optional[float] = None
     currency: Optional[str] = None
     is_booked: Optional[bool] = None
+    priority: Optional[WishPriority] = None
+    store: Optional[str] = None

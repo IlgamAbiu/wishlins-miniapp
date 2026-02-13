@@ -24,6 +24,25 @@ function formatPrice(price: number | null, currency: string | null) {
     maximumFractionDigits: 0
   }).format(price)
 }
+
+function formatDate(dateString: string) {
+  const date = new Date(dateString)
+  return new Intl.DateTimeFormat('ru-RU', {
+    day: 'numeric',
+    month: 'short'
+  }).format(date)
+}
+
+function getGradient(index: number): string {
+  const gradients = [
+    'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+    'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+    'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+    'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+  ]
+  return gradients[index % gradients.length]
+}
 </script>
 
 <template>
@@ -46,41 +65,44 @@ function formatPrice(price: number | null, currency: string | null) {
 
     <!-- Grid Content -->
     <div v-else class="grid-content">
-      <!-- First Card - Large -->
+      <!-- Large Cards (really_want priority) -->
       <div
-        v-if="wishes.length > 0"
+        v-for="(wish, index) in wishes.filter(w => w.priority === 'really_want')"
+        :key="wish.id"
         class="wish-card-large glass-card-new"
-        @click="$emit('click', wishes[0])"
+        @click="$emit('click', wish)"
       >
-        <button class="favorite-btn glass-btn">
-          <span class="heart-icon">❤️</span>
-        </button>
         <div class="card-image">
           <img
-            v-if="wishes[0].image_url"
-            :src="wishes[0].image_url"
+            v-if="wish.image_url"
+            :src="wish.image_url"
             alt="wish"
             loading="lazy"
           />
-          <div v-else class="image-placeholder">🎁</div>
+          <div v-else class="image-gradient" :style="{ background: getGradient(index) }">
+            <span class="gradient-icon">✨</span>
+          </div>
         </div>
         <div class="card-content">
           <div class="card-header">
-            <div>
-              <h3 class="card-title">{{ wishes[0].title }}</h3>
-              <p v-if="wishes[0].description" class="card-source">{{ wishes[0].description }}</p>
+            <div class="card-info">
+              <h3 class="card-title">{{ wish.title }}</h3>
+              <div class="card-meta">
+                <span v-if="wish.store" class="card-store">{{ wish.store }}</span>
+                <span class="card-date">{{ formatDate(wish.created_at) }}</span>
+              </div>
             </div>
-            <div v-if="wishes[0].price" class="card-price-big">
-              {{ formatPrice(wishes[0].price, wishes[0].currency) }}
+            <div v-if="wish.price" class="card-price-big">
+              {{ formatPrice(wish.price, wish.currency) }}
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Remaining Cards - Small Grid -->
-      <div v-if="wishes.length > 1" class="grid-small">
+      <!-- Small Cards Grid (just_want priority) -->
+      <div v-if="wishes.filter(w => w.priority === 'just_want').length > 0" class="grid-small">
         <div
-          v-for="wish in wishes.slice(1)"
+          v-for="(wish, index) in wishes.filter(w => w.priority === 'just_want')"
           :key="wish.id"
           class="wish-card-small glass-card-new"
           @click="$emit('click', wish)"
@@ -92,14 +114,19 @@ function formatPrice(price: number | null, currency: string | null) {
               alt="wish"
               loading="lazy"
             />
-            <div v-else class="image-placeholder">🎁</div>
-            <button class="favorite-btn-small glass-btn">
-              <span class="heart-icon-small">🤍</span>
-            </button>
+            <div v-else class="image-gradient" :style="{ background: getGradient(index) }">
+              <span class="gradient-icon-small">✨</span>
+            </div>
           </div>
           <div class="small-content">
             <h4 class="small-title">{{ wish.title }}</h4>
-            <p v-if="wish.price" class="small-price">{{ formatPrice(wish.price, wish.currency) }}</p>
+            <div class="small-meta">
+              <p v-if="wish.store" class="small-store">{{ wish.store }}</p>
+              <p v-if="wish.price" class="small-price">
+                {{ formatPrice(wish.price, wish.currency) }}
+              </p>
+              <p class="small-date">{{ formatDate(wish.created_at) }}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -176,29 +203,25 @@ function formatPrice(price: number | null, currency: string | null) {
   overflow: hidden;
 }
 
-.favorite-btn {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
+/* Gradient backgrounds for missing images */
+.image-gradient {
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10;
-  background: rgba(255, 255, 255, 0.6);
-  color: #FF375F;
+  position: relative;
 }
 
-[data-theme='dark'] .favorite-btn {
-  background: rgba(0, 0, 0, 0.4);
-  color: #FF453A;
+.gradient-icon {
+  font-size: 64px;
+  opacity: 0.8;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
 }
 
-.heart-icon {
-  font-size: 20px;
-  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));
+.gradient-icon-small {
+  font-size: 40px;
+  opacity: 0.8;
 }
 
 .card-image {
@@ -242,26 +265,55 @@ function formatPrice(price: number | null, currency: string | null) {
   gap: 16px;
 }
 
+.card-info {
+  flex: 1;
+  min-width: 0;
+}
+
 .card-title {
   margin: 0;
   font-size: 20px;
   font-weight: 700;
   color: #1e293b;
   line-height: 1.2;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 [data-theme='dark'] .card-title {
   color: #FFFFFF;
 }
 
-.card-source {
-  margin: 4px 0 0;
-  font-size: 14px;
+.card-meta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 6px;
+  font-size: 12px;
+}
+
+.card-store {
+  padding: 3px 10px;
+  background: rgba(79, 70, 229, 0.1);
+  border-radius: 8px;
+  font-weight: 600;
+  color: #4f46e5;
+}
+
+[data-theme='dark'] .card-store {
+  background: rgba(79, 70, 229, 0.2);
+  color: #818cf8;
+}
+
+.card-date {
   font-weight: 500;
   color: #64748b;
 }
 
-[data-theme='dark'] .card-source {
+[data-theme='dark'] .card-date {
   color: #9CA3AF;
 }
 
@@ -303,31 +355,38 @@ function formatPrice(price: number | null, currency: string | null) {
   object-fit: cover;
 }
 
-.favorite-btn-small {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.5);
-}
-
-[data-theme='dark'] .favorite-btn-small {
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.4);
-}
-
-.heart-icon-small {
-  font-size: 16px;
-}
-
 .small-content {
   padding: 0 6px 2px;
+}
+
+/* Small card metadata */
+.small-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 6px;
+}
+
+.small-store {
+  font-size: 10px;
+  font-weight: 600;
+  color: #4f46e5;
+  margin: 0;
+}
+
+[data-theme='dark'] .small-store {
+  color: #818cf8;
+}
+
+.small-date {
+  font-size: 9px;
+  color: #64748b;
+  margin: 0;
+  font-weight: 500;
+}
+
+[data-theme='dark'] .small-date {
+  color: #9CA3AF;
 }
 
 .small-title {

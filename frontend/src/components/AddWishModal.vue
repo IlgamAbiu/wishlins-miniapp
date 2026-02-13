@@ -4,15 +4,17 @@
  * Bottom sheet modal to add a new wish.
  */
 import { ref, reactive } from 'vue'
+import type { WishPriority } from '@/types'
 
 const emit = defineEmits<{
   (e: 'close'): void
-  (e: 'submit', data: { title: string; price?: number; currency?: string; link?: string; description?: string }): void
+  (e: 'submit', data: { title: string; priority: WishPriority; price?: number; currency?: string; link?: string; description?: string }): void
 }>()
 
 const isSubmitting = ref(false)
 const form = reactive({
   title: '',
+  priority: 'just_want' as WishPriority,
   price: '',
   currency: 'RUB',
   link: '',
@@ -29,6 +31,7 @@ function handleSubmit() {
   
   emit('submit', {
     title: form.title,
+    priority: form.priority,
     price: priceNumber,
     currency: form.currency,
     link: form.link,
@@ -64,6 +67,37 @@ function onInputFocus(event: FocusEvent) {
           />
         </div>
 
+        <!-- Priority Selector -->
+        <div class="form-group">
+          <label>Приоритет*</label>
+          <div class="priority-selector">
+            <label class="priority-option">
+              <input
+                type="radio"
+                name="priority"
+                value="just_want"
+                v-model="form.priority"
+              />
+              <span class="priority-label">
+                <span class="priority-emoji">😊</span>
+                <span>Просто хочу</span>
+              </span>
+            </label>
+            <label class="priority-option">
+              <input
+                type="radio"
+                name="priority"
+                value="really_want"
+                v-model="form.priority"
+              />
+              <span class="priority-label">
+                <span class="priority-emoji">🔥</span>
+                <span>Очень хочу</span>
+              </span>
+            </label>
+          </div>
+        </div>
+
         <div class="form-row">
           <div class="form-group">
             <label>Цена</label>
@@ -93,6 +127,17 @@ function onInputFocus(event: FocusEvent) {
             placeholder="https://..."
             @focus="onInputFocus"
           />
+          <span class="field-hint">Магазин будет определен автоматически</span>
+        </div>
+
+        <!-- Photo Upload Placeholder -->
+        <div class="form-group">
+          <label>Фото</label>
+          <button type="button" class="photo-upload-placeholder" disabled>
+            <span class="icon">📷</span>
+            <span>Загрузка фото скоро станет доступна</span>
+          </button>
+          <span class="field-hint">Пока можно вставить ссылку на изображение в поле "Ссылка"</span>
         </div>
 
         <div class="form-group">
@@ -246,5 +291,81 @@ input, select, textarea {
 @keyframes slide-up {
   from { transform: translateY(100%); }
   to { transform: translateY(0); }
+}
+
+/* Priority Selector Styles */
+.priority-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.priority-option {
+  display: flex;
+  cursor: pointer;
+}
+
+.priority-option input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.priority-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 12px;
+  border: 2px solid var(--tg-secondary-bg-color);
+  border-radius: var(--border-radius-lg);
+  background: var(--tg-bg-color);
+  transition: all var(--transition-fast);
+  width: 100%;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.priority-option input:checked + .priority-label {
+  border-color: var(--tg-button-color);
+  background: rgba(79, 70, 229, 0.1);
+}
+
+[data-theme='dark'] .priority-option input:checked + .priority-label {
+  background: rgba(79, 70, 229, 0.15);
+}
+
+.priority-emoji {
+  font-size: 24px;
+}
+
+.field-hint {
+  font-size: 11px;
+  color: var(--tg-hint-color);
+  margin-top: 4px;
+  display: block;
+}
+
+/* Photo Upload Placeholder */
+.photo-upload-placeholder {
+  width: 100%;
+  padding: 16px;
+  background: var(--tg-secondary-bg-color);
+  border: 2px dashed var(--tg-hint-color);
+  border-radius: var(--border-radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--tg-hint-color);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.photo-upload-placeholder .icon {
+  font-size: 24px;
 }
 </style>

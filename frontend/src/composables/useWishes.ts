@@ -9,8 +9,17 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/
 
 export function useWishes() {
     const wishes = ref<Wish[]>([])
+    const selectedWish = ref<Wish | null>(null)
     const loading = ref(false)
     const error = ref<string | null>(null)
+
+    function openWish(wish: Wish) {
+        selectedWish.value = wish
+    }
+
+    function closeWish() {
+        selectedWish.value = null
+    }
 
     async function fetchWishes(wishlistId: string): Promise<void> {
         loading.value = true
@@ -154,12 +163,15 @@ export function useWishes() {
 
     return {
         wishes,
+        selectedWish,
         loading,
         error,
         fetchWishes,
         createWish,
         deleteWish,
         updateWish,
-        moveWishesToWishlist
+        moveWishesToWishlist,
+        openWish,
+        closeWish
     }
 }

@@ -17,7 +17,7 @@ import EventLimitModal from '@/components/EventLimitModal.vue'
 
 const { isInTelegram, user, userDisplayName } = useTelegramWebApp()
 const { wishlists, fetchWishlists, createWishlist, updateWishlist, deleteWishlist } = useWishlists()
-const { wishes, loading: wishesLoading, error: wishesError, fetchWishes, createWish, moveWishesToWishlist } = useWishes()
+const { wishes, loading: wishesLoading, error: wishesError, fetchWishes, createWish, moveWishesToWishlist, openWish } = useWishes()
 const { updateProfileText, getUserByTelegramId } = useUser()
 
 const selectedEventId = ref<string | null>(null)
@@ -190,8 +190,7 @@ async function handleAddWish(data: any) {
 }
 
 function onWishClick(wish: any) {
-  // TODO: Open detailed wish view or edit modal
-  console.log("Clicked wish", wish)
+  openWish(wish)
 }
 
 function handleEditProfile() {

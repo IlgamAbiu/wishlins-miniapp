@@ -11,14 +11,14 @@ const wish = computed(() => selectedWish.value)
 // MOCK DATA FOR TESTING
 const mockWish: Wish = {
     id: 'mock-1',
-    title: 'Sony WH-1000XM5 Noise Canceling Headphones',
-    price: 348,
+    title: 'Sony WH-1000XM5',
+    price: 349,
     currency: 'USD',
     description: 'Industry-leading noise cancellation, exceptional sound quality, and crystal-clear hands-free calling. The best just got better.',
-    image_url: 'https://m.media-amazon.com/images/I/51SKmu2G9FL._AC_UF1000,1000_QL80_.jpg',
+    image_url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCyxEaBXFFCk5KA2xEsU3Ro5IdWItcS9nBgpYVeMomu_2EZ8zWPm4ouMBodSHxmx6Bsllf5VBD2ZZ9FjfCrhU_jc-Z93DrjbKcDQl7QRSK8ZfMw29wnr-ItqSsThlJ35ej8aNr5WLujDwE94JQS0tGo_xhAemiqSd35rSeMP7RM8ctopk7V3eH6CsmrRY28LnobRCmxk0EQwc3w7fdBhmSellPbGOFBu6QiaGv1AZFPGnvM7dJNf2t9CIwNb9--WPCNlb2P9F4s0yA',
     priority: 'really_want',
     link: 'https://amazon.com',
-    store: 'Amazon',
+    store: 'Noise Cancelling Headphones',
     wishlist_id: 'mock-list',
     created_at: new Date().toISOString()
 } as Wish
@@ -131,7 +131,7 @@ function handleStoreLink() {
             <div class="space-y-6">
                 <!-- Title & Price Row -->
                 <div class="flex flex-col gap-3">
-                    <h1 class="text-3xl font-display font-bold text-white text-glow leading-tight line-clamp-3">
+                    <h1 class="text-3xl font-display font-bold text-white text-glow leading-tight">
                         {{ safeWish.title }}
                     </h1>
                     <div class="flex items-center justify-between">
@@ -147,7 +147,7 @@ function handleStoreLink() {
                 </div>
                 <!-- Description -->
                 <div class="relative">
-                     <p v-if="safeWish.description" class="text-white/70 text-sm leading-relaxed font-light line-clamp-4">
+                     <p v-if="safeWish.description" class="text-white/70 text-sm leading-relaxed font-light">
                         {{ safeWish.description }}
                     </p>
                     <div v-if="safeWish.description"

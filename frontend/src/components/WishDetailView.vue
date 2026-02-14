@@ -14,17 +14,23 @@ const mockWish: Wish = {
     title: 'Sony WH-1000XM5',
     price: 349,
     currency: 'USD',
-    description: 'Industry-leading noise cancellation, exceptional sound quality, and crystal-clear hands-free calling. The best just got better.',
+    // Long Description (Description 2)
+    description: `Industry-leading noise cancellation, exceptional sound quality, and crystal-clear hands-free calling. The best just got better.
+
+These headphones feature our new Integrated Processor V1, which unlocks the full potential of our HD Noise Cancelling Processor QN1. This unique combination of technology controls eight microphones to deliver unprecedented noise cancelling quality.
+
+Precision-engineered to deliver exceptional high-resolution audio quality. Our new 30mm 
+driver unit with soft edge improves noise cancelling.`,
     image_url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCyxEaBXFFCk5KA2xEsU3Ro5IdWItcS9nBgpYVeMomu_2EZ8zWPm4ouMBodSHxmx6Bsllf5VBD2ZZ9FjfCrhU_jc-Z93DrjbKcDQl7QRSK8ZfMw29wnr-ItqSsThlJ35ej8aNr5WLujDwE94JQS0tGo_xhAemiqSd35rSeMP7RM8ctopk7V3eH6CsmrRY28LnobRCmxk0EQwc3w7fdBhmSellPbGOFBu6QiaGv1AZFPGnvM7dJNf2t9CIwNb9--WPCNlb2P9F4s0yA',
     priority: 'really_want',
     link: 'https://amazon.com',
-    store: 'Noise Cancelling Headphones',
+    // Short Description (Description 1) - simulates 'store' usage or subtitle
+    store: 'Noise Cancelling Headphones with Auto NC Optimizer, Collapsible Design, and Alexa Built-in.',
     wishlist_id: 'mock-list',
     created_at: new Date().toISOString()
 } as Wish
 
 const safeWish = computed<Wish>(() => mockWish)
-// const safeWish = computed<Wish>(() => wish.value || {} as Wish)
 
 const formattedPrice = computed(() => {
   if (!safeWish.value.price) return ''
@@ -57,218 +63,558 @@ function handleStoreLink() {
 </script>
 
 <template>
-  <div v-if="wish" class="wish-detail-view bg-background-light dark:bg-background-dark font-display text-white min-h-screen relative overflow-hidden flex flex-col items-center justify-center">
-    <!-- Ambient Background Effects -->
-    <div class="fixed inset-0 pointer-events-none w-full h-full overflow-hidden z-0">
-        <div class="absolute top-[-20%] left-[-20%] w-[140%] h-[80%] ambient-halo opacity-70"></div>
-        <div class="absolute bottom-[-10%] right-[-10%] w-[80%] h-[60%] bg-purple-900/30 blur-[100px] rounded-full"></div>
+  <div v-if="wish" class="wish-detail-view">
+    <!-- Ambient Background Effects (Fixed) -->
+    <div class="ambient-background">
+        <div class="halo"></div>
+        <div class="blur-circle"></div>
     </div>
 
-    <!-- Main Mobile Container -->
-    <main class="relative z-10 w-full max-w-md h-screen flex flex-col p-6">
-        <!-- Top Navigation -->
-        <header class="flex justify-between items-center mb-6 pt-safe">
-            <!-- Back Button -->
-            <button
-                @click="handleBack"
-                class="w-12 h-12 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all group shadow-glass-deep">
-                <span class="material-symbols-outlined text-white/80 group-hover:text-white transition-colors">arrow_back</span>
-            </button>
-            
-             <!-- Done Button -->
-             <button @click="handleBack"
-                class="px-5 py-2 rounded-full bg-white/5 backdrop-blur-md border border-white/5 text-sm font-semibold text-white/90 hover:bg-white/10 transition-all shadow-glass-inset">
-                Done
-            </button>
-        </header>
-
-        <!-- Hero Section -->
-        <section class="flex-grow flex flex-col items-center justify-start relative mt-4">
-            <!-- Liquid Glass Image Container -->
-            <div class="relative w-72 h-72 mb-8 flex-none max-w-[80vw] max-h-[80vw]">
-                <!-- Decorative blurred layer behind -->
-                <div class="absolute inset-0 bg-primary/30 liquid-border blur-2xl transform scale-110 animate-pulse">
-                </div>
-                <!-- Main Liquid Container -->
-                <div
-                    class="relative w-full h-full liquid-border overflow-hidden border border-white/20 shadow-2xl backdrop-blur-sm bg-white/5">
-                    <!-- Glass Shine -->
-                    <div class="absolute top-0 left-0 w-full h-full bg-glass-shine z-20 pointer-events-none opacity-50">
-                    </div>
-                    <!-- Product Image -->
-                    <img 
-                        v-if="safeWish.image_url"
-                        :src="safeWish.image_url" 
-                        :alt="safeWish.title"
-                        class="w-full h-full object-cover transform scale-110 hover:scale-100 transition-transform duration-700 opacity-90"
-                    />
-                    <div v-else class="w-full h-full flex items-center justify-center gradient-placeholder">
-                        <span class="text-6xl filter drop-shadow-lg">✨</span>
-                    </div>
-
-                </div>
-                
-                <!-- Floating Badge -->
-                <div v-if="safeWish.priority === 'really_want'" class="absolute -bottom-6 left-1/2 transform -translate-x-1/2 z-30">
-                    <div
-                        class="relative px-6 py-2 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 shadow-neon-glow flex items-center gap-2 overflow-hidden group">
-                        <!-- Amber inner glow -->
-                        <div class="absolute inset-0 bg-amber-glow opacity-60"></div>
-                        <div
-                            class="w-2 h-2 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.8)] animate-pulse">
-                        </div>
-                        <span class="relative text-xs font-bold tracking-widest text-white/90 uppercase z-10">ОЧЕНЬ
-                            ХОЧУ</span>
-                    </div>
+    <!-- Fixed Image Layer (Behind scrolling content) -->
+    <div class="image-layer">
+        <div class="image-container-wrapper">
+            <div class="liquid-bg"></div>
+            <!-- Main Liquid Container -->
+            <div class="liquid-container">
+                <div class="glass-shine"></div>
+                <img 
+                    v-if="safeWish.image_url"
+                    :src="safeWish.image_url" 
+                    :alt="safeWish.title"
+                    class="product-image"
+                />
+                <div v-else class="placeholder">
+                    <span class="text-6xl filter drop-shadow-lg">✨</span>
                 </div>
             </div>
-        </section>
+            
+            <!-- Priority Floating Badge (On top of image bottom center) -->
+            <div v-if="safeWish.priority === 'really_want'" class="floating-badge">
+                <div class="badge-content">
+                    <div class="amber-glow"></div>
+                    <div class="amber-dot"></div>
+                    <span class="badge-text">ОЧЕНЬ ХОЧУ</span>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        <!-- Main Info Panel (Bottom Sheet style) -->
-        <section class="glass-panel w-full rounded-3xl p-6 pb-8 relative mt-auto transform translate-y-2">
-            <!-- Handle bar for visual cue -->
-            <div class="w-12 h-1 bg-white/20 rounded-full mx-auto mb-6"></div>
-            <div class="space-y-6">
-                <!-- Title & Price Row -->
-                <div class="flex flex-col gap-3">
-                    <h1 class="text-3xl font-display font-bold text-white text-glow leading-tight">
-                        {{ safeWish.title }}
-                    </h1>
-                    <div class="flex items-center justify-between">
-                         <p v-if="safeWish.store" class="text-white/60 text-sm font-medium">{{ safeWish.store }}</p>
-                         <p v-else class="text-white/60 text-sm font-medium">Wish Item</p>
+    <!-- Scrollable Content Layer (Foreground) -->
+    <div class="scroll-container">
+        <!-- Spacer to push content down and reveal image initially -->
+        <div class="spacer-top"></div>
 
-                        <!-- Price Indentation -->
-                        <div v-if="safeWish.price"
-                            class="px-5 py-2 rounded-2xl bg-black/20 shadow-price-dent border border-white/5 flex items-center">
-                            <span class="text-xl font-bold text-white tracking-wide">{{ formattedPrice }}</span>
-                        </div>
+        <!-- Main Info Panel -->
+        <section class="glass-panel">
+            <div class="handle-bar"></div>
+            <div class="panel-content">
+                <!-- 1. Title (Full text) -->
+                <h1 class="title">
+                    {{ safeWish.title }}
+                </h1>
+                
+                <!-- 2. Description 1 (Short, max 2 lines) -->
+                <p v-if="safeWish.store" class="short-description">
+                    {{ safeWish.store }}
+                </p>
+
+                <!-- 3. Price -->
+                <div class="price-row">
+                    <div v-if="safeWish.price" class="price-tag">
+                        <span class="price-text">{{ formattedPrice }}</span>
                     </div>
                 </div>
-                <!-- Description -->
-                <div class="relative">
-                     <p v-if="safeWish.description" class="text-white/70 text-sm leading-relaxed font-light">
+
+                <!-- 4. Description 2 (Long, max lines, scrollable) -->
+                <div class="long-description-container">
+                     <p v-if="safeWish.description" class="long-description">
                         {{ safeWish.description }}
                     </p>
-                    <div v-if="safeWish.description"
-                        class="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-[#161625] to-transparent opacity-80 pointer-events-none">
-                    </div>
                 </div>
-                <!-- Action Area -->
-                <div class="flex items-center gap-4 pt-2">
-                    <!-- Primary Button: Store Link -->
+                
+                <!-- 5. Action Buttons (Sticky at bottom of panel) -->
+                <div class="actions-sticky">
                     <button
                         v-if="safeWish.link"
                         @click="handleStoreLink"
-                        class="flex-grow h-14 primary-glass-btn rounded-full flex items-center justify-center gap-2 group transition-all transform hover:scale-[1.02] active:scale-[0.98]">
-                        <span class="text-white font-bold tracking-wide">Store Link</span>
-                        <span
-                            class="material-symbols-outlined text-white/80 group-hover:translate-x-1 transition-transform text-sm">arrow_outward</span>
+                        class="primary-btn">
+                        <span class="btn-text">Store Link</span>
+                        <span class="material-symbols-outlined btn-icon">arrow_outward</span>
                     </button>
-                     <div v-else class="flex-grow"></div>
+                    <div v-else class="spacer-flex"></div>
                     
-                    <!-- Secondary Actions -->
-                    <div class="flex gap-3">
-                        <button
-                            @click="handleShare"
-                            class="w-14 h-14 rounded-full bg-white/5 border border-white/10 backdrop-blur-md flex items-center justify-center hover:bg-white/10 active:bg-white/20 transition-all shadow-glass-inset">
-                            <span class="material-symbols-outlined text-white/90">share</span>
+                    <div class="secondary-actions">
+                        <button @click="handleShare" class="glass-btn icon-btn">
+                            <span class="material-symbols-outlined">share</span>
                         </button>
-                        <button
-                             @click="handleEdit"
-                            class="w-14 h-14 rounded-full bg-white/5 border border-white/10 backdrop-blur-md flex items-center justify-center hover:bg-white/10 active:bg-white/20 transition-all shadow-glass-inset">
-                            <span class="material-symbols-outlined text-white/90">edit</span>
+                        <button @click="handleEdit" class="glass-btn icon-btn">
+                            <span class="material-symbols-outlined">edit</span>
                         </button>
                     </div>
                 </div>
             </div>
         </section>
-    </main>
+    </div>
 
-    <!-- Decorative Gloss Overlays on the screen edges for "Glass Phone" feel -->
-    <div class="fixed top-0 left-0 w-full h-32 bg-gradient-to-b from-white/5 to-transparent pointer-events-none z-50">
-    </div>
-    <div
-        class="fixed bottom-0 left-0 w-full h-32 bg-gradient-to-t from-black/40 to-transparent pointer-events-none z-0">
-    </div>
+    <!-- Fixed Header (Top of everything) -->
+    <header class="header">
+        <button @click="handleBack" class="glass-btn back-btn">
+            <span class="material-symbols-outlined icon">arrow_back</span>
+        </button>
+        <button @click="handleBack" class="glass-btn done-btn">
+            Done
+        </button>
+    </header>
+
+    <!-- Decorative Gloss Overlays -->
+    <div class="gloss-top"></div>
+    <div class="gloss-bottom"></div>
   </div>
 </template>
 
 <style scoped>
+/* Reset & Base */
 .wish-detail-view {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 1000; /* High z-index to overlay everything including tab bar */
-    /* Background handled by classes now, matching template */
+    z-index: 1000;
+    background-color: #f5f6f8;
+    color: #111;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    overflow: hidden; /* Main view doesn't scroll, inner container does */
 }
 
-.pt-safe {
-  padding-top: env(safe-area-inset-top, 20px);
+[data-theme='dark'] .wish-detail-view {
+    background-color: #101022;
+    color: #fff;
 }
 
-/* Custom Utilities copied/adapted from template EXACTLY */
-.glass-panel {
-    backdrop-filter: blur(40px) saturate(180%);
-    -webkit-backdrop-filter: blur(40px) saturate(180%);
-    background: linear-gradient(160deg, rgba(30, 30, 45, 0.6) 0%, rgba(20, 20, 30, 0.4) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-}
-
-.liquid-border {
-    border-radius: 63% 37% 54% 46% / 55% 48% 52% 45%;
-    transition: all 0.5s ease;
-}
-
-.text-glow {
-    text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
-}
-
-.primary-glass-btn {
-    background: linear-gradient(135deg, rgba(10, 13, 194, 0.8) 0%, rgba(76, 29, 149, 0.8) 100%);
-    backdrop-filter: blur(10px);
-    box-shadow:
-        inset 0 1px 1px rgba(255, 255, 255, 0.4),
-        inset 0 -2px 5px rgba(0, 0, 0, 0.2),
-        0 10px 20px -5px rgba(10, 13, 194, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.ambient-halo {
-    background: radial-gradient(circle at 50% 30%, rgba(10, 13, 194, 0.4), transparent 60%);
-    filter: blur(80px);
+/* Ambient Background */
+.ambient-background {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
     z-index: 0;
 }
 
-.shadow-glass-deep {
-    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+.halo {
+    position: absolute;
+    top: -20%;
+    left: -20%;
+    width: 140%;
+    height: 80%;
+    background: radial-gradient(circle at 50% 30%, rgba(10, 13, 194, 0.4), transparent 60%);
+    filter: blur(80px);
+    opacity: 0.7;
 }
 
-.shadow-glass-inset {
+.blur-circle {
+    position: absolute;
+    bottom: -10%;
+    right: -10%;
+    width: 80%;
+    height: 60%;
+    background: rgba(88, 28, 135, 0.3);
+    filter: blur(100px);
+    border-radius: 50%;
+}
+
+/* Fixed Header */
+.header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    padding-top: env(safe-area-inset-top, 20px);
+    z-index: 50; /* Above everything */
+    pointer-events: none; /* Let clicks pass through if needed, but buttons enable valid clicks */
+}
+.header button {
+    pointer-events: auto;
+}
+
+/* Buttons */
+.glass-btn {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.9);
+    transition: all 0.2s ease;
+    cursor: pointer;
     box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.2), inset 0 -1px 2px 0 rgba(0, 0, 0, 0.3);
 }
 
-.shadow-neon-glow {
-    box-shadow: 0 0 10px rgba(245, 158, 11, 0.3), inset 0 0 5px rgba(245, 158, 11, 0.2);
+.glass-btn:active {
+    background: rgba(255, 255, 255, 0.15);
+    transform: scale(0.98);
 }
 
-.bg-amber-glow {
-    background: radial-gradient(circle at center, rgba(245, 158, 11, 0.4) 0%, rgba(245, 158, 11, 0) 70%);
+.back-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
-.shadow-price-dent {
-    box-shadow: inset 2px 2px 5px rgba(0,0,0,0.4), inset -2px -2px 5px rgba(255,255,255,0.05);
+.done-btn {
+    padding: 8px 20px;
+    border-radius: 9999px;
+    font-size: 14px;
+    font-weight: 600;
 }
 
-.bg-glass-shine {
+.icon {
+    font-size: 24px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Image Layer (Fixed) */
+.image-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%; /* Occupy full height but visual content is top-centered */
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 100px; /* Space for header */
+}
+
+.image-container-wrapper {
+    position: relative;
+    width: 288px;
+    height: 288px;
+    max-width: 80vw;
+    max-height: 80vw;
+}
+
+.liquid-bg {
+    position: absolute;
+    inset: 0;
+    background: rgba(10, 13, 194, 0.3);
+    border-radius: 63% 37% 54% 46% / 55% 48% 52% 45%;
+    filter: blur(40px);
+    transform: scale(1.1);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1.1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.8; }
+}
+
+.liquid-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 63% 37% 54% 46% / 55% 48% 52% 45%;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(4px);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.glass-shine {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 40%);
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0.5;
 }
 
-.gradient-placeholder {
+.product-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scale(1.1);
+    opacity: 0.9;
+}
+
+.placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0.02) 100%);
-    backdrop-filter: blur(20px);
+}
+
+/* Floating Badge */
+.floating-badge {
+    position: absolute;
+    bottom: -24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 30;
+}
+
+.badge-content {
+    position: relative;
+    padding: 8px 24px;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.3), inset 0 0 5px rgba(245, 158, 11, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow: hidden;
+}
+
+.amber-glow {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, rgba(245, 158, 11, 0.4) 0%, rgba(245, 158, 11, 0) 70%);
+    opacity: 0.6;
+}
+
+.amber-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #f59e0b;
+    box-shadow: 0 0 8px rgba(245, 158, 11, 0.8);
+    position: relative;
+    z-index: 1;
+    animation: dot-pulse 2s infinite;
+}
+
+@keyframes dot-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.badge-text {
+    position: relative;
+    z-index: 1;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: rgba(255, 255, 255, 0.9);
+    text-transform: uppercase;
+}
+
+/* Scroll Container */
+.scroll-container {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    /* Smooth scroll behavior */
+    scroll-behavior: smooth;
+}
+
+.spacer-top {
+    flex-shrink: 0;
+    width: 100%;
+    height: 420px; /* Push content below image initially. Adjust based on Image height + padding */
+}
+
+/* Glass Info Panel */
+.glass-panel {
+    flex-grow: 1;
+    width: 100%;
+    min-height: 60vh; /* Ensure it covers enough screen when scrolled up */
+    border-top-left-radius: 32px;
+    border-top-right-radius: 32px;
+    padding: 24px;
+    padding-bottom: 24px;
+    position: relative;
+    margin-top: 24px; /* Gap between image and panel start */
+    
+    /* Liquid Glass iOS 26 Effect */
+    backdrop-filter: blur(26px) saturate(180%);
+    -webkit-backdrop-filter: blur(26px) saturate(180%);
+    background: rgba(30, 30, 45, 0.7); /* Slightly more opaque for better text readability over image */
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.3);
+    
+    display: flex;
+    flex-direction: column;
+}
+
+[data-theme='light'] .glass-panel {
+    background: rgba(255, 255, 255, 0.8);
+    border-top: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.handle-bar {
+    width: 48px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 9999px;
+    margin: 0 auto 24px auto;
+    flex-shrink: 0;
+}
+
+[data-theme='light'] .handle-bar {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.panel-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    height: 100%;
+}
+
+.title {
+    font-size: 28px;
+    font-weight: 800;
+    color: white;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+    line-height: 1.1;
+    margin: 0;
+    /* Max lines? Requirement says "maximize lines". Default allow wrap */
+    word-break: break-word;
+}
+[data-theme='light'] .title { color: #111; text-shadow: none; }
+
+.short-description {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 15px;
+    font-weight: 500;
+    margin: 0;
+    /* Max 2 lines */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+[data-theme='light'] .short-description { color: #555; }
+
+.price-row {
+    margin-top: 4px;
+}
+
+.price-tag {
+    display: inline-flex;
+    padding: 8px 20px;
+    border-radius: 16px;
+    background: rgba(0, 0, 0, 0.2);
+    box-shadow: inset 1px 1px 3px rgba(0,0,0,0.3), inset -1px -1px 3px rgba(255,255,255,0.05);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+[data-theme='light'] .price-tag { background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.05); }
+
+.price-text {
+    font-size: 22px;
+    font-weight: 700;
+    color: white;
+    letter-spacing: 0.025em;
+}
+[data-theme='light'] .price-text { color: #111; }
+
+.long-description-container {
+    flex-grow: 1; /* Allow to expand */
+    margin-bottom: 24px;
+}
+
+.long-description {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 16px;
+    line-height: 1.6;
+    font-weight: 400;
+    margin: 0;
+    white-space: pre-line;
+}
+[data-theme='light'] .long-description { color: #333; }
+
+/* Sticky Actions */
+.actions-sticky {
+    position: sticky;
+    bottom: 0px;
+    padding-top: 16px;
+    padding-bottom: 20px; /* Safe area padding included in scroll/panel usually, but extra here */
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: auto;
+    /* Glass background behind buttons to ensure readability if scrolled over content? 
+       Usually sticky buttons sit in the padded area of the parent. 
+       Let's stick them to the bottom of the container. 
+    */
+}
+
+.primary-btn {
+    flex-grow: 1;
+    height: 56px;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: linear-gradient(135deg, rgba(10, 13, 194, 0.9) 0%, rgba(76, 29, 149, 0.9) 100%);
+    box-shadow: 0 4px 15px rgba(10, 13, 194, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.primary-btn:active { transform: scale(0.98); }
+
+.spacer-flex { flex-grow: 1; }
+
+.secondary-actions { display: flex; gap: 12px; }
+
+.icon-btn {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.icon-btn .material-symbols-outlined { color: rgba(255, 255, 255, 0.9); }
+[data-theme='light'] .icon-btn .material-symbols-outlined { color: #333; }
+[data-theme='light'] .glass-btn { 
+    background: rgba(0,0,0,0.05); 
+    border: 1px solid rgba(0,0,0,0.1); 
+    color: #333;
+}
+
+/* Gloss Overlays */
+.gloss-top {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 80px;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.05), transparent);
+    pointer-events: none;
+    z-index: 60;
+}
+.gloss-bottom {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 80px;
+    background: linear-gradient(to top, rgba(0,0,0,0.2), transparent);
+    pointer-events: none;
+    z-index: 60;
 }
 </style>

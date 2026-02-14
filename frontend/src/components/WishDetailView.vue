@@ -353,7 +353,7 @@ function handleStoreLink() {
 /* Floating Badge */
 .floating-badge {
     position: absolute;
-    bottom: -24px;
+    bottom: -43px;
     left: 50%;
     transform: translateX(-50%);
     z-index: 30;
@@ -428,7 +428,7 @@ function handleStoreLink() {
 .spacer-top {
     flex-shrink: 0;
     width: 100%;
-    height: 420px;
+    height: 450px;
 }
 
 /* Glass Info Panel */
@@ -444,7 +444,7 @@ function handleStoreLink() {
     border-bottom-right-radius: 32px;
 
     padding: 24px;
-    padding-bottom: 24px;
+    padding-bottom: 0;
     
     position: relative;
     margin-top: 24px;
@@ -533,6 +533,7 @@ function handleStoreLink() {
 .long-description-container {
     flex-grow: 1; 
     margin-bottom: 24px;
+    padding-bottom: 24px;
 }
 
 .long-description {
@@ -548,18 +549,32 @@ function handleStoreLink() {
 /* Sticky Actions */
 .actions-sticky {
     position: sticky;
-    bottom: -1px; /* stick to bottom of panel content area */
-    /* Because parent has padding-bottom 24px, sticky might float up. 
-       Actually, sticky relative to flex item. 
-       Let's keep it simple: just flex positioning at bottom. 
-       Since panel is adaptive, it will just be at the bottom. 
-    */
-    position: relative; 
-    padding-top: 16px;
+    bottom: 0; /* Sticks to bottom of viewport/scroll container */
+    
+    /* Overlay Styles */
+    margin-left: -24px; /* Extend to edges of glass panel */
+    margin-right: -24px;
+    padding: 20px 24px;
+    
+    background: rgba(30, 30, 45, 0.85); /* Slightly darker/more opaque than panel to hide text */
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    
+    border-bottom-left-radius: 32px;
+    border-bottom-right-radius: 32px;
+    
+    z-index: 20;
+
     display: flex;
     align-items: center;
     gap: 16px;
     margin-top: auto;
+}
+
+[data-theme='light'] .actions-sticky {
+    background: rgba(255, 255, 255, 0.9);
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .primary-btn {

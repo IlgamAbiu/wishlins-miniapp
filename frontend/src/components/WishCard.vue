@@ -20,13 +20,6 @@ function formatPrice(price: number | null, currency: string | null) {
   }).format(price)
 }
 
-function formatDate(dateString: string) {
-  const date = new Date(dateString)
-  return new Intl.DateTimeFormat('ru-RU', {
-    day: 'numeric',
-    month: 'short'
-  }).format(date)
-}
 
 // Generate consistent gradient based on title length/chars to avoid index dependency
 function getGradient(str: string): string {
@@ -77,13 +70,6 @@ const backgroundStyle = computed(() => {
           {{ formatPrice(wish.price, wish.currency) }}
         </div>
       </div>
-      
-        <div class="card-footer">
-          <div class="footer-info">
-            <span v-if="wish.store" class="store-name">{{ wish.store }}</span>
-            <span class="date-text">{{ formatDate(wish.created_at) }}</span>
-          </div>
-        </div>
     </div>
   </div>
 </template>
@@ -156,15 +142,6 @@ const backgroundStyle = computed(() => {
   color: #8b5cf6; /* Purple color from design */
 }
 
-.store-name {
-  font-size: 12px;
-  color: var(--tg-hint-color);
-}
-
-.date-text {
-  font-size: 11px;
-  color: var(--tg-hint-color);
-}
 
 /* === LAYOUT: FULL (Large Card) === */
 .layout-full {
@@ -202,20 +179,7 @@ const backgroundStyle = computed(() => {
   font-size: 20px;
 }
 
-.layout-full .footer-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-}
 
-.layout-full .store-name {
-  font-size: 14px;
-}
-
-.layout-full .date-text {
-  font-size: 12px;
-}
 
 
 /* === LAYOUT: HALF (Small Card) === */
@@ -244,18 +208,9 @@ const backgroundStyle = computed(() => {
   font-size: 13px;
 }
 
-.layout-half .footer-info {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
 
 
 
-.layout-half .store-name, 
-.layout-half .date-text {
-    font-size: 11px;
-}
 
 
 </style>

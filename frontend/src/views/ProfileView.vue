@@ -245,6 +245,9 @@ function pluralizeWishes(count: number): string {
             <h1 class="user-name">{{ userDisplayName }}</h1>
             <p class="user-subtitle">{{ profileText }}</p>
           </div>
+          <button class="glass-btn edit-header-btn">
+            <span class="material-symbols-outlined text-[20px]">edit</span>
+          </button>
         </div>
 
         <!-- Events Carousel -->
@@ -469,6 +472,24 @@ function pluralizeWishes(count: number): string {
 
 [data-theme='dark'] .user-subtitle {
   color: #94a3b8;
+}
+
+.edit-header-btn {
+  margin-left: auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none; /* Reset if glass-btn has border that conflicts, though glass-btn usually has one */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  background: rgba(255, 255, 255, 0.4); /* Consistent with light theme template */
+}
+
+[data-theme='dark'] .edit-header-btn {
+  color: #slate-300;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 /* === CAROUSEL WRAPPER === */

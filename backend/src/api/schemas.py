@@ -8,6 +8,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
+from src.domain.entities.wish import WishPriority
+
 
 class UserRegisterRequest(BaseModel):
     """Request schema for user registration."""
@@ -216,6 +218,8 @@ class WishBase(BaseModel):
     image_url: Optional[str] = None
     price: Optional[float] = None
     currency: Optional[str] = "RUB"
+    priority: WishPriority = Field(default=WishPriority.JUST_WANT, description="Wish priority level")
+    store: Optional[str] = Field(None, description="Store name (auto-extracted from link)")
 
 
 class WishCreateRequest(WishBase):
@@ -234,6 +238,8 @@ class WishUpdateRequest(BaseModel):
     price: Optional[float] = None
     currency: Optional[str] = None
     is_booked: Optional[bool] = None
+    priority: Optional[WishPriority] = None
+    store: Optional[str] = None
 
 
 class WishResponse(WishBase):

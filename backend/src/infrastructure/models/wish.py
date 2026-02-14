@@ -5,11 +5,12 @@ Wish ORM model for SQLAlchemy.
 from datetime import datetime
 from uuid import uuid4
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, String, Text, Float, func
+from sqlalchemy import Boolean, DateTime, ForeignKey, String, Text, Float, func, Enum as SQLAlchemyEnum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.infrastructure.database import Base
+from src.domain.entities.wish import WishPriority
 
 
 class WishModel(Base):
@@ -57,6 +58,16 @@ class WishModel(Base):
         Boolean,
         default=False,
         nullable=False,
+    )
+    priority: Mapped[WishPriority] = mapped_column(
+        SQLAlchemyEnum(WishPriority, native_enum=False),
+        nullable=False,
+        default=WishPriority.JUST_WANT,
+        index=True,
+    )
+    store: Mapped[str | None] = mapped_column(
+        String(255),
+        nullable=True,
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

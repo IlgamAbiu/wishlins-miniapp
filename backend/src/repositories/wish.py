@@ -30,6 +30,8 @@ class WishRepository:
             price=wish.price,
             currency=wish.currency,
             is_booked=wish.is_booked,
+            priority=wish.priority,
+            store=wish.store,
             created_at=wish.created_at,
             updated_at=wish.updated_at,
         )
@@ -49,11 +51,14 @@ class WishRepository:
         return self._to_entity(model)
 
     async def get_by_wishlist_id(self, wishlist_id: UUID) -> List[Wish]:
-        """Get all wishes for a wishlist."""
+        """Get all wishes for a wishlist, sorted by priority and creation date."""
         stmt = (
             select(WishModel)
             .where(WishModel.wishlist_id == wishlist_id)
-            .order_by(WishModel.created_at.desc())
+            .order_by(
+                WishModel.priority.desc(),  # really_want first
+                WishModel.created_at.desc()
+            )
         )
         result = await self._session.execute(stmt)
         models = result.scalars().all()
@@ -75,6 +80,8 @@ class WishRepository:
         model.price = wish.price
         model.currency = wish.currency
         model.is_booked = wish.is_booked
+        model.priority = wish.priority
+        model.store = wish.store
         model.updated_at = wish.updated_at
 
         await self._session.flush()
@@ -97,6 +104,8 @@ class WishRepository:
             price=model.price,
             currency=model.currency,
             is_booked=model.is_booked,
+            priority=model.priority,
+            store=model.store,
             created_at=model.created_at,
             updated_at=model.updated_at,
         )

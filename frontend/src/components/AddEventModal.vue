@@ -8,34 +8,67 @@ import { ref, computed } from 'vue'
 const props = defineProps<{
   initialData?: {
     title: string
-    emoji: string | null
     date: string | null
+    description?: string | null
   }
+  isDefaultEvent?: boolean
 }>()
 
 const emit = defineEmits<{
   (e: 'close'): void
-  (e: 'submit', title: string, emoji: string, date: string): void
+  (e: 'submit', title: string, date: string, description: string): void
 }>()
 
 const title = ref(props.initialData?.title || '')
-const emoji = ref(props.initialData?.emoji || '🎉')
+const description = ref(props.initialData?.description || '')
+// Format date for display (DD.MM.YYYY)
+const formatDateForDisplay = (isoString?: string | null) => {
+  if (!isoString) return ''
+  const date = new Date(isoString)
+  const day = String(date.getDate()).padStart(2, '0')
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const year = date.getFullYear()
+  return `${day}.${month}.${year}`
+}
 // Format date for input type="date" (YYYY-MM-DD)
-const formatDate = (isoString?: string | null) => {
+const formatDateForInput = (isoString?: string | null) => {
   if (!isoString) return ''
   return isoString.split('T')[0]
 }
-const eventDate = ref(formatDate(props.initialData?.date))
+const eventDate = ref(formatDateForInput(props.initialData?.date))
+const displayDate = computed(() =>
+  eventDate.value ? formatDateForDisplay(eventDate.value) : 'Не указана'
+)
 
 const isSubmitting = ref(false)
 const isEditMode = computed(() => !!props.initialData)
+const dateInput = ref<HTMLInputElement>()
 
-const commonEmojis = ['🎉', '🎂', '🎄', '💍', '🍼', '🏠', '🎓', '✈️', '💼', '🎁']
+function handleDateClick() {
+  dateInput.value?.showPicker?.()
+  dateInput.value?.click()
+}
+
+function handleDateChange(event: Event) {
+  const input = event.target as HTMLInputElement
+  eventDate.value = input.value
+}
+
+function clearDate() {
+  eventDate.value = ''
+}
+
+function clearDescription() {
+  description.value = ''
+}
 
 function handleSubmit() {
   if (!title.value.trim()) return
   isSubmitting.value = true
-  emit('submit', title.value, emoji.value, eventDate.value || new Date().toISOString())
+  // Send empty string for empty date and description (will be converted to null in parent)
+  const cleanDate = eventDate.value?.trim() || ''
+  const cleanDescription = description.value?.trim() || ''
+  emit('submit', title.value.trim(), cleanDate, cleanDescription)
 }
 
 function onInputFocus(event: FocusEvent) {
@@ -67,34 +100,53 @@ function onInputFocus(event: FocusEvent) {
           />
         </div>
 
-        <div class="form-row">
-          <div class="form-group emoji-group">
-            <label>Иконка</label>
-            <div class="emoji-selector">
-              <div class="emoji-preview">{{ emoji }}</div>
-              <div class="emoji-list">
-                <button 
-                  v-for="e in commonEmojis" 
-                  :key="e"
-                  type="button"
-                  class="emoji-option"
-                  :class="{ active: emoji === e }"
-                  @click="emoji = e"
-                >
-                  {{ e }}
-                </button>
-              </div>
+        <div v-if="!isDefaultEvent" class="form-group">
+          <label>Дата события (необязательно)</label>
+          <div class="date-picker-wrapper">
+            <div
+              class="date-picker-btn"
+              :class="{ 'has-date': eventDate }"
+              @click="handleDateClick"
+            >
+              <span class="date-icon">📅</span>
+              <span class="date-text">{{ displayDate }}</span>
+              <button
+                v-if="eventDate"
+                type="button"
+                class="clear-date-btn"
+                @click.stop.prevent="clearDate"
+              >
+                ✕
+              </button>
             </div>
-          </div>
-
-          <div class="form-group date-group">
-            <label>Дата события</label>
             <input
+              ref="dateInput"
               v-model="eventDate"
               type="date"
-              required
-              @focus="onInputFocus"
+              class="date-input-hidden"
+              @change="handleDateChange"
             />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Описание события (необязательно)</label>
+          <div class="textarea-wrapper">
+            <textarea
+              v-model="description"
+              rows="3"
+              placeholder="В этом году я решил сменить стиль, поэтому буду рад всему минималистичному"
+              @focus="onInputFocus"
+            ></textarea>
+            <button
+              v-if="description.trim()"
+              type="button"
+              class="clear-description-btn"
+              @click="clearDescription"
+              title="Очистить описание"
+            >
+              ✕
+            </button>
           </div>
         </div>
 
@@ -183,27 +235,6 @@ function onInputFocus(event: FocusEvent) {
   gap: var(--spacing-xs);
 }
 
-.form-row {
-  display: flex;
-  flex-direction: column; /* Stack on mobile */
-  gap: var(--spacing-lg);
-}
-
-/* Tablet/Desktop layout */
-@media (min-width: 600px) {
-  .form-row {
-    flex-direction: row;
-  }
-}
-
-.emoji-group {
-  flex: 1;
-}
-
-.date-group {
-  flex: 1;
-}
-
 label {
   font-size: 13px;
   font-weight: 500;
@@ -211,62 +242,138 @@ label {
   margin-left: 4px;
 }
 
-/* Inputs are styled globally in design-system.css, 
+/* Inputs are styled globally in design-system.css,
    but we can add specific overrides if needed */
-input {
+input, textarea {
   /* Ensure global styles apply correctly */
   width: 100%;
 }
 
-.emoji-selector {
-  display: flex;
-  gap: var(--spacing-sm);
-  align-items: center;
+/* Textarea wrapper with clear button */
+.textarea-wrapper {
+  position: relative;
 }
 
-.emoji-preview {
-  font-size: 32px;
-  width: 50px;
-  height: 50px;
+.clear-description-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.1);
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--tg-hint-color);
+  flex-shrink: 0;
+  transition: all 0.2s;
+  z-index: 1;
+}
+
+.clear-description-btn:hover {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.clear-description-btn:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+[data-theme='dark'] .clear-description-btn {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme='dark'] .clear-description-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Date Picker Button */
+.date-picker-wrapper {
+  position: relative;
+}
+
+.date-picker-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
   background: var(--tg-secondary-bg-color);
+  border: 1px solid var(--tg-border-color);
   border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--tg-hint-color);
+  font-size: 15px;
+  position: relative;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.date-picker-btn.has-date {
+  color: var(--tg-text-color);
+}
+
+.date-picker-btn:active {
+  transform: scale(0.98);
+  background: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme='dark'] .date-picker-btn:active {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.date-icon {
+  font-size: 20px;
   flex-shrink: 0;
 }
 
-.emoji-list {
-  display: flex;
-  gap: var(--spacing-xs);
-  overflow-x: auto;
-  padding-bottom: 4px;
-  scrollbar-width: none; 
-  -ms-overflow-style: none;
+.date-text {
+  flex: 1;
+  text-align: left;
 }
 
-.emoji-list::-webkit-scrollbar {
-  display: none;
-}
-
-.emoji-option {
-  background: none;
+.clear-date-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.1);
   border: none;
-  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  padding: 8px;
-  border-radius: var(--border-radius-md);
-  transition: transform var(--transition-fast), background-color var(--transition-fast);
+  font-size: 12px;
+  color: var(--tg-hint-color);
+  flex-shrink: 0;
+  transition: all 0.2s;
 }
 
-.emoji-option:hover {
-  background: var(--tg-secondary-bg-color);
+.clear-date-btn:hover {
+  background: rgba(0, 0, 0, 0.15);
 }
 
-.emoji-option.active {
-  background: var(--tg-secondary-bg-color);
-  transform: scale(1.1);
-  border: 1px solid var(--tg-border-color);
+[data-theme='dark'] .clear-date-btn {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme='dark'] .clear-date-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.date-input-hidden {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
 }
 
 .submit-btn {

@@ -31,6 +31,11 @@ export interface NavigationState {
 }
 
 /**
+ * Wish priority levels.
+ */
+export type WishPriority = 'just_want' | 'really_want'
+
+/**
  * Wishlist from API.
  */
 export interface Wishlist {
@@ -40,7 +45,6 @@ export interface Wishlist {
   description: string | null
   is_public: boolean
   is_default: boolean
-  emoji: string | null
   event_date: string | null
   created_at: string
   updated_at: string
@@ -59,6 +63,8 @@ export interface Wish {
   price: number | null
   currency: string | null
   is_booked: boolean
+  priority: WishPriority
+  store: string | null
   created_at: string
   updated_at: string
 }
@@ -74,6 +80,8 @@ export interface CreateWishRequest {
   image_url?: string
   price?: number
   currency?: string
+  priority?: WishPriority  // defaults to 'just_want' on backend
+  store?: string           // auto-extracted on backend
 }
 
 

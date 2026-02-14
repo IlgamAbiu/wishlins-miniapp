@@ -30,6 +30,38 @@ const otherEvents = computed(() => {
 function selectEvent(id: string) {
   emit('select', id)
 }
+
+// Calculate days until event
+function getDaysUntilEvent(eventDate: string | null): string | null {
+  if (!eventDate) return null
+
+  const now = new Date()
+  now.setHours(0, 0, 0, 0)
+
+  const event = new Date(eventDate)
+  event.setHours(0, 0, 0, 0)
+
+  const diffTime = event.getTime() - now.getTime()
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+  if (diffDays < 0) {
+    return `было ${Math.abs(diffDays)} дн. назад`
+  } else if (diffDays === 0) {
+    return 'сегодня'
+  } else if (diffDays === 1) {
+    return 'завтра'
+  } else if (diffDays <= 7) {
+    return `через ${diffDays} дн.`
+  } else if (diffDays <= 30) {
+    return `через ${diffDays} дн.`
+  } else if (diffDays <= 365) {
+    const months = Math.floor(diffDays / 30)
+    return `через ${months} мес.`
+  } else {
+    const years = Math.floor(diffDays / 365)
+    return `через ${years} г.`
+  }
+}
 </script>
 
 <template>
@@ -55,10 +87,17 @@ function selectEvent(id: string) {
         v-for="event in otherEvents"
         :key="event.id"
         class="event-pill"
-        :class="{ 'event-pill--active active-pill': event.id === selectedEventId, 'glass-btn': event.id !== selectedEventId }"
+        :class="{
+          'event-pill--active active-pill': event.id === selectedEventId,
+          'glass-btn': event.id !== selectedEventId,
+          'has-date': event.event_date
+        }"
         @click="selectEvent(event.id)"
       >
         <span class="pill-text">{{ event.title }}</span>
+        <span v-if="event.event_date" class="pill-date-overlay">
+          {{ getDaysUntilEvent(event.event_date) }}
+        </span>
       </button>
     </div>
   </div>
@@ -90,6 +129,8 @@ function selectEvent(id: string) {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-direction: column;
+  gap: 2px;
   height: 44px;
   padding: 0 24px;
   border-radius: 22px;
@@ -98,19 +139,49 @@ function selectEvent(id: string) {
   transition: all 0.2s ease;
   white-space: nowrap;
   color: #64748b;
+  /* Reduced shadow to prevent clipping */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+  position: relative;
+}
+
+.event-pill.has-date {
+  padding-top: 6px;
+  padding-bottom: 6px;
 }
 
 [data-theme='dark'] .event-pill {
-  color: rgba(255, 255, 255, 0.7);
+  color: #94a3b8;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
 }
 
 .event-pill--active {
-  color: var(--tg-button-color);
+  color: #111118;
+  font-weight: 600;
+}
+
+[data-theme='dark'] .event-pill--active {
+  color: #f8fafc;
+  font-weight: 600;
 }
 
 .pill-text {
   font-size: 14px;
   font-weight: 700;
+  line-height: 1.2;
+}
+
+.pill-date-overlay {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--tg-button-color);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.8;
+  line-height: 1;
+}
+
+[data-theme='dark'] .pill-date-overlay {
+  color: #4f46e5;
 }
 
 /* === ADD BUTTON === */
@@ -124,10 +195,13 @@ function selectEvent(id: string) {
   cursor: pointer;
   flex-shrink: 0;
   color: #64748b;
+  /* Reduced shadow to prevent clipping */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
 }
 
 [data-theme='dark'] .event-add-btn {
-  color: rgba(255, 255, 255, 0.7);
+  color: #94a3b8;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
 }
 
 .add-icon {

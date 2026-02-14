@@ -12,18 +12,26 @@ import WishGrid from '@/components/WishGrid.vue'
 import AddWishModal from '@/components/AddWishModal.vue'
 import AddEventModal from '@/components/AddEventModal.vue'
 import EditProfileTextModal from '@/components/EditProfileTextModal.vue'
+import DeleteEventModal from '@/components/DeleteEventModal.vue'
+import EventLimitModal from '@/components/EventLimitModal.vue'
 
 const { isInTelegram, user, userDisplayName } = useTelegramWebApp()
 const { wishlists, fetchWishlists, createWishlist, updateWishlist, deleteWishlist } = useWishlists()
-const { wishes, loading: wishesLoading, error: wishesError, fetchWishes, createWish } = useWishes()
+const { wishes, loading: wishesLoading, error: wishesError, fetchWishes, createWish, moveWishesToWishlist } = useWishes()
 const { updateProfileText, getUserByTelegramId } = useUser()
 
 const selectedEventId = ref<string | null>(null)
 const showAddWishModal = ref(false)
 const showAddEventModal = ref(false)
 const showEditProfileModal = ref(false)
+const showDeleteEventModal = ref(false)
+const showEventLimitModal = ref(false)
 const editingEvent = ref<any>(null) // Event being edited
+const eventToDelete = ref<any>(null) // Event being deleted
 const profileText = ref('Saving for a dream ✨')
+
+// Event limit constant
+const MAX_EVENTS = 5
 
 const selectedEvent = computed(() => 
   wishlists.value.find(w => w.id === selectedEventId.value)
@@ -64,15 +72,15 @@ async function handleEventSelect(id: string) {
   selectedEventId.value = id
 }
 
-async function handleSaveEvent(title: string, emoji: string, date: string) {
+async function handleSaveEvent(title: string, date: string, description: string) {
   if (!user.value) return
-  
+
   if (editingEvent.value) {
     // Update existing
     const updated = await updateWishlist(editingEvent.value.id, {
       title,
-      emoji,
-      eventDate: date
+      eventDate: date || null,
+      description: description || null
     })
     if (updated) {
       showAddEventModal.value = false
@@ -80,7 +88,13 @@ async function handleSaveEvent(title: string, emoji: string, date: string) {
     }
   } else {
     // Create new
-    const newWishlist = await createWishlist(title, user.value.id, true, emoji, date)
+    const newWishlist = await createWishlist(
+      title,
+      user.value.id,
+      true,
+      date || null,
+      description || null
+    )
     if (newWishlist) {
       showAddEventModal.value = false
       selectedEventId.value = newWishlist.id
@@ -89,6 +103,12 @@ async function handleSaveEvent(title: string, emoji: string, date: string) {
 }
 
 function openCreateEventModal() {
+  // Check event limit (max 5 events)
+  if (wishlists.value.length >= MAX_EVENTS) {
+    showEventLimitModal.value = true
+    return
+  }
+
   editingEvent.value = null
   showAddEventModal.value = true
 }
@@ -98,14 +118,51 @@ function handleEditEvent() {
   showAddEventModal.value = true
 }
 
-async function handleDeleteEvent() {
-  if (!selectedEvent.value || !confirm('Удалить это событие и все желания в нем?')) return
-  
-  const success = await deleteWishlist(selectedEvent.value.id)
-  if (success) {
-    // Select default event
-    const defaultEvent = wishlists.value.find(w => w.is_default)
-    if (defaultEvent) selectedEventId.value = defaultEvent.id
+function handleDeleteEvent() {
+  if (!selectedEvent.value) return
+
+  // Check if event has wishes
+  if (wishes.value.length > 0) {
+    // Show modal with options
+    eventToDelete.value = selectedEvent.value
+    showDeleteEventModal.value = true
+  } else {
+    // Delete immediately if no wishes
+    confirmDeleteEvent(false)
+  }
+}
+
+async function confirmDeleteEvent(moveWishes: boolean) {
+  if (!eventToDelete.value && !selectedEvent.value) return
+
+  const eventId = (eventToDelete.value || selectedEvent.value).id
+
+  try {
+    // If user wants to move wishes, move them to default wishlist first
+    if (moveWishes && wishes.value.length > 0 && user.value) {
+      const defaultEvent = wishlists.value.find(w => w.is_default)
+      if (defaultEvent) {
+        const moved = await moveWishesToWishlist(eventId, defaultEvent.id, user.value.id)
+        if (!moved) {
+          alert('Не удалось переместить желания')
+          return
+        }
+      }
+    }
+
+    // Delete the wishlist
+    const success = await deleteWishlist(eventId)
+    if (success) {
+      showDeleteEventModal.value = false
+      eventToDelete.value = null
+
+      // Select default event
+      const defaultEvent = wishlists.value.find(w => w.is_default)
+      if (defaultEvent) selectedEventId.value = defaultEvent.id
+    }
+  } catch (err) {
+    console.error('Failed to delete event:', err)
+    alert('Произошла ошибка при удалении события')
   }
 }
 
@@ -164,6 +221,10 @@ function pluralizeWishes(count: number): string {
 
 <template>
   <div class="profile-view">
+    <!-- Background Decorative Blobs -->
+    <div class="bg-blob bg-blob-1"></div>
+    <div class="bg-blob bg-blob-2"></div>
+
     <!-- Not in Telegram -->
     <div v-if="!isInTelegram" class="not-telegram">
       <p>Only works in Telegram</p>
@@ -184,6 +245,9 @@ function pluralizeWishes(count: number): string {
             <h1 class="user-name">{{ userDisplayName }}</h1>
             <p class="user-subtitle">{{ profileText }}</p>
           </div>
+          <button class="glass-btn edit-header-btn">
+            <span class="material-symbols-outlined text-[20px]">edit</span>
+          </button>
         </div>
 
         <!-- Events Carousel -->
@@ -196,17 +260,33 @@ function pluralizeWishes(count: number): string {
           />
         </div>
 
+        <!-- Event Description (if exists) -->
+        <div v-if="selectedEvent?.description" class="event-description-wrapper">
+          <div class="event-description glass-card-new">
+            <p class="description-text">
+              {{ selectedEvent.description }}
+            </p>
+          </div>
+        </div>
+
         <!-- Event Actions Row -->
         <div v-if="selectedEvent" class="actions-row">
           <div class="actions-buttons">
-            <button class="glass-btn action-btn" @click="handleEditEvent">
-              <span class="icon">✏️</span>
+            <button
+              class="glass-btn action-btn"
+              @click="handleEditEvent"
+            >
+              <span class="material-symbols-outlined text-[18px]">edit</span>
             </button>
-            <button class="glass-btn action-btn" @click="handleDeleteEvent">
-              <span class="icon">🗑️</span>
+            <button
+              v-if="!selectedEvent.is_default"
+              class="glass-btn action-btn"
+              @click="handleDeleteEvent"
+            >
+              <span class="material-symbols-outlined text-[18px]">delete</span>
             </button>
             <button class="glass-btn action-btn" @click="handleShareEvent">
-              <span class="icon">↗️</span>
+              <span class="material-symbols-outlined text-[18px]">ios_share</span>
             </button>
           </div>
           <div class="item-count">
@@ -242,9 +322,10 @@ function pluralizeWishes(count: number): string {
            v-if="showAddEventModal"
            :initial-data="editingEvent ? {
              title: editingEvent.title,
-             emoji: editingEvent.emoji,
-             date: editingEvent.event_date
+             date: editingEvent.event_date,
+             description: editingEvent.description || ''
            } : undefined"
+           :is-default-event="editingEvent?.is_default || false"
            @close="showAddEventModal = false"
            @submit="handleSaveEvent"
          />
@@ -253,6 +334,17 @@ function pluralizeWishes(count: number): string {
            :initial-text="profileText"
            @close="showEditProfileModal = false"
            @submit="handleSaveProfileText"
+         />
+         <DeleteEventModal
+           v-if="showDeleteEventModal && eventToDelete"
+           :event-title="eventToDelete.title"
+           :wishes-count="wishes.length"
+           @close="showDeleteEventModal = false; eventToDelete = null"
+           @confirm="confirmDeleteEvent"
+         />
+         <EventLimitModal
+           v-if="showEventLimitModal"
+           @close="showEventLimitModal = false"
          />
       </Teleport>
     </div>
@@ -266,6 +358,7 @@ function pluralizeWishes(count: number): string {
   display: flex;
   flex-direction: column;
   position: relative;
+  isolation: isolate;
 }
 
 .content {
@@ -280,7 +373,7 @@ function pluralizeWishes(count: number): string {
   padding: 20px 20px 0;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
 }
 
 .header-panel {
@@ -312,7 +405,7 @@ function pluralizeWishes(count: number): string {
 
 [data-theme='dark'] .avatar {
   border: 2px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
 .avatar img {
@@ -345,8 +438,8 @@ function pluralizeWishes(count: number): string {
 }
 
 [data-theme='dark'] .avatar-status {
-  background: #30D158;
-  border: 2px solid #1C1C1E;
+  background: #10b981;
+  border: 2px solid #030308;
 }
 
 .user-info {
@@ -366,7 +459,7 @@ function pluralizeWishes(count: number): string {
 }
 
 [data-theme='dark'] .user-name {
-  color: #FFFFFF;
+  color: #f8fafc;
 }
 
 .user-subtitle {
@@ -378,13 +471,57 @@ function pluralizeWishes(count: number): string {
 }
 
 [data-theme='dark'] .user-subtitle {
-  color: #8E8E93;
+  color: #94a3b8;
+}
+
+.edit-header-btn {
+  margin-left: auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none; /* Reset if glass-btn has border that conflicts, though glass-btn usually has one */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  background: rgba(255, 255, 255, 0.4); /* Consistent with light theme template */
+}
+
+[data-theme='dark'] .edit-header-btn {
+  color: #slate-300;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 /* === CAROUSEL WRAPPER === */
 .carousel-wrapper {
   margin: 0 -20px;
   padding: 0 20px;
+  /* Prevent shadow clipping in carousel */
+  overflow: visible;
+}
+
+/* === EVENT DESCRIPTION === */
+.event-description-wrapper {
+  /* margin controlled by parent gap */
+}
+
+.event-description {
+  padding: 16px;
+  border-radius: 22px;
+}
+
+.description-text {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #64748b;
+  font-weight: 400;
+  font-style: italic;
+  white-space: pre-line;
+}
+
+[data-theme='dark'] .description-text {
+  color: #9CA3AF;
 }
 
 /* === ACTIONS ROW === */
@@ -401,21 +538,19 @@ function pluralizeWishes(count: number): string {
 }
 
 .action-btn {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #64748b;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
 }
 
 [data-theme='dark'] .action-btn {
-  color: rgba(255, 255, 255, 0.6);
-}
-
-.action-btn .icon {
-  font-size: 18px;
+  color: rgba(248, 250, 252, 0.7);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
 }
 
 .item-count {
@@ -461,8 +596,20 @@ function pluralizeWishes(count: number): string {
 }
 
 [data-theme='dark'] .fab-button {
-  border: 4px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 0 25px rgba(10, 132, 255, 0.4);
+  background: #4f46e5;
+  border: 4px solid rgba(79, 70, 229, 0.2);
+  box-shadow: 0 0 30px rgba(79, 70, 229, 0.5),
+              0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme='dark'] .fab-button:hover {
+  box-shadow: 0 0 40px rgba(79, 70, 229, 0.7),
+              0 8px 24px rgba(0, 0, 0, 0.5);
+  transform: scale(1.05);
+}
+
+[data-theme='dark'] .fab-button:active {
+  transform: scale(0.95);
 }
 
 .fab-button:hover {
@@ -488,5 +635,37 @@ function pluralizeWishes(count: number): string {
 .v-enter-from,
 .v-leave-to {
   opacity: 0;
+}
+
+/* === BACKGROUND BLOBS === */
+.bg-blob {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 0;
+  mix-blend-mode: screen;
+  transition: opacity 0.5s ease;
+}
+
+[data-theme='dark'] .bg-blob {
+  opacity: 0.12;
+}
+
+.bg-blob-1 {
+  top: 5%;
+  right: -10%;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, #4f46e5 0%, transparent 70%);
+}
+
+.bg-blob-2 {
+  bottom: 15%;
+  left: -15%;
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, #6366f1 0%, transparent 70%);
 }
 </style>

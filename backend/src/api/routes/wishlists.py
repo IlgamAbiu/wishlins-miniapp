@@ -15,7 +15,7 @@ from src.api.schemas import (
     WishlistResponse,
     WishlistListResponse,
 )
-from src.domain.entities import WishlistCreate, WishlistUpdate
+from src.domain.entities import WishlistCreate, WishlistUpdate, UNSET
 
 router = APIRouter(prefix="/wishlists", tags=["wishlists"])
 
@@ -56,6 +56,8 @@ async def get_user_wishlists_by_telegram_id(
                 description=w.description,
                 is_public=w.is_public,
                 is_default=w.is_default,
+                emoji=w.emoji,
+                event_date=w.event_date,
                 created_at=w.created_at,
                 updated_at=w.updated_at,
             )
@@ -205,19 +207,16 @@ async def update_wishlist(
     request: WishlistUpdateRequest,
     wishlist_service: WishlistServiceDep,
 ) -> WishlistResponse:
-    wishlist = await wishlist_service.get_wishlist_by_id(wishlist_id)
-    if wishlist and wishlist.is_default:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Cannot update default wishlist",
-        )
+    # Only pass fields that were actually set in the request
+    # Use UNSET for fields that were not provided to avoid overwriting them
+    fields_set = request.model_fields_set
 
     wishlist_data = WishlistUpdate(
-        title=request.title,
-        description=request.description,
-        is_public=request.is_public,
-        emoji=request.emoji,
-        event_date=request.event_date,
+        title=request.title if "title" in fields_set else UNSET,
+        description=request.description if "description" in fields_set else UNSET,
+        is_public=request.is_public if "is_public" in fields_set else UNSET,
+        emoji=request.emoji if "emoji" in fields_set else UNSET,
+        event_date=request.event_date if "event_date" in fields_set else UNSET,
     )
 
     wishlist = await wishlist_service.update_wishlist(wishlist_id, wishlist_data)

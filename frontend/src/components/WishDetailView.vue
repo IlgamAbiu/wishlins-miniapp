@@ -154,15 +154,15 @@ function handleStoreLink() {
                 </div>
             </div>
         </section>
+        
+        <!-- Bottom spacing for scroll feel -->
+        <div class="h-8"></div>
     </div>
 
     <!-- Fixed Header (Top of everything) -->
     <header class="header">
         <button @click="handleBack" class="glass-btn back-btn">
             <span class="material-symbols-outlined icon">arrow_back</span>
-        </button>
-        <button @click="handleBack" class="glass-btn done-btn">
-            Done
         </button>
     </header>
 
@@ -234,7 +234,7 @@ function handleStoreLink() {
     padding: 20px;
     padding-top: env(safe-area-inset-top, 20px);
     z-index: 50; /* Above everything */
-    pointer-events: none; /* Let clicks pass through if needed, but buttons enable valid clicks */
+    pointer-events: none; /* Let clicks pass through */
 }
 .header button {
     pointer-events: auto;
@@ -266,13 +266,6 @@ function handleStoreLink() {
     box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
-.done-btn {
-    padding: 8px 20px;
-    border-radius: 9999px;
-    font-size: 14px;
-    font-weight: 600;
-}
-
 .icon {
     font-size: 24px;
     color: rgba(255, 255, 255, 0.8);
@@ -284,7 +277,7 @@ function handleStoreLink() {
     top: 0;
     left: 0;
     width: 100%;
-    height: 100%; /* Occupy full height but visual content is top-centered */
+    height: 100%;
     z-index: 1;
     display: flex;
     flex-direction: column;
@@ -422,33 +415,45 @@ function handleStoreLink() {
     overflow-x: hidden;
     display: flex;
     flex-direction: column;
-    /* Smooth scroll behavior */
     scroll-behavior: smooth;
+    
+    /* Hide scrollbar */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.scroll-container::-webkit-scrollbar {
+    display: none;
 }
 
 .spacer-top {
     flex-shrink: 0;
     width: 100%;
-    height: 420px; /* Push content below image initially. Adjust based on Image height + padding */
+    height: 420px;
 }
 
 /* Glass Info Panel */
 .glass-panel {
-    flex-grow: 1;
-    width: 100%;
-    min-height: 60vh; /* Ensure it covers enough screen when scrolled up */
+    align-self: center; /* Center horizontally if width < 100% */
+    width: calc(100% - 32px); /* 16px margin on each side */
+    /* Remove min-height to enable adaptive sizing */
+    /* min-height: 60vh; */
+    
     border-top-left-radius: 32px;
     border-top-right-radius: 32px;
+    border-bottom-left-radius: 32px; /* Add bottom radius too since it floats */
+    border-bottom-right-radius: 32px;
+
     padding: 24px;
     padding-bottom: 24px;
-    position: relative;
-    margin-top: 24px; /* Gap between image and panel start */
     
-    /* Liquid Glass iOS 26 Effect */
+    position: relative;
+    margin-top: 24px;
+    margin-bottom: 32px; /* Margin at bottom for visual clearance */
+    
     backdrop-filter: blur(26px) saturate(180%);
     -webkit-backdrop-filter: blur(26px) saturate(180%);
-    background: rgba(30, 30, 45, 0.7); /* Slightly more opaque for better text readability over image */
-    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(30, 30, 45, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.3);
     
     display: flex;
@@ -457,7 +462,7 @@ function handleStoreLink() {
 
 [data-theme='light'] .glass-panel {
     background: rgba(255, 255, 255, 0.8);
-    border-top: 1px solid rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.8);
 }
 
 .handle-bar {
@@ -477,7 +482,7 @@ function handleStoreLink() {
     display: flex;
     flex-direction: column;
     gap: 16px;
-    height: 100%;
+    /* height: 100%; removed to allow content to dictate height */
 }
 
 .title {
@@ -487,7 +492,6 @@ function handleStoreLink() {
     text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
     line-height: 1.1;
     margin: 0;
-    /* Max lines? Requirement says "maximize lines". Default allow wrap */
     word-break: break-word;
 }
 [data-theme='light'] .title { color: #111; text-shadow: none; }
@@ -497,7 +501,6 @@ function handleStoreLink() {
     font-size: 15px;
     font-weight: 500;
     margin: 0;
-    /* Max 2 lines */
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -528,7 +531,7 @@ function handleStoreLink() {
 [data-theme='light'] .price-text { color: #111; }
 
 .long-description-container {
-    flex-grow: 1; /* Allow to expand */
+    flex-grow: 1; 
     margin-bottom: 24px;
 }
 
@@ -545,17 +548,18 @@ function handleStoreLink() {
 /* Sticky Actions */
 .actions-sticky {
     position: sticky;
-    bottom: 0px;
+    bottom: -1px; /* stick to bottom of panel content area */
+    /* Because parent has padding-bottom 24px, sticky might float up. 
+       Actually, sticky relative to flex item. 
+       Let's keep it simple: just flex positioning at bottom. 
+       Since panel is adaptive, it will just be at the bottom. 
+    */
+    position: relative; 
     padding-top: 16px;
-    padding-bottom: 20px; /* Safe area padding included in scroll/panel usually, but extra here */
     display: flex;
     align-items: center;
     gap: 16px;
     margin-top: auto;
-    /* Glass background behind buttons to ensure readability if scrolled over content? 
-       Usually sticky buttons sit in the padded area of the parent. 
-       Let's stick them to the bottom of the container. 
-    */
 }
 
 .primary-btn {

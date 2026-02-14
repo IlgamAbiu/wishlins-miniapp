@@ -131,32 +131,32 @@ function handleStoreLink() {
                         {{ safeWish.description }}
                     </p>
                 </div>
-                
-                <!-- 5. Action Buttons (Sticky at bottom of panel) -->
-                <div class="actions-sticky">
-                    <button
-                        v-if="safeWish.link"
-                        @click="handleStoreLink"
-                        class="primary-btn">
-                        <span class="btn-text">Store Link</span>
-                        <span class="material-symbols-outlined btn-icon">arrow_outward</span>
-                    </button>
-                    <div v-else class="spacer-flex"></div>
-                    
-                    <div class="secondary-actions">
-                        <button @click="handleShare" class="glass-btn icon-btn">
-                            <span class="material-symbols-outlined">share</span>
-                        </button>
-                        <button @click="handleEdit" class="glass-btn icon-btn">
-                            <span class="material-symbols-outlined">edit</span>
-                        </button>
-                    </div>
-                </div>
             </div>
         </section>
         
-        <!-- Bottom spacing for scroll feel -->
-        <div class="h-8"></div>
+        <!-- Bottom spacing for scroll feel and to clear floating buttons -->
+        <div class="spacer-bottom"></div>
+    </div>
+
+    <!-- Floating Actions (Fixed Overlay) -->
+    <div class="floating-actions">
+        <button
+            v-if="safeWish.link"
+            @click="handleStoreLink"
+            class="primary-btn">
+            <span class="btn-text">Store Link</span>
+            <span class="material-symbols-outlined btn-icon">arrow_outward</span>
+        </button>
+        <div v-else class="spacer-flex"></div>
+        
+        <div class="secondary-actions">
+            <button @click="handleShare" class="glass-btn icon-btn">
+                <span class="material-symbols-outlined">share</span>
+            </button>
+            <button @click="handleEdit" class="glass-btn icon-btn">
+                <span class="material-symbols-outlined">edit</span>
+            </button>
+        </div>
     </div>
 
     <!-- Fixed Header (Top of everything) -->
@@ -232,9 +232,10 @@ function handleStoreLink() {
     justify-content: space-between;
     align-items: center;
     padding: 20px;
-    padding-top: env(safe-area-inset-top, 20px);
+    /* Ensure top padding includes safe area + 20px visual margin */
+    padding-top: calc(20px + env(safe-area-inset-top, 0px));
     z-index: 50; /* Above everything */
-    pointer-events: none; /* Let clicks pass through */
+    pointer-events: none; /* Let clicks pass through if needed, but buttons enable valid clicks */
 }
 .header button {
     pointer-events: auto;
@@ -243,12 +244,13 @@ function handleStoreLink() {
 /* Buttons */
 .glass-btn {
     background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(12px);
+    backdrop-filter: blur(26px); /* Liquid Glass Effect */
+    -webkit-backdrop-filter: blur(26px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: rgba(255, 255, 255, 0.9);
     transition: all 0.2s ease;
     cursor: pointer;
-    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.2), inset 0 -1px 2px 0 rgba(0, 0, 0, 0.3);
+    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.2), inset 0 -1px 2px 0 rgba(0, 0, 0, 0.3), 0 10px 20px -5px rgba(0, 0, 0, 0.3);
 }
 
 .glass-btn:active {
@@ -277,7 +279,7 @@ function handleStoreLink() {
     top: 0;
     left: 0;
     width: 100%;
-    height: 100%;
+    height: 100%; /* Occupy full height but visual content is top-centered */
     z-index: 1;
     display: flex;
     flex-direction: column;
@@ -415,6 +417,7 @@ function handleStoreLink() {
     overflow-x: hidden;
     display: flex;
     flex-direction: column;
+    /* Smooth scroll behavior */
     scroll-behavior: smooth;
     
     /* Hide scrollbar */
@@ -428,7 +431,13 @@ function handleStoreLink() {
 .spacer-top {
     flex-shrink: 0;
     width: 100%;
-    height: 450px;
+    height: 450px; /* Push content below image initially. Adjust based on Image height + padding */
+}
+
+.spacer-bottom {
+    width: 100%;
+    height: 140px; /* Space for floating buttons */
+    flex-shrink: 0;
 }
 
 /* Glass Info Panel */
@@ -444,11 +453,10 @@ function handleStoreLink() {
     border-bottom-right-radius: 32px;
 
     padding: 24px;
-    padding-bottom: 0;
     
     position: relative;
     margin-top: 24px;
-    margin-bottom: 32px; /* Margin at bottom for visual clearance */
+    /* margin-bottom handled by spacer-bottom */
     
     backdrop-filter: blur(26px) saturate(180%);
     -webkit-backdrop-filter: blur(26px) saturate(180%);
@@ -492,6 +500,7 @@ function handleStoreLink() {
     text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
     line-height: 1.1;
     margin: 0;
+    /* Max lines? Requirement says "maximize lines". Default allow wrap */
     word-break: break-word;
 }
 [data-theme='light'] .title { color: #111; text-shadow: none; }
@@ -501,6 +510,7 @@ function handleStoreLink() {
     font-size: 15px;
     font-weight: 500;
     margin: 0;
+    /* Max 2 lines */
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -531,9 +541,7 @@ function handleStoreLink() {
 [data-theme='light'] .price-text { color: #111; }
 
 .long-description-container {
-    flex-grow: 1; 
-    margin-bottom: 24px;
-    padding-bottom: 24px;
+    flex-grow: 1; /* Allow to expand */
 }
 
 .long-description {
@@ -546,35 +554,30 @@ function handleStoreLink() {
 }
 [data-theme='light'] .long-description { color: #333; }
 
-/* Sticky Actions */
-.actions-sticky {
-    position: sticky;
-    bottom: 0; /* Sticks to bottom of viewport/scroll container */
+/* Floating Actions */
+.floating-actions {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 50;
     
-    /* Overlay Styles */
-    margin-left: -24px; /* Extend to edges of glass panel */
-    margin-right: -24px;
-    padding: 20px 24px;
-    
-    background: rgba(30, 30, 45, 0.85); /* Slightly darker/more opaque than panel to hide text */
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    
-    border-bottom-left-radius: 32px;
-    border-bottom-right-radius: 32px;
-    
-    z-index: 20;
-
+    /* Layout */
     display: flex;
-    align-items: center;
+    align-items: flex-end; /* Buttons sit at bottom */
     gap: 16px;
-    margin-top: auto;
+    padding: 0 24px 32px 24px; /* Side padding and bottom clearance */
+    box-sizing: border-box;
+    
+    /* Pass through clicks */
+    pointer-events: none;
+    
+    /* No background */
 }
 
-[data-theme='light'] .actions-sticky {
-    background: rgba(255, 255, 255, 0.9);
-    border-top: 1px solid rgba(0, 0, 0, 0.05);
+.floating-actions .primary-btn,
+.floating-actions .icon-btn {
+    pointer-events: auto; /* Re-enable clicks */
 }
 
 .primary-btn {
@@ -587,8 +590,11 @@ function handleStoreLink() {
     gap: 8px;
     cursor: pointer;
     transition: all 0.2s ease;
+    
     background: linear-gradient(135deg, rgba(10, 13, 194, 0.9) 0%, rgba(76, 29, 149, 0.9) 100%);
-    box-shadow: 0 4px 15px rgba(10, 13, 194, 0.4);
+    backdrop-filter: blur(26px);
+    -webkit-backdrop-filter: blur(26px);
+    box-shadow: 0 10px 30px rgba(10, 13, 194, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.4);
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: white;
 }
@@ -606,6 +612,7 @@ function handleStoreLink() {
     display: flex;
     align-items: center;
     justify-content: center;
+    /* Inherits .glass-btn styles */
 }
 .icon-btn .material-symbols-outlined { color: rgba(255, 255, 255, 0.9); }
 [data-theme='light'] .icon-btn .material-symbols-outlined { color: #333; }

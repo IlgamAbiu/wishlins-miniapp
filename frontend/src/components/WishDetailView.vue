@@ -57,15 +57,15 @@ function handleStoreLink() {
 </script>
 
 <template>
-  <div v-if="wish" class="wish-detail-view">
+  <div v-if="wish" class="wish-detail-view bg-background-light dark:bg-background-dark font-display text-white min-h-screen relative overflow-hidden flex flex-col items-center justify-center">
     <!-- Ambient Background Effects -->
     <div class="fixed inset-0 pointer-events-none w-full h-full overflow-hidden z-0">
         <div class="absolute top-[-20%] left-[-20%] w-[140%] h-[80%] ambient-halo opacity-70"></div>
         <div class="absolute bottom-[-10%] right-[-10%] w-[80%] h-[60%] bg-purple-900/30 blur-[100px] rounded-full"></div>
     </div>
 
-    <!-- Main Container -->
-    <main class="relative z-10 w-full h-full flex flex-col p-6">
+    <!-- Main Mobile Container -->
+    <main class="relative z-10 w-full max-w-md h-screen flex flex-col p-6">
         <!-- Top Navigation -->
         <header class="flex justify-between items-center mb-6 pt-safe">
             <!-- Back Button -->
@@ -75,11 +75,11 @@ function handleStoreLink() {
                 <span class="material-symbols-outlined text-white/80 group-hover:text-white transition-colors">arrow_back</span>
             </button>
             
-             <!-- Done Button (Optional, can be used to close as well) -->
-             <!-- <button @click="handleBack"
+             <!-- Done Button -->
+             <button @click="handleBack"
                 class="px-5 py-2 rounded-full bg-white/5 backdrop-blur-md border border-white/5 text-sm font-semibold text-white/90 hover:bg-white/10 transition-all shadow-glass-inset">
                 Done
-            </button> -->
+            </button>
         </header>
 
         <!-- Hero Section -->
@@ -124,9 +124,9 @@ function handleStoreLink() {
             </div>
         </section>
 
-        <!-- Main Info Panel -->
+        <!-- Main Info Panel (Bottom Sheet style) -->
         <section class="glass-panel w-full rounded-3xl p-6 pb-8 relative mt-auto transform translate-y-2">
-            <!-- Handle bar -->
+            <!-- Handle bar for visual cue -->
             <div class="w-12 h-1 bg-white/20 rounded-full mx-auto mb-6"></div>
             <div class="space-y-6">
                 <!-- Title & Price Row -->
@@ -135,7 +135,7 @@ function handleStoreLink() {
                         {{ safeWish.title }}
                     </h1>
                     <div class="flex items-center justify-between">
-                        <p v-if="safeWish.store" class="text-white/60 text-sm font-medium">{{ safeWish.store }}</p>
+                         <p v-if="safeWish.store" class="text-white/60 text-sm font-medium">{{ safeWish.store }}</p>
                          <p v-else class="text-white/60 text-sm font-medium">Wish Item</p>
 
                         <!-- Price Indentation -->
@@ -146,10 +146,13 @@ function handleStoreLink() {
                     </div>
                 </div>
                 <!-- Description -->
-                <div v-if="safeWish.description" class="relative max-h-32 overflow-y-auto custom-scrollbar">
-                    <p class="text-white/70 text-sm leading-relaxed font-light">
+                <div class="relative">
+                     <p v-if="safeWish.description" class="text-white/70 text-sm leading-relaxed font-light line-clamp-4">
                         {{ safeWish.description }}
                     </p>
+                    <div v-if="safeWish.description"
+                        class="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-[#161625] to-transparent opacity-80 pointer-events-none">
+                    </div>
                 </div>
                 <!-- Action Area -->
                 <div class="flex items-center gap-4 pt-2">
@@ -158,14 +161,10 @@ function handleStoreLink() {
                         v-if="safeWish.link"
                         @click="handleStoreLink"
                         class="flex-grow h-14 primary-glass-btn rounded-full flex items-center justify-center gap-2 group transition-all transform hover:scale-[1.02] active:scale-[0.98]">
-                        <span class="text-white font-bold tracking-wide">In Store</span>
+                        <span class="text-white font-bold tracking-wide">Store Link</span>
                         <span
                             class="material-symbols-outlined text-white/80 group-hover:translate-x-1 transition-transform text-sm">arrow_outward</span>
                     </button>
-                    <!-- Spacer if no link, to push secondary actions to right, OR just let flex gap handle it if we want them left aligned. 
-                         Let's keep them right aligned if no link for better reachability? Or center? 
-                         If no link, maybe we make the Share/Edit buttons bigger or just align right. 
-                         Let's align right for now. -->
                      <div v-else class="flex-grow"></div>
                     
                     <!-- Secondary Actions -->
@@ -185,6 +184,13 @@ function handleStoreLink() {
             </div>
         </section>
     </main>
+
+    <!-- Decorative Gloss Overlays on the screen edges for "Glass Phone" feel -->
+    <div class="fixed top-0 left-0 w-full h-32 bg-gradient-to-b from-white/5 to-transparent pointer-events-none z-50">
+    </div>
+    <div
+        class="fixed bottom-0 left-0 w-full h-32 bg-gradient-to-t from-black/40 to-transparent pointer-events-none z-0">
+    </div>
   </div>
 </template>
 
@@ -196,14 +202,14 @@ function handleStoreLink() {
     width: 100%;
     height: 100%;
     z-index: 1000; /* High z-index to overlay everything including tab bar */
-    background: radial-gradient(circle at 50% 0%, #1C1C1E 0%, #0A0A0C 100%);
+    /* Background handled by classes now, matching template */
 }
 
 .pt-safe {
   padding-top: env(safe-area-inset-top, 20px);
 }
 
-/* Custom Utilities copied/adapted from template */
+/* Custom Utilities copied/adapted from template EXACTLY */
 .glass-panel {
     backdrop-filter: blur(40px) saturate(180%);
     -webkit-backdrop-filter: blur(40px) saturate(180%);
@@ -259,17 +265,6 @@ function handleStoreLink() {
 
 .bg-glass-shine {
     background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 40%);
-}
-
-.custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
 }
 
 .gradient-placeholder {

@@ -80,14 +80,14 @@ function handleStoreLink() {
                     <div class="absolute top-0 left-0 w-full h-full bg-glass-shine z-20 pointer-events-none opacity-50">
                     </div>
                     <!-- Product Image -->
-                   <img 
+                    <img 
                         v-if="safeWish.image_url"
                         :src="safeWish.image_url" 
                         :alt="safeWish.title"
                         class="w-full h-full object-cover transform scale-110 hover:scale-100 transition-transform duration-700 opacity-90"
                     />
-                    <div v-else class="w-full h-full flex items-center justify-center bg-white/5">
-                        <span class="text-6xl">✨</span>
+                    <div v-else class="w-full h-full flex items-center justify-center gradient-placeholder">
+                        <span class="text-6xl filter drop-shadow-lg">✨</span>
                     </div>
 
                 </div>
@@ -130,12 +130,9 @@ function handleStoreLink() {
                     </div>
                 </div>
                 <!-- Description -->
-                <div class="relative max-h-32 overflow-y-auto custom-scrollbar">
-                    <p v-if="safeWish.description" class="text-white/70 text-sm leading-relaxed font-light">
+                <div v-if="safeWish.description" class="relative max-h-32 overflow-y-auto custom-scrollbar">
+                    <p class="text-white/70 text-sm leading-relaxed font-light">
                         {{ safeWish.description }}
-                    </p>
-                    <p v-else class="text-white/40 text-sm leading-relaxed font-light italic">
-                        No description provided.
                     </p>
                 </div>
                 <!-- Action Area -->
@@ -149,6 +146,10 @@ function handleStoreLink() {
                         <span
                             class="material-symbols-outlined text-white/80 group-hover:translate-x-1 transition-transform text-sm">arrow_outward</span>
                     </button>
+                    <!-- Spacer if no link, to push secondary actions to right, OR just let flex gap handle it if we want them left aligned. 
+                         Let's keep them right aligned if no link for better reachability? Or center? 
+                         If no link, maybe we make the Share/Edit buttons bigger or just align right. 
+                         Let's align right for now. -->
                      <div v-else class="flex-grow"></div>
                     
                     <!-- Secondary Actions -->
@@ -253,5 +254,10 @@ function handleStoreLink() {
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.2);
   border-radius: 4px;
+}
+
+.gradient-placeholder {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0.02) 100%);
+    backdrop-filter: blur(20px);
 }
 </style>

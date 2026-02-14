@@ -85,7 +85,7 @@ function handleStoreLink() {
         <!-- Hero Section -->
         <section class="flex-grow flex flex-col items-center justify-start relative mt-4">
             <!-- Liquid Glass Image Container -->
-            <div class="relative w-72 h-72 mb-8">
+            <div class="relative w-72 h-72 mb-8 flex-none max-w-[80vw] max-h-[80vw]">
                 <!-- Decorative blurred layer behind -->
                 <div class="absolute inset-0 bg-primary/30 liquid-border blur-2xl transform scale-110 animate-pulse">
                 </div>

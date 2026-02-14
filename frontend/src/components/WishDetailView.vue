@@ -8,7 +8,23 @@ const { selectedWish, closeWish } = useWishes()
 const wish = computed(() => selectedWish.value)
 
 // If no wish is selected, we shouldn't show this view, but for safety:
-const safeWish = computed<Wish>(() => wish.value || {} as Wish)
+// MOCK DATA FOR TESTING
+const mockWish: Wish = {
+    id: 'mock-1',
+    title: 'Sony WH-1000XM5 Noise Canceling Headphones',
+    price: 348,
+    currency: 'USD',
+    description: 'Industry-leading noise cancellation, exceptional sound quality, and crystal-clear hands-free calling. The best just got better.',
+    image_url: 'https://m.media-amazon.com/images/I/51SKmu2G9FL._AC_UF1000,1000_QL80_.jpg',
+    priority: 'really_want',
+    link: 'https://amazon.com',
+    store: 'Amazon',
+    wishlist_id: 'mock-list',
+    created_at: new Date().toISOString()
+} as Wish
+
+const safeWish = computed<Wish>(() => mockWish)
+// const safeWish = computed<Wish>(() => wish.value || {} as Wish)
 
 const formattedPrice = computed(() => {
   if (!safeWish.value.price) return ''

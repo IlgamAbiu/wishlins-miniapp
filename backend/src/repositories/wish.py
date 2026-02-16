@@ -31,7 +31,6 @@ class WishRepository:
             currency=wish.currency,
             is_booked=wish.is_booked,
             priority=wish.priority,
-            store=wish.store,
             created_at=wish.created_at,
             updated_at=wish.updated_at,
         )
@@ -81,7 +80,6 @@ class WishRepository:
         model.currency = wish.currency
         model.is_booked = wish.is_booked
         model.priority = wish.priority
-        model.store = wish.store
         model.updated_at = wish.updated_at
 
         await self._session.flush()
@@ -105,7 +103,6 @@ class WishRepository:
             currency=model.currency,
             is_booked=model.is_booked,
             priority=model.priority,
-            store=model.store,
             created_at=model.created_at,
             updated_at=model.updated_at,
         )

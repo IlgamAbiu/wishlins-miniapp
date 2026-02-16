@@ -22,6 +22,7 @@ class Wish:
     id: UUID
     wishlist_id: UUID
     title: str
+    subtitle: Optional[str]
     description: Optional[str]
     link: Optional[str]
     image_url: Optional[str]
@@ -38,6 +39,7 @@ class Wish:
             "id": str(self.id),
             "wishlist_id": str(self.wishlist_id),
             "title": self.title,
+            "subtitle": self.subtitle,
             "description": self.description,
             "link": self.link,
             "image_url": self.image_url,
@@ -56,6 +58,7 @@ class WishCreate:
 
     wishlist_id: UUID
     title: str
+    subtitle: Optional[str] = None
     description: Optional[str] = None
     link: Optional[str] = None
     image_url: Optional[str] = None
@@ -75,6 +78,7 @@ class WishUpdate:
     """Data for updating an existing wish."""
 
     title: Optional[str] = None
+    subtitle: Optional[str] = None
     description: Optional[str] = None
     link: Optional[str] = None
     image_url: Optional[str] = None

@@ -24,6 +24,7 @@ class WishRepository:
             id=wish.id,
             wishlist_id=wish.wishlist_id,
             title=wish.title,
+            subtitle=wish.subtitle,
             description=wish.description,
             link=wish.link,
             image_url=wish.image_url,
@@ -73,6 +74,7 @@ class WishRepository:
             raise ValueError(f"Wish with id {wish.id} not found")
 
         model.title = wish.title
+        model.subtitle = wish.subtitle
         model.description = wish.description
         model.link = wish.link
         model.image_url = wish.image_url
@@ -96,6 +98,7 @@ class WishRepository:
             id=model.id,
             wishlist_id=model.wishlist_id,
             title=model.title,
+            subtitle=model.subtitle,
             description=model.description,
             link=model.link,
             image_url=model.image_url,

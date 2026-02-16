@@ -8,12 +8,21 @@ import type { WishPriority } from '@/types'
 
 const emit = defineEmits<{
   (e: 'close'): void
-  (e: 'submit', data: { title: string; priority: WishPriority; price?: number; currency?: string; link?: string; description?: string }): void
+  (e: 'submit', data: { 
+    title: string; 
+    subtitle?: string; 
+    priority: WishPriority; 
+    price?: number; 
+    currency?: string; 
+    link?: string; 
+    description?: string 
+  }): void
 }>()
 
 const isSubmitting = ref(false)
 const form = reactive({
   title: '',
+  subtitle: '',
   priority: 'just_want' as WishPriority,
   price: '',
   currency: 'RUB',
@@ -31,6 +40,7 @@ function handleSubmit() {
   
   emit('submit', {
     title: form.title,
+    subtitle: form.subtitle,
     priority: form.priority,
     price: priceNumber,
     currency: form.currency,
@@ -63,6 +73,16 @@ function onInputFocus(event: FocusEvent) {
             placeholder="Что вы хотите?"
             required
             autofocus
+            @focus="onInputFocus"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Подзаголовок</label>
+          <input
+            v-model="form.subtitle"
+            type="text"
+            placeholder="Короткое описание или магазин"
             @focus="onInputFocus"
           />
         </div>

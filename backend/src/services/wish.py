@@ -33,6 +33,7 @@ class WishService:
             id=uuid4(),
             wishlist_id=data.wishlist_id,
             title=data.title,
+            subtitle=data.subtitle,
             description=data.description,
             link=data.link,
             image_url=data.image_url,
@@ -65,6 +66,9 @@ class WishService:
             if not data.title.strip():
                 raise ValueError("title cannot be empty")
             wish.title = data.title
+
+        if data.subtitle is not None:
+            wish.subtitle = data.subtitle
 
         if data.description is not None:
             wish.description = data.description

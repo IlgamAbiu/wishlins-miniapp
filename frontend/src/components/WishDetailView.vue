@@ -95,7 +95,13 @@ function handleStoreLink() {
                     {{ safeWish.title }}
                 </h1>
                 
-                <!-- Subtitle (Store Name) Removed -->
+                <!-- Subtitle -->
+                <p v-if="safeWish.subtitle" class="short-description">
+                    {{ safeWish.subtitle }}
+                </p>
+                <p v-else class="short-description placeholder-text">
+                    Здесь может быть короткое описание или название магазина
+                </p>
 
                 <!-- 3. Price -->
                 <div class="price-row">

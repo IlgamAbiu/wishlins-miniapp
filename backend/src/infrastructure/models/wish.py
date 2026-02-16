@@ -33,6 +33,10 @@ class WishModel(Base):
         String(255),
         nullable=False,
     )
+    subtitle: Mapped[str | None] = mapped_column(
+        String(255),
+        nullable=True,
+    )
     description: Mapped[str | None] = mapped_column(
         Text,
         nullable=True,

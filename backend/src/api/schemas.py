@@ -213,6 +213,7 @@ class WishBase(BaseModel):
     """Base Wish schema."""
 
     title: str = Field(..., min_length=1, max_length=255)
+    subtitle: Optional[str] = None
     description: Optional[str] = None
     link: Optional[str] = None
     image_url: Optional[str] = None
@@ -231,6 +232,7 @@ class WishUpdateRequest(BaseModel):
     """Schema for updating a wish."""
 
     title: Optional[str] = Field(None, min_length=1, max_length=255)
+    subtitle: Optional[str] = None
     description: Optional[str] = None
     link: Optional[str] = None
     image_url: Optional[str] = None

@@ -1,9 +1,14 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useWishes } from '@/composables/useWishes'
+import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
 import type { Wish } from '@/types'
+import AddWishModal from '@/components/AddWishModal.vue'
 
-const { selectedWish, closeWish } = useWishes()
+const { selectedWish, closeWish, updateWish, deleteWish } = useWishes()
+const { user } = useTelegramWebApp()
+
+const showEditModal = ref(false)
 
 const wish = computed(() => selectedWish.value)
 
@@ -23,8 +28,7 @@ function handleBack() {
 }
 
 function handleEdit() {
- // TODO: Implement edit logic
- console.log('Edit wish', safeWish.value.id)
+ showEditModal.value = true
 }
 
 function handleShare() {
@@ -37,6 +41,27 @@ function handleStoreLink() {
         window.open(safeWish.value.link, '_blank')
     } else {
         alert('Здесь может быть ссылка на магазин, но пока ее нет')
+    }
+}
+async function handleUpdateWish(data: any) {
+    if (!user.value || !safeWish.value) return 
+
+    // Remove id from data if present to avoid issues with update payload
+    const { id, ...updateData } = data
+    
+    const updated = await updateWish(safeWish.value.id, updateData, user.value.id)
+    if (updated) {
+        showEditModal.value = false
+    }
+}
+
+async function handleDeleteWish(id: string) {
+    if (!user.value) return
+
+    const success = await deleteWish(id, user.value.id)
+    if (success) {
+        showEditModal.value = false
+        closeWish()
     }
 }
 </script>
@@ -65,7 +90,7 @@ function handleStoreLink() {
                 <div v-else class="placeholder">
                     <div class="placeholder-content">
                         <span class="material-symbols-outlined placeholder-icon">add_a_photo</span>
-                        <span class="placeholder-label">Add Photo</span>
+                        <span class="placeholder-label">Здесь не хватает фото вашего желания</span>
                     </div>
                 </div>
             </div>
@@ -134,7 +159,7 @@ function handleStoreLink() {
         <button
             @click="handleStoreLink"
             class="primary-btn">
-            <span class="btn-text">Где купить ?</span>
+            <span class="btn-text">Где купить</span>
             <span class="material-symbols-outlined btn-icon">arrow_outward</span>
         </button>
         
@@ -158,6 +183,16 @@ function handleStoreLink() {
     <!-- Decorative Gloss Overlays -->
     <div class="gloss-top"></div>
     <div class="gloss-bottom"></div>
+    <!-- Edit Modal -->
+    <Teleport to="body">
+        <AddWishModal
+            v-if="showEditModal"
+            :initial-wish="safeWish"
+            @close="showEditModal = false"
+            @submit="handleUpdateWish"
+            @delete="handleDeleteWish"
+        />
+    </Teleport>
   </div>
 </template>
 

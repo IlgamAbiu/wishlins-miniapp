@@ -29,7 +29,6 @@ class Wish:
     currency: Optional[str]
     is_booked: bool
     priority: WishPriority
-    store: Optional[str]
     created_at: datetime
     updated_at: datetime
 
@@ -46,7 +45,6 @@ class Wish:
             "currency": self.currency,
             "is_booked": self.is_booked,
             "priority": self.priority.value,
-            "store": self.store,
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
         }
@@ -64,7 +62,6 @@ class WishCreate:
     price: Optional[float] = None
     currency: Optional[str] = "RUB"
     priority: WishPriority = WishPriority.JUST_WANT
-    store: Optional[str] = None
 
     def __post_init__(self):
         if not self.title or not self.title.strip():
@@ -85,4 +82,3 @@ class WishUpdate:
     currency: Optional[str] = None
     is_booked: Optional[bool] = None
     priority: Optional[WishPriority] = None
-    store: Optional[str] = None

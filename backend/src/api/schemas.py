@@ -219,7 +219,6 @@ class WishBase(BaseModel):
     price: Optional[float] = None
     currency: Optional[str] = "RUB"
     priority: WishPriority = Field(default=WishPriority.JUST_WANT, description="Wish priority level")
-    store: Optional[str] = Field(None, description="Store name (auto-extracted from link)")
 
 
 class WishCreateRequest(WishBase):
@@ -239,7 +238,6 @@ class WishUpdateRequest(BaseModel):
     currency: Optional[str] = None
     is_booked: Optional[bool] = None
     priority: Optional[WishPriority] = None
-    store: Optional[str] = None
 
 
 class WishResponse(WishBase):

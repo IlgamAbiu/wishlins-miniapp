@@ -342,6 +342,7 @@ input, select, textarea {
   font-weight: 600;
   cursor: pointer;
   transition: opacity var(--transition-fast), transform var(--transition-fast);
+  width: 100%;
 }
 
 .submit-btn:active {

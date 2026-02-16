@@ -119,16 +119,18 @@ async function handleDeleteWish(id: string) {
                     {{ safeWish.title }}
                 </h1>
                 
-                <!-- Subtitle -->
-                <p v-if="safeWish.subtitle" class="short-description">
-                    {{ safeWish.subtitle }}
-                </p>
-                <p v-else class="short-description placeholder-text">
-                    Здесь может быть короткое описание или название магазина
-                </p>
+                <!-- Subtitle & Price Row -->
+                <div class="info-row">
+                    <div class="subtitle-container">
+                        <p v-if="safeWish.subtitle" class="short-description">
+                            {{ safeWish.subtitle }}
+                        </p>
+                        <p v-else class="short-description placeholder-text">
+                            Здесь может быть короткое описание или название магазина
+                        </p>
+                    </div>
 
-                <!-- 3. Price -->
-                <div class="price-row">
+                    <!-- Price -->
                     <div v-if="safeWish.price" class="price-tag">
                         <span class="price-text">{{ formattedPrice }}</span>
                     </div>
@@ -548,6 +550,21 @@ async function handleDeleteWish(id: string) {
 }
 [data-theme='light'] .title { color: #111; text-shadow: none; }
 
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start; /* Align to top in case subtitle is multiline */
+    gap: 16px;
+    margin-top: 8px;
+    width: 100%;
+}
+
+.subtitle-container {
+    flex: 1;
+    min-width: 0; /* Enable truncation in flex child */
+    padding-top: 6px; /* Visual alignment with price tag */
+}
+
 .short-description {
     color: rgba(255, 255, 255, 0.7);
     font-size: 15px;
@@ -556,8 +573,10 @@ async function handleDeleteWish(id: string) {
     /* Max 2 lines */
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    -webkit-line-clamp: 2; /* Autoprefixer fallback */
     -webkit-box-orient: vertical;
     overflow: hidden;
+    line-height: 1.4;
 }
 [data-theme='light'] .short-description { color: #555; }
 
@@ -567,9 +586,7 @@ async function handleDeleteWish(id: string) {
     font-weight: 400;
 }
 
-.price-row {
-    margin-top: 4px;
-}
+/* Removed old .price-row margin since we use .info-row now */
 
 .price-tag {
     display: inline-flex;

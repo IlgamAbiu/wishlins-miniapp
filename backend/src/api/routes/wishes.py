@@ -78,6 +78,7 @@ async def create_wish(
         wish_data = WishCreate(
             wishlist_id=request.wishlist_id,
             title=request.title,
+            subtitle=request.subtitle,
             description=request.description,
             link=request.link,
             image_url=request.image_url,
@@ -129,6 +130,7 @@ async def update_wish(
     try:
         update_data = WishUpdate(
             title=request.title,
+            subtitle=request.subtitle,
             description=request.description,
             link=request.link,
             image_url=request.image_url,

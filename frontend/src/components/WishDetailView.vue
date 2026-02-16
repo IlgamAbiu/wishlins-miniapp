@@ -89,8 +89,7 @@ async function handleDeleteWish(id: string) {
                 />
                 <div v-else class="placeholder">
                     <div class="placeholder-content">
-                        <span class="material-symbols-outlined placeholder-icon">add_a_photo</span>
-                        <span class="placeholder-label">Здесь не хватает фото вашего желания</span>
+                        <span class="material-symbols-outlined placeholder-icon">image</span>
                     </div>
                 </div>
             </div>

@@ -109,6 +109,12 @@ export function useWishes() {
             const updated = await response.json()
             const index = wishes.value.findIndex(w => w.id === wishId)
             if (index !== -1) wishes.value[index] = updated
+
+            // Update selectedWish if it's the one being updated
+            if (selectedWish.value && selectedWish.value.id === wishId) {
+                selectedWish.value = updated
+            }
+
             return updated
         } catch (err) {
             error.value = err instanceof Error ? err.message : 'Failed to update wish'

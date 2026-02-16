@@ -137,7 +137,6 @@ function onInputFocus(event: FocusEvent) {
             <span class="icon">📷</span>
             <span>Загрузка фото скоро станет доступна</span>
           </button>
-          <span class="field-hint">Пока можно вставить ссылку на изображение в поле "Ссылка"</span>
         </div>
 
         <div class="form-group">

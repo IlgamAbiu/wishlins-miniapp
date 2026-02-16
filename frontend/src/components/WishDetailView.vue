@@ -58,6 +58,8 @@ function handleShare() {
 function handleStoreLink() {
     if (safeWish.value.link) {
         window.open(safeWish.value.link, '_blank')
+    } else {
+        alert('Здесь может быть ссылка на магазин, но пока ее нет')
     }
 }
 </script>
@@ -84,7 +86,10 @@ function handleStoreLink() {
                     class="product-image"
                 />
                 <div v-else class="placeholder">
-                    <span class="text-6xl filter drop-shadow-lg">✨</span>
+                    <div class="placeholder-content">
+                        <span class="material-symbols-outlined placeholder-icon">add_a_photo</span>
+                        <span class="placeholder-label">Add Photo</span>
+                    </div>
                 </div>
             </div>
             
@@ -113,15 +118,15 @@ function handleStoreLink() {
                     {{ safeWish.title }}
                 </h1>
                 
-                <!-- 2. Description 1 (Short, max 2 lines) -->
-                <p v-if="safeWish.store" class="short-description">
-                    {{ safeWish.store }}
-                </p>
+                <!-- Subtitle (Store Name) Removed -->
 
                 <!-- 3. Price -->
                 <div class="price-row">
                     <div v-if="safeWish.price" class="price-tag">
                         <span class="price-text">{{ formattedPrice }}</span>
+                    </div>
+                    <div v-else class="price-tag placeholder-price">
+                        <span class="price-text">∞ $ € ₽</span>
                     </div>
                 </div>
 
@@ -129,6 +134,9 @@ function handleStoreLink() {
                 <div class="long-description-container">
                      <p v-if="safeWish.description" class="long-description">
                         {{ safeWish.description }}
+                    </p>
+                    <p v-else class="long-description placeholder-text">
+                        Здесь может быть полное описание вашего желания, никаких ограничений на символы
                     </p>
                 </div>
             </div>
@@ -141,13 +149,11 @@ function handleStoreLink() {
     <!-- Floating Actions (Fixed Overlay) -->
     <div class="floating-actions">
         <button
-            v-if="safeWish.link"
             @click="handleStoreLink"
             class="primary-btn">
-            <span class="btn-text">Store Link</span>
+            <span class="btn-text">В магазин</span>
             <span class="material-symbols-outlined btn-icon">arrow_outward</span>
         </button>
-        <div v-else class="spacer-flex"></div>
         
         <div class="secondary-actions">
             <button @click="handleShare" class="glass-btn icon-btn">
@@ -232,7 +238,6 @@ function handleStoreLink() {
     justify-content: space-between;
     align-items: center;
     padding: 20px;
-    /* Ensure top padding includes safe area + 20px visual margin */
     padding-top: calc(20px + env(safe-area-inset-top, 0px));
     z-index: 50; /* Above everything */
     pointer-events: none; /* Let clicks pass through if needed, but buttons enable valid clicks */
@@ -350,6 +355,27 @@ function handleStoreLink() {
     align-items: center;
     justify-content: center;
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0.02) 100%);
+}
+
+.placeholder-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    opacity: 0.8;
+}
+
+.placeholder-icon {
+    font-size: 48px;
+    color: white;
+}
+
+.placeholder-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 /* Floating Badge */
@@ -518,6 +544,12 @@ function handleStoreLink() {
 }
 [data-theme='light'] .short-description { color: #555; }
 
+.placeholder-text {
+    opacity: 0.5;
+    font-style: italic;
+    font-weight: 400;
+}
+
 .price-row {
     margin-top: 4px;
 }
@@ -531,6 +563,10 @@ function handleStoreLink() {
     border: 1px solid rgba(255, 255, 255, 0.05);
 }
 [data-theme='light'] .price-tag { background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.05); }
+
+.placeholder-price {
+    opacity: 0.6;
+}
 
 .price-text {
     font-size: 22px;
@@ -600,6 +636,21 @@ function handleStoreLink() {
 }
 
 .primary-btn:active { transform: scale(0.98); }
+
+.btn-text {
+    font-weight: 700;
+    letter-spacing: 0.025em;
+}
+
+.btn-icon {
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.8);
+    transition: transform 0.2s ease;
+}
+
+.primary-btn:hover .btn-icon {
+    transform: translateX(4px);
+}
 
 .spacer-flex { flex-grow: 1; }
 

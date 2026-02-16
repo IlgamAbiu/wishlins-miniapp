@@ -1,7 +1,7 @@
 """remove store from wishes
 
-Revision ID: 006_remove_store
-Revises: 005_add_priority_and_store_to_wishes
+Revision ID: 006
+Revises: 005
 Create Date: 2026-02-16 12:45:00.000000
 
 """
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '006_remove_store'
-down_revision: Union[str, None] = '005_add_priority_and_store_to_wishes'
+revision: str = '006'
+down_revision: Union[str, None] = '005'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

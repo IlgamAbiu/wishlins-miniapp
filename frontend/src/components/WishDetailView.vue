@@ -43,6 +43,12 @@ function handleStoreLink() {
         alert('Здесь может быть ссылка на магазин, но пока ее нет')
     }
 }
+
+function handleBook() {
+    // TODO: Implement booking logic
+    console.log('Book wish', safeWish.value.id)
+    alert('Функция бронирования скоро будет доступна')
+}
 async function handleUpdateWish(data: any) {
     if (!user.value || !safeWish.value) return 
 
@@ -164,14 +170,11 @@ async function handleDeleteWish(id: string) {
             <span class="material-symbols-outlined btn-icon">arrow_outward</span>
         </button>
         
-        <div class="secondary-actions">
-            <button @click="handleShare" class="glass-btn icon-btn">
-                <span class="material-symbols-outlined">share</span>
-            </button>
-            <button @click="handleEdit" class="glass-btn icon-btn">
-                <span class="material-symbols-outlined">edit</span>
-            </button>
-        </div>
+        <button
+            @click="handleBook"
+            class="book-btn">
+            <span class="btn-text">Забронировать</span>
+        </button>
     </div>
 
     <!-- Fixed Header (Top of everything) -->
@@ -179,6 +182,15 @@ async function handleDeleteWish(id: string) {
         <button @click="handleBack" class="glass-btn back-btn">
             <span class="material-symbols-outlined icon">arrow_back</span>
         </button>
+        
+        <div class="header-actions">
+            <button @click="handleShare" class="glass-btn icon-btn">
+                <span class="material-symbols-outlined">share</span>
+            </button>
+            <button @click="handleEdit" class="glass-btn icon-btn">
+                <span class="material-symbols-outlined">edit</span>
+            </button>
+        </div>
     </header>
 
     <!-- Decorative Gloss Overlays -->
@@ -262,6 +274,12 @@ async function handleDeleteWish(id: string) {
     pointer-events: none; /* Let clicks pass through if needed, but buttons enable valid clicks */
 }
 .header button {
+    pointer-events: auto;
+}
+
+.header-actions {
+    display: flex;
+    gap: 12px;
     pointer-events: auto;
 }
 
@@ -646,7 +664,7 @@ async function handleDeleteWish(id: string) {
 }
 
 .floating-actions .primary-btn,
-.floating-actions .icon-btn {
+.floating-actions .book-btn {
     pointer-events: auto; /* Re-enable clicks */
 }
 
@@ -685,6 +703,30 @@ async function handleDeleteWish(id: string) {
 
 .primary-btn:hover .btn-icon {
     transform: translateX(4px);
+}
+
+.book-btn {
+    flex-grow: 1;
+    height: 56px;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(26px);
+    -webkit-backdrop-filter: blur(26px);
+    box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: rgba(16, 185, 129, 1);
+}
+
+.book-btn:active { 
+    transform: scale(0.98); 
+    background: rgba(16, 185, 129, 0.1);
 }
 
 .spacer-flex { flex-grow: 1; }

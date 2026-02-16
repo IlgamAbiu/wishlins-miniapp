@@ -7,30 +7,7 @@ const { selectedWish, closeWish } = useWishes()
 
 const wish = computed(() => selectedWish.value)
 
-// If no wish is selected, we shouldn't show this view, but for safety:
-// MOCK DATA FOR TESTING
-const mockWish: Wish = {
-    id: 'mock-1',
-    title: 'Sony WH-1000XM5',
-    price: 349,
-    currency: 'USD',
-    // Long Description (Description 2)
-    description: `Industry-leading noise cancellation, exceptional sound quality, and crystal-clear hands-free calling. The best just got better.
-
-These headphones feature our new Integrated Processor V1, which unlocks the full potential of our HD Noise Cancelling Processor QN1. This unique combination of technology controls eight microphones to deliver unprecedented noise cancelling quality.
-
-Precision-engineered to deliver exceptional high-resolution audio quality. Our new 30mm 
-driver unit with soft edge improves noise cancelling.`,
-    image_url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCyxEaBXFFCk5KA2xEsU3Ro5IdWItcS9nBgpYVeMomu_2EZ8zWPm4ouMBodSHxmx6Bsllf5VBD2ZZ9FjfCrhU_jc-Z93DrjbKcDQl7QRSK8ZfMw29wnr-ItqSsThlJ35ej8aNr5WLujDwE94JQS0tGo_xhAemiqSd35rSeMP7RM8ctopk7V3eH6CsmrRY28LnobRCmxk0EQwc3w7fdBhmSellPbGOFBu6QiaGv1AZFPGnvM7dJNf2t9CIwNb9--WPCNlb2P9F4s0yA',
-    priority: 'really_want',
-    link: 'https://amazon.com',
-    // Short Description (Description 1) - simulates 'store' usage or subtitle
-    store: 'Noise Cancelling Headphones with Auto NC Optimizer, Collapsible Design, and Alexa Built-in.',
-    wishlist_id: 'mock-list',
-    created_at: new Date().toISOString()
-} as Wish
-
-const safeWish = computed<Wish>(() => mockWish)
+const safeWish = computed<Wish>(() => wish.value as Wish)
 
 const formattedPrice = computed(() => {
   if (!safeWish.value.price) return ''

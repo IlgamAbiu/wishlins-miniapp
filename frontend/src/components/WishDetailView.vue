@@ -494,7 +494,7 @@ async function handleDeleteWish(id: string) {
 .spacer-top {
     flex-shrink: 0;
     width: 100%;
-    height: 450px; /* Push content below image initially. Adjust based on Image height + padding */
+    height: 410px; /* Reduced to bring panel higher: 450px - 20px (badge overlap) - 20px (tighter spacing) */
 }
 
 .spacer-bottom {
@@ -734,8 +734,8 @@ async function handleDeleteWish(id: string) {
 .secondary-actions { display: flex; gap: 12px; }
 
 .icon-btn {
-    width: 56px;
-    height: 56px;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
     display: flex;
     align-items: center;

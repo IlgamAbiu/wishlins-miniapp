@@ -418,7 +418,7 @@ async function handleDeleteWish(id: string) {
 /* Floating Badge */
 .floating-badge {
     position: absolute;
-    bottom: -43px;
+    bottom: -20px; /* Half of badge height (~40px total height, so -20px for half overlap) */
     left: 50%;
     transform: translateX(-50%);
     z-index: 30;
@@ -518,7 +518,7 @@ async function handleDeleteWish(id: string) {
     padding: 24px;
     
     position: relative;
-    margin-top: 24px;
+    margin-top: 16px; /* Match side margins (16px) */
     /* margin-bottom handled by spacer-bottom */
     
     backdrop-filter: blur(26px) saturate(180%);

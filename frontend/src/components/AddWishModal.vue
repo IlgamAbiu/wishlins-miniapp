@@ -147,7 +147,6 @@ function onInputFocus(event: FocusEvent) {
             placeholder="https://..."
             @focus="onInputFocus"
           />
-          <span class="field-hint">Магазин будет определен автоматически</span>
         </div>
 
         <!-- Photo Upload Placeholder -->

@@ -134,7 +134,7 @@ function handleStoreLink() {
         <button
             @click="handleStoreLink"
             class="primary-btn">
-            <span class="btn-text">В магазин</span>
+            <span class="btn-text">Где купить ?</span>
             <span class="material-symbols-outlined btn-icon">arrow_outward</span>
         </button>
         
@@ -621,6 +621,7 @@ function handleStoreLink() {
 .primary-btn:active { transform: scale(0.98); }
 
 .btn-text {
+    font-size: 14px;
     font-weight: 700;
     letter-spacing: 0.025em;
 }

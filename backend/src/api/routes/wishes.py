@@ -180,3 +180,24 @@ async def delete_wish(
         )
 
     await service.delete_wish(wish_id)
+
+
+@router.post("/{wish_id}/fulfill", response_model=WishResponse)
+async def fulfill_wish(
+    wish_id: UUID,
+    user_service: UserServiceDep,
+    service: Annotated[WishService, Depends(get_wish_service)],
+    telegram_id: int = Query(..., description="Telegram user ID"),
+):
+    """Mark a wish as fulfilled."""
+    user = await user_service.get_user_by_telegram_id(telegram_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    try:
+        return await service.fulfill_wish(wish_id, user.id)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )

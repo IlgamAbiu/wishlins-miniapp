@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useWishes } from '@/composables/useWishes'
+import { useWishlists } from '@/composables/useWishlists'
 import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
 import type { Wish } from '@/types'
 import AddWishModal from '@/components/AddWishModal.vue'
 
-const { selectedWish, closeWish, updateWish, deleteWish } = useWishes()
+const { selectedWish, closeWish, updateWish, deleteWish, fulfillWish } = useWishes()
+const { wishlists } = useWishlists()
 const { user } = useTelegramWebApp()
 
 const showEditModal = ref(false)
@@ -21,6 +23,24 @@ const formattedPrice = computed(() => {
     currency: safeWish.value.currency || 'USD',
     maximumFractionDigits: 0
   }).format(safeWish.value.price)
+})
+
+const isOwner = computed(() => {
+    if (!user.value || !safeWish.value) return false
+    // Find the wishlist this wish belongs to
+    const wishlist = wishlists.value.find(w => w.id === safeWish.value.wishlist_id)
+    if (wishlist) {
+        return wishlist.user_id === user.value.id
+    }
+    // Fallback: if wishlist not found in loaded list, we might implement a check or default to false
+    // BUT, if we are in "My Wishes" view, we likely own it. 
+    // For now, stricly check existence in user's loaded wishlists (if they are loaded)
+    return false
+})
+
+const isFulfilled = computed(() => {
+    const wishlist = wishlists.value.find(w => w.id === safeWish.value.wishlist_id)
+    return wishlist?.title === 'Сбывшиеся мечты'
 })
 
 function handleBack() {
@@ -41,6 +61,22 @@ function handleStoreLink() {
         window.open(safeWish.value.link, '_blank')
     } else {
         alert('Здесь может быть ссылка на магазин, но пока ее нет')
+    }
+}
+
+async function handleFulfill() {
+    if (!user.value || !safeWish.value) return
+    
+    // Optimistic UI or wait? useWishes handles loading
+    const updated = await fulfillWish(safeWish.value.id, user.value.id)
+    if (updated) {
+        // Maybe close the wish or show success?
+        // Requirement advises: "migrates to archive".
+        // We probably should close the detail view or show a notification.
+        // For now, I'll close it to reflect it's gone from current list (if filtering)
+        // OR just show updated state.
+        // Let's close it as it "moves".
+        closeWish()
     }
 }
 
@@ -171,6 +207,15 @@ async function handleDeleteWish(id: string) {
         </button>
         
         <button
+            v-if="isOwner && !isFulfilled"
+            @click="handleFulfill"
+            class="fulfill-btn">
+            <span class="btn-text">Исполнено</span>
+            <span class="material-symbols-outlined btn-icon">check_circle</span>
+        </button>
+        
+        <button
+            v-else-if="!isOwner"
             @click="handleBook"
             class="book-btn">
             <span class="btn-text">Забронировать</span>
@@ -729,6 +774,31 @@ async function handleDeleteWish(id: string) {
 .book-btn:active { 
     transform: scale(0.98); 
     background: rgba(16, 185, 129, 0.1);
+}
+
+.fulfill-btn {
+    flex-grow: 1;
+    height: 56px;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.fulfill-btn:active { transform: scale(0.98); }
+
+.fulfill-btn:hover .btn-icon {
+    transform: scale(1.1);
 }
 
 .spacer-flex { flex-grow: 1; }

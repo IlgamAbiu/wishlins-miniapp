@@ -168,6 +168,35 @@ export function useWishes() {
         }
     }
 
+    async function fulfillWish(wishId: string, telegramId: number): Promise<Wish | null> {
+        loading.value = true
+        try {
+            const response = await fetch(`${API_BASE_URL}/wishes/${wishId}/fulfill?telegram_id=${telegramId}`, {
+                method: 'POST',
+            })
+
+            if (!response.ok) {
+                throw new Error('Failed to fulfill wish')
+            }
+
+            const updated = await response.json()
+            // Update local state
+            const index = wishes.value.findIndex(w => w.id === wishId)
+            if (index !== -1) wishes.value[index] = updated
+
+            // Update selectedWish if it's the one being updated
+            if (selectedWish.value && selectedWish.value.id === wishId) {
+                selectedWish.value = updated
+            }
+            return updated
+        } catch (err) {
+            error.value = err instanceof Error ? err.message : 'Failed to fulfill wish'
+            return null
+        } finally {
+            loading.value = false
+        }
+    }
+
     return {
         wishes,
         selectedWish,
@@ -178,6 +207,7 @@ export function useWishes() {
         deleteWish,
         updateWish,
         moveWishesToWishlist,
+        fulfillWish,
         openWish,
         closeWish
     }

@@ -8,7 +8,7 @@ import type { Wish } from '@/types'
 import AddWishModal from '@/components/AddWishModal.vue'
 
 const { selectedWish, closeWish, updateWish, deleteWish, fulfillWish } = useWishes()
-const { wishlists } = useWishlists()
+const { wishlists, fetchWishlists } = useWishlists()
 const { user } = useTelegramWebApp()
 const { getUserByTelegramId } = useUser()
 
@@ -77,10 +77,12 @@ function handleStoreLink() {
 
 async function handleFulfill() {
     if (!user.value || !safeWish.value) return
-    
+
     // Optimistic UI or wait? useWishes handles loading
     const updated = await fulfillWish(safeWish.value.id, user.value.id)
     if (updated) {
+        // Refresh wishlists to include newly created "Сбывшиеся мечты" if it was just created
+        await fetchWishlists(user.value.id)
         // Updated requirement: Do NOT close wish. Just update state.
         // useWishes updates selectedWish value, which triggers reactivity.
         // isFulfilled computed property should update to true.
@@ -104,16 +106,10 @@ async function handleRestore() {
     // Move wish to default wishlist
     const updated = await updateWish(safeWish.value.id, { wishlist_id: defaultWishlist.id }, user.value.id)
     if (updated) {
-        // Similarly, it might disappear from "Fulfilled" view if we were there.
-        // If we want to reflect it in the current view (if we are in "My Wishes"), we might need to add it back?
-        // useWishes' updateWish updates it in place if found. But we removed it on fulfill!
-        // If it was removed, updateWish won't find it in the list to update.
-        // But `selectedWish` is updated.
-        // Ideally we should re-fetch or push it back to the list if the current view matches.
-        // useWishes now handles adding it back if currentWishlistId matches.
-        // But for now, let's just update the wish.
-        // alert('Желание возвращено!') - not needed logic button state update is enough?
-        // closeWish() - Removed as per user request to stay on screen.
+        // Refresh wishlists to ensure wishlists.value is up-to-date
+        await fetchWishlists(user.value.id)
+        // useWishes updates selectedWish value, which triggers reactivity.
+        // isFulfilled computed property should update to false since wish is now in default list.
     }
 }
 

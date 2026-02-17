@@ -75,6 +75,8 @@ function handleStoreLink() {
     }
 }
 
+async function handleFulfill() {
+    if (!user.value || !safeWish.value) return
     
     // Optimistic UI or wait? useWishes handles loading
     const updated = await fulfillWish(safeWish.value.id, user.value.id)

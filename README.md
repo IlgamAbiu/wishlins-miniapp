@@ -1,3 +1,4 @@
+тест git cli
 # Wishlist - Telegram Mini App
 
 Сервис списков желаний для Telegram.

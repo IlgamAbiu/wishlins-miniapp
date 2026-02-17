@@ -5,7 +5,7 @@ API layer handles only request/response orchestration.
 
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Query, status
 
 from src.api.dependencies import WishlistServiceDep, UserServiceDep
 from src.api.schemas import (
@@ -15,7 +15,7 @@ from src.api.schemas import (
     WishlistResponse,
     WishlistListResponse,
 )
-from src.domain.entities import WishlistCreate, WishlistUpdate
+from src.domain.entities import WishlistCreate, WishlistUpdate, UNSET
 
 router = APIRouter(prefix="/wishlists", tags=["wishlists"])
 
@@ -55,6 +55,9 @@ async def get_user_wishlists_by_telegram_id(
                 title=w.title,
                 description=w.description,
                 is_public=w.is_public,
+                is_default=w.is_default,
+                emoji=w.emoji,
+                event_date=w.event_date,
                 created_at=w.created_at,
                 updated_at=w.updated_at,
             )
@@ -88,6 +91,9 @@ async def get_user_wishlists(
                 title=w.title,
                 description=w.description,
                 is_public=w.is_public,
+                is_default=w.is_default,
+                emoji=w.emoji,
+                event_date=w.event_date,
                 created_at=w.created_at,
                 updated_at=w.updated_at,
             )
@@ -110,10 +116,10 @@ async def get_user_wishlists(
     description="Create a new wishlist for a user.",
 )
 async def create_wishlist(
-    telegram_id: int,
     request: WishlistCreateRequest,
     wishlist_service: WishlistServiceDep,
     user_service: UserServiceDep,
+    telegram_id: int = Query(..., description="Telegram user ID"),
 ) -> WishlistResponse:
     """Create a new wishlist."""
     # First, find the user by telegram_id
@@ -129,6 +135,8 @@ async def create_wishlist(
         title=request.title,
         description=request.description,
         is_public=request.is_public,
+        emoji=request.emoji,
+        event_date=request.event_date,
     )
 
     wishlist = await wishlist_service.create_wishlist(wishlist_data)
@@ -139,6 +147,9 @@ async def create_wishlist(
         title=wishlist.title,
         description=wishlist.description,
         is_public=wishlist.is_public,
+        is_default=wishlist.is_default,
+        emoji=wishlist.emoji,
+        event_date=wishlist.event_date,
         created_at=wishlist.created_at,
         updated_at=wishlist.updated_at,
     )
@@ -173,6 +184,9 @@ async def get_wishlist(
         title=wishlist.title,
         description=wishlist.description,
         is_public=wishlist.is_public,
+        is_default=wishlist.is_default,
+        emoji=wishlist.emoji,
+        event_date=wishlist.event_date,
         created_at=wishlist.created_at,
         updated_at=wishlist.updated_at,
     )
@@ -193,11 +207,16 @@ async def update_wishlist(
     request: WishlistUpdateRequest,
     wishlist_service: WishlistServiceDep,
 ) -> WishlistResponse:
-    """Update a wishlist."""
+    # Only pass fields that were actually set in the request
+    # Use UNSET for fields that were not provided to avoid overwriting them
+    fields_set = request.model_fields_set
+
     wishlist_data = WishlistUpdate(
-        title=request.title,
-        description=request.description,
-        is_public=request.is_public,
+        title=request.title if "title" in fields_set else UNSET,
+        description=request.description if "description" in fields_set else UNSET,
+        is_public=request.is_public if "is_public" in fields_set else UNSET,
+        emoji=request.emoji if "emoji" in fields_set else UNSET,
+        event_date=request.event_date if "event_date" in fields_set else UNSET,
     )
 
     wishlist = await wishlist_service.update_wishlist(wishlist_id, wishlist_data)
@@ -214,6 +233,9 @@ async def update_wishlist(
         title=wishlist.title,
         description=wishlist.description,
         is_public=wishlist.is_public,
+        is_default=wishlist.is_default,
+        emoji=wishlist.emoji,
+        event_date=wishlist.event_date,
         created_at=wishlist.created_at,
         updated_at=wishlist.updated_at,
     )
@@ -234,6 +256,13 @@ async def delete_wishlist(
     wishlist_service: WishlistServiceDep,
 ) -> None:
     """Delete a wishlist."""
+    wishlist = await wishlist_service.get_wishlist_by_id(wishlist_id)
+    if wishlist and wishlist.is_default:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Cannot delete default wishlist",
+        )
+
     deleted = await wishlist_service.delete_wishlist(wishlist_id)
 
     if not deleted:

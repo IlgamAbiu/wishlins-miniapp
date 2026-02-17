@@ -19,6 +19,7 @@ class User:
     first_name: str
     last_name: Optional[str]
     avatar_url: Optional[str]
+    profile_text: Optional[str]
     created_at: datetime
     updated_at: datetime
 
@@ -31,6 +32,7 @@ class User:
             "first_name": self.first_name,
             "last_name": self.last_name,
             "avatar_url": self.avatar_url,
+            "profile_text": self.profile_text,
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
         }
@@ -66,3 +68,4 @@ class UserUpdate:
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     avatar_url: Optional[str] = None
+    profile_text: Optional[str] = None

@@ -1,377 +1,676 @@
 <script setup lang="ts">
 /**
- * ProfileView - User profile with wishlists.
+ * ProfileView - User profile with Events (Wishlists) and Wishes.
  */
-import { onMounted, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
 import { useWishlists } from '@/composables/useWishlists'
+import { useWishes } from '@/composables/useWishes'
+import { useUser } from '@/composables/useUser'
+import EventCarousel from '@/components/EventCarousel.vue'
+import WishGrid from '@/components/WishGrid.vue'
+import AddWishModal from '@/components/AddWishModal.vue'
+import AddEventModal from '@/components/AddEventModal.vue'
+import EditProfileTextModal from '@/components/EditProfileTextModal.vue'
+import DeleteEventModal from '@/components/DeleteEventModal.vue'
+import EventLimitModal from '@/components/EventLimitModal.vue'
 
 const { isInTelegram, user, userDisplayName } = useTelegramWebApp()
-const { wishlists, loading, error, fetchWishlists } = useWishlists()
+const { wishlists, fetchWishlists, createWishlist, updateWishlist, deleteWishlist } = useWishlists()
+const { wishes, loading: wishesLoading, error: wishesError, fetchWishes, createWish, moveWishesToWishlist, openWish } = useWishes()
+const { updateProfileText, getUserByTelegramId } = useUser()
 
-// Fetch wishlists when user is available
-watch(() => user.value, (newUser) => {
-  if (newUser) {
-    fetchWishlists(newUser.id)
+const selectedEventId = ref<string | null>(null)
+const showAddWishModal = ref(false)
+const showAddEventModal = ref(false)
+const showEditProfileModal = ref(false)
+const showDeleteEventModal = ref(false)
+const showEventLimitModal = ref(false)
+const editingEvent = ref<any>(null) // Event being edited
+const eventToDelete = ref<any>(null) // Event being deleted
+const profileText = ref('Saving for a dream ✨')
+
+// Event limit constant
+const MAX_EVENTS = 5
+
+const selectedEvent = computed(() => 
+  wishlists.value.find(w => w.id === selectedEventId.value)
+)
+
+// Initial Data Fetch
+async function initData() {
+  if (user.value) {
+    // Load user profile data including profile_text
+    const userData = await getUserByTelegramId(user.value.id)
+    if (userData && userData.profile_text) {
+      profileText.value = userData.profile_text
+    }
+
+    await fetchWishlists(user.value.id)
+
+    // Select default event or first one
+    if (wishlists.value.length > 0) {
+      const defaultEvent = wishlists.value.find(w => w.is_default)
+      selectedEventId.value = defaultEvent ? defaultEvent.id : wishlists.value[0].id
+    }
   }
+}
+
+watch(() => user.value, (newUser) => {
+  if (newUser) initData()
 }, { immediate: true })
 
-onMounted(() => {
-  // If user is already available on mount, fetch wishlists
-  if (user.value) {
-    fetchWishlists(user.value.id)
+// Watch for event selection to fetch wishes
+let fetchTimeout: ReturnType<typeof setTimeout>
+watch(selectedEventId, (newId) => {
+  if (newId) {
+    // Debounce fetch to avoid lag during rapid scanning
+    if (fetchTimeout) clearTimeout(fetchTimeout)
+    fetchTimeout = setTimeout(() => {
+      fetchWishes(newId)
+    }, 300)
   }
 })
+
+// Handlers
+async function handleEventSelect(id: string) {
+  selectedEventId.value = id
+}
+
+async function handleSaveEvent(title: string, date: string, description: string) {
+  if (!user.value) return
+
+  if (editingEvent.value) {
+    // Update existing
+    const updated = await updateWishlist(editingEvent.value.id, {
+      title,
+      eventDate: date || null,
+      description: description || null
+    })
+    if (updated) {
+      showAddEventModal.value = false
+      editingEvent.value = null
+    }
+  } else {
+    // Create new
+    const newWishlist = await createWishlist(
+      title,
+      user.value.id,
+      true,
+      date || null,
+      description || null
+    )
+    if (newWishlist) {
+      showAddEventModal.value = false
+      selectedEventId.value = newWishlist.id
+    }
+  }
+}
+
+function openCreateEventModal() {
+  // Check event limit (max 5 events)
+  if (wishlists.value.length >= MAX_EVENTS) {
+    showEventLimitModal.value = true
+    return
+  }
+
+  editingEvent.value = null
+  showAddEventModal.value = true
+}
+
+function handleEditEvent() {
+  editingEvent.value = selectedEvent.value
+  showAddEventModal.value = true
+}
+
+function handleDeleteEvent() {
+  if (!selectedEvent.value) return
+
+  // Check if event has wishes
+  if (wishes.value.length > 0) {
+    // Show modal with options
+    eventToDelete.value = selectedEvent.value
+    showDeleteEventModal.value = true
+  } else {
+    // Delete immediately if no wishes
+    confirmDeleteEvent(false)
+  }
+}
+
+async function confirmDeleteEvent(moveWishes: boolean) {
+  if (!eventToDelete.value && !selectedEvent.value) return
+
+  const eventId = (eventToDelete.value || selectedEvent.value).id
+
+  try {
+    // If user wants to move wishes, move them to default wishlist first
+    if (moveWishes && wishes.value.length > 0 && user.value) {
+      const defaultEvent = wishlists.value.find(w => w.is_default)
+      if (defaultEvent) {
+        const moved = await moveWishesToWishlist(eventId, defaultEvent.id, user.value.id)
+        if (!moved) {
+          alert('Не удалось переместить желания')
+          return
+        }
+      }
+    }
+
+    // Delete the wishlist
+    const success = await deleteWishlist(eventId)
+    if (success) {
+      showDeleteEventModal.value = false
+      eventToDelete.value = null
+
+      // Select default event
+      const defaultEvent = wishlists.value.find(w => w.is_default)
+      if (defaultEvent) selectedEventId.value = defaultEvent.id
+    }
+  } catch (err) {
+    console.error('Failed to delete event:', err)
+    alert('Произошла ошибка при удалении события')
+  }
+}
+
+function handleShareEvent() {
+  // TODO: Implement real sharing
+  console.log('Sharing event:', selectedEvent.value?.id)
+  if (window.Telegram?.WebApp) {
+      window.Telegram.WebApp.showAlert('Ссылка на событие скопирована!')
+  } else {
+      alert('Ссылка скопирована! (тест)')
+  }
+}
+
+async function handleAddWish(data: any) {
+  if (!selectedEventId.value || !user.value) return
+  
+  const newWish = await createWish({
+    ...data,
+    wishlist_id: selectedEventId.value
+  }, user.value.id)
+  
+  if (newWish) {
+    showAddWishModal.value = false
+  }
+}
+
+function onWishClick(wish: any) {
+  openWish(wish)
+}
+
+function handleEditProfile() {
+  showEditProfileModal.value = true
+}
+
+async function handleSaveProfileText(text: string) {
+  if (!user.value) return
+
+  const success = await updateProfileText(user.value.id, text)
+  if (success) {
+    profileText.value = text
+    showEditProfileModal.value = false
+  }
+}
+
+// Склонение слова "желание"
+function pluralizeWishes(count: number): string {
+  const cases = [2, 0, 1, 1, 1, 2]
+  const titles = ['желание', 'желания', 'желаний']
+  const index = (count % 100 > 4 && count % 100 < 20)
+    ? 2
+    : cases[Math.min(count % 10, 5)]
+  return `${count} ${titles[index]}`
+}
 </script>
 
 <template>
   <div class="profile-view">
-    <!-- Not in Telegram message -->
+    <!-- Background Decorative Blobs -->
+    <div class="bg-blob bg-blob-1"></div>
+    <div class="bg-blob bg-blob-2"></div>
+
+    <!-- Not in Telegram -->
     <div v-if="!isInTelegram" class="not-telegram">
-      <div class="not-telegram__icon">📱</div>
-      <h2 class="not-telegram__title">Wishlist работает только в Telegram</h2>
-      <p class="not-telegram__text">
-        Пожалуйста, откройте приложение через Telegram Mini App
-      </p>
-      <a
-        href="https://t.me/my_123_wishlist_bot"
-        target="_blank"
-        class="not-telegram__button"
-      >
-        Открыть бота
-      </a>
+      <p>Only works in Telegram</p>
     </div>
 
-    <!-- Profile content -->
-    <div v-else class="profile-content">
-      <!-- User header -->
-      <div class="profile-header">
-        <div class="profile-avatar">
-          <img
-            v-if="user?.photo_url"
-            :src="user.photo_url"
-            :alt="userDisplayName"
-            class="profile-avatar__img"
-          />
-          <div v-else class="profile-avatar__placeholder">
-            {{ userDisplayName.charAt(0).toUpperCase() }}
+    <div v-else class="content">
+      <!-- Header with glass-panel -->
+      <header class="header-section">
+        <div class="glass-panel header-panel" @click="handleEditProfile">
+          <div class="avatar-wrapper">
+            <div class="avatar">
+              <img v-if="user?.photo_url" :src="user.photo_url" alt="avatar" />
+              <div v-else class="avatar-placeholder">{{ userDisplayName.charAt(0) }}</div>
+              <div class="avatar-status"></div>
+            </div>
           </div>
-        </div>
-        <h1 class="profile-name">{{ userDisplayName }}</h1>
-        <p v-if="user?.username" class="profile-username">@{{ user.username }}</p>
-      </div>
-
-      <!-- Wishlists section -->
-      <div class="wishlists-section">
-        <h2 class="wishlists-title">Мои списки желаний</h2>
-
-        <!-- Loading state -->
-        <div v-if="loading" class="wishlists-loading">
-          <div class="spinner"></div>
-          <p>Загрузка...</p>
-        </div>
-
-        <!-- Error state -->
-        <div v-else-if="error" class="wishlists-error">
-          <div class="wishlists-error__icon">⚠️</div>
-          <p class="wishlists-error__text">{{ error }}</p>
-        </div>
-
-        <!-- Empty state -->
-        <div v-else-if="wishlists.length === 0" class="wishlists-empty">
-          <div class="wishlists-empty__icon">📝</div>
-          <h3 class="wishlists-empty__title">У вас пока нет списков желаний</h3>
-          <p class="wishlists-empty__text">
-            Создайте свой первый список, чтобы начать делиться желаниями с друзьями
-          </p>
-          <button class="wishlists-empty__button">
-            Создать список
+          <div class="user-info">
+            <h1 class="user-name">{{ userDisplayName }}</h1>
+            <p class="user-subtitle">{{ profileText }}</p>
+          </div>
+          <button class="glass-btn edit-header-btn">
+            <span class="material-symbols-outlined text-[20px]">edit</span>
           </button>
         </div>
 
-        <!-- Wishlists list -->
-        <div v-else class="wishlists-list">
-          <div
-            v-for="wishlist in wishlists"
-            :key="wishlist.id"
-            class="wishlist-card"
-          >
-            <div class="wishlist-card__header">
-              <h3 class="wishlist-card__title">{{ wishlist.title }}</h3>
-              <span
-                v-if="wishlist.is_public"
-                class="wishlist-card__badge"
-              >
-                Публичный
-              </span>
-            </div>
-            <p
-              v-if="wishlist.description"
-              class="wishlist-card__description"
-            >
-              {{ wishlist.description }}
+        <!-- Events Carousel -->
+        <div class="carousel-wrapper">
+          <EventCarousel
+            :events="wishlists"
+            :selected-event-id="selectedEventId"
+            @select="handleEventSelect"
+            @add="openCreateEventModal"
+          />
+        </div>
+
+        <!-- Event Description (if exists) -->
+        <div v-if="selectedEvent?.description" class="event-description-wrapper">
+          <div class="event-description glass-card-new">
+            <p class="description-text">
+              {{ selectedEvent.description }}
             </p>
-            <div class="wishlist-card__footer">
-              <span class="wishlist-card__date">
-                Создан {{ new Date(wishlist.created_at).toLocaleDateString('ru-RU') }}
-              </span>
-            </div>
           </div>
         </div>
-      </div>
+
+        <!-- Event Actions Row -->
+        <div v-if="selectedEvent" class="actions-row">
+          <div class="actions-buttons">
+            <button
+              class="glass-btn action-btn"
+              @click="handleEditEvent"
+            >
+              <span class="material-symbols-outlined text-[18px]">edit</span>
+            </button>
+            <button
+              v-if="!selectedEvent.is_default"
+              class="glass-btn action-btn"
+              @click="handleDeleteEvent"
+            >
+              <span class="material-symbols-outlined text-[18px]">delete</span>
+            </button>
+            <button class="glass-btn action-btn" @click="handleShareEvent">
+              <span class="material-symbols-outlined text-[18px]">ios_share</span>
+            </button>
+          </div>
+          <div class="item-count">
+            <span class="count-label">{{ pluralizeWishes(wishes.length) }}</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Data Status/Grid -->
+      <section class="wishes-section">
+         <WishGrid
+           :wishes="wishes"
+           :loading="wishesLoading"
+           :error="wishesError"
+           @add="showAddWishModal = true"
+           @click="onWishClick"
+         />
+      </section>
+
+      <!-- Floating FAB Button -->
+      <button class="fab-button" @click="showAddWishModal = true">
+        <span class="fab-icon">+</span>
+      </button>
+
+      <!-- Modals -->
+      <Teleport to="body">
+         <AddWishModal
+           v-if="showAddWishModal"
+           @close="showAddWishModal = false"
+           @submit="handleAddWish"
+         />
+         <AddEventModal
+           v-if="showAddEventModal"
+           :initial-data="editingEvent ? {
+             title: editingEvent.title,
+             date: editingEvent.event_date,
+             description: editingEvent.description || ''
+           } : undefined"
+           :is-default-event="editingEvent?.is_default || false"
+           @close="showAddEventModal = false"
+           @submit="handleSaveEvent"
+         />
+         <EditProfileTextModal
+           v-if="showEditProfileModal"
+           :initial-text="profileText"
+           @close="showEditProfileModal = false"
+           @submit="handleSaveProfileText"
+         />
+         <DeleteEventModal
+           v-if="showDeleteEventModal && eventToDelete"
+           :event-title="eventToDelete.title"
+           :wishes-count="wishes.length"
+           @close="showDeleteEventModal = false; eventToDelete = null"
+           @confirm="confirmDeleteEvent"
+         />
+         <EventLimitModal
+           v-if="showEventLimitModal"
+           @close="showEventLimitModal = false"
+         />
+      </Teleport>
     </div>
   </div>
 </template>
 
 <style scoped>
 .profile-view {
-  height: 100%;
-  overflow-y: auto;
-  background: var(--tg-secondary-bg-color, #f5f5f5);
-}
-
-/* Not in Telegram message */
-.not-telegram {
-  height: 100%;
+  height: 100vh;
+  background: transparent;
   display: flex;
   flex-direction: column;
+  position: relative;
+  isolation: isolate;
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 120px;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* === HEADER SECTION === */
+.header-section {
+  padding: 20px 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.header-panel {
+  padding: 16px;
+  display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 40px 20px;
-  text-align: center;
+  gap: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.not-telegram__icon {
-  font-size: 64px;
-  margin-bottom: 24px;
+.header-panel:active {
+  transform: scale(0.98);
 }
 
-.not-telegram__title {
-  margin: 0 0 12px;
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--tg-text-color, #000000);
+.avatar-wrapper {
+  position: relative;
 }
 
-.not-telegram__text {
-  margin: 0 0 24px;
-  font-size: 15px;
-  color: var(--tg-hint-color, #999999);
-  line-height: 1.4;
-}
-
-.not-telegram__button {
-  display: inline-block;
-  padding: 12px 24px;
-  background: var(--tg-button-color, #3390ec);
-  color: var(--tg-button-text-color, #ffffff);
-  text-decoration: none;
-  border-radius: 8px;
-  font-weight: 600;
-  transition: opacity 0.2s;
-}
-
-.not-telegram__button:hover {
-  opacity: 0.9;
-  text-decoration: none;
-}
-
-/* Profile content */
-.profile-content {
-  padding-bottom: var(--tab-bar-height, 56px);
-}
-
-/* Profile header */
-.profile-header {
-  padding: 24px 20px;
-  text-align: center;
-  background: var(--tg-bg-color, #ffffff);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-}
-
-.profile-avatar {
-  display: inline-block;
-  margin-bottom: 16px;
-}
-
-.profile-avatar__img {
-  width: 80px;
-  height: 80px;
+.avatar {
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 2px solid white;
+  position: relative;
+}
+
+[data-theme='dark'] .avatar {
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
 }
 
-.profile-avatar__placeholder {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background: var(--tg-button-color, #3390ec);
-  color: var(--tg-button-text-color, #ffffff);
+.avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #FF9F0A, #FF375F);
+  color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 36px;
-  font-weight: 700;
-}
-
-.profile-name {
-  margin: 0 0 4px;
   font-size: 24px;
   font-weight: 700;
-  color: var(--tg-text-color, #000000);
 }
 
-.profile-username {
-  margin: 0;
-  font-size: 15px;
-  color: var(--tg-hint-color, #999999);
-}
-
-/* Wishlists section */
-.wishlists-section {
-  padding: 20px;
-}
-
-.wishlists-title {
-  margin: 0 0 16px;
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--tg-text-color, #000000);
-}
-
-/* Loading state */
-.wishlists-loading {
-  padding: 40px 20px;
-  text-align: center;
-  color: var(--tg-hint-color, #999999);
-}
-
-.spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid rgba(0, 0, 0, 0.1);
-  border-top-color: var(--tg-button-color, #3390ec);
+.avatar-status {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 14px;
+  height: 14px;
+  background: #34C759;
+  border: 2px solid white;
   border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 12px;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
+[data-theme='dark'] .avatar-status {
+  background: #10b981;
+  border: 2px solid #030308;
 }
 
-/* Error state */
-.wishlists-error {
-  padding: 40px 20px;
-  text-align: center;
-}
-
-.wishlists-error__icon {
-  font-size: 48px;
-  margin-bottom: 12px;
-}
-
-.wishlists-error__text {
-  margin: 0;
-  font-size: 15px;
-  color: #ff3b30;
-}
-
-/* Empty state */
-.wishlists-empty {
-  padding: 40px 20px;
-  text-align: center;
-}
-
-.wishlists-empty__icon {
-  font-size: 64px;
-  margin-bottom: 16px;
-}
-
-.wishlists-empty__title {
-  margin: 0 0 8px;
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--tg-text-color, #000000);
-}
-
-.wishlists-empty__text {
-  margin: 0 0 24px;
-  font-size: 15px;
-  color: var(--tg-hint-color, #999999);
-  line-height: 1.4;
-}
-
-.wishlists-empty__button {
-  padding: 12px 24px;
-  background: var(--tg-button-color, #3390ec);
-  color: var(--tg-button-text-color, #ffffff);
-  border: none;
-  border-radius: 8px;
-  font-size: 15px;
-  font-weight: 600;
-  transition: opacity 0.2s;
-}
-
-.wishlists-empty__button:hover {
-  opacity: 0.9;
-}
-
-/* Wishlists list */
-.wishlists-list {
+.user-info {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  justify-content: center;
 }
 
-.wishlist-card {
-  padding: 16px;
-  background: var(--tg-bg-color, #ffffff);
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-}
-
-.wishlist-card__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
-  gap: 12px;
-}
-
-.wishlist-card__title {
+.user-name {
   margin: 0;
-  font-size: 17px;
-  font-weight: 600;
-  color: var(--tg-text-color, #000000);
-  flex: 1;
+  font-size: 18px;
+  font-weight: 700;
+  color: #111118;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 
-.wishlist-card__badge {
-  padding: 4px 8px;
-  background: var(--tg-button-color, #3390ec);
-  color: var(--tg-button-text-color, #ffffff);
-  border-radius: 4px;
+[data-theme='dark'] .user-name {
+  color: #f8fafc;
+}
+
+.user-subtitle {
+  margin: 0;
   font-size: 12px;
-  font-weight: 600;
-  white-space: nowrap;
+  font-weight: 500;
+  color: #64748b;
+  margin-top: 2px;
 }
 
-.wishlist-card__description {
-  margin: 0 0 12px;
+[data-theme='dark'] .user-subtitle {
+  color: #94a3b8;
+}
+
+.edit-header-btn {
+  margin-left: auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none; /* Reset if glass-btn has border that conflicts, though glass-btn usually has one */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  background: rgba(255, 255, 255, 0.4); /* Consistent with light theme template */
+}
+
+[data-theme='dark'] .edit-header-btn {
+  color: #slate-300;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* === CAROUSEL WRAPPER === */
+.carousel-wrapper {
+  margin: 0 -20px;
+  padding: 0 20px;
+  /* Prevent shadow clipping in carousel */
+  overflow: visible;
+}
+
+/* === EVENT DESCRIPTION === */
+.event-description-wrapper {
+  /* margin controlled by parent gap */
+}
+
+.event-description {
+  padding: 16px;
+  border-radius: 22px;
+}
+
+.description-text {
+  margin: 0;
   font-size: 15px;
-  color: var(--tg-hint-color, #999999);
-  line-height: 1.4;
+  line-height: 1.6;
+  color: #64748b;
+  font-weight: 400;
+  font-style: italic;
+  white-space: pre-line;
 }
 
-.wishlist-card__footer {
+[data-theme='dark'] .description-text {
+  color: #9CA3AF;
+}
+
+/* === ACTIONS ROW === */
+.actions-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 0 4px;
 }
 
-.wishlist-card__date {
-  font-size: 13px;
-  color: var(--tg-hint-color, #999999);
+.actions-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.action-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme='dark'] .action-btn {
+  color: rgba(248, 250, 252, 0.7);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+.item-count {
+  text-align: right;
+}
+
+.count-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+[data-theme='dark'] .count-label {
+  color: #6B7280;
+}
+
+/* === WISHES SECTION === */
+.wishes-section {
+  min-height: 200px;
+  margin-top: 20px;
+}
+
+/* === FAB BUTTON === */
+.fab-button {
+  position: fixed;
+  bottom: 100px;
+  right: 20px;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--tg-button-color);
+  color: white;
+  border: 4px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 24px rgba(10, 13, 194, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 100;
+}
+
+[data-theme='dark'] .fab-button {
+  background: #4f46e5;
+  border: 4px solid rgba(79, 70, 229, 0.2);
+  box-shadow: 0 0 30px rgba(79, 70, 229, 0.5),
+              0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme='dark'] .fab-button:hover {
+  box-shadow: 0 0 40px rgba(79, 70, 229, 0.7),
+              0 8px 24px rgba(0, 0, 0, 0.5);
+  transform: scale(1.05);
+}
+
+[data-theme='dark'] .fab-button:active {
+  transform: scale(0.95);
+}
+
+.fab-button:hover {
+  transform: scale(1.05);
+}
+
+.fab-button:active {
+  transform: scale(0.95);
+}
+
+.fab-icon {
+  font-size: 36px;
+  font-weight: 300;
+  line-height: 1;
+}
+
+/* Transitions */
+.v-enter-active,
+.v-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.v-enter-from,
+.v-leave-to {
+  opacity: 0;
+}
+
+/* === BACKGROUND BLOBS === */
+.bg-blob {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px); /* Reduced from 120px */
+  opacity: 0;
+  pointer-events: none;
+  z-index: 0;
+  mix-blend-mode: screen;
+  transition: opacity 0.5s ease;
+  will-change: transform;
+}
+
+[data-theme='dark'] .bg-blob {
+  opacity: 0.12;
+}
+
+.bg-blob-1 {
+  top: 5%;
+  right: -10%;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, #4f46e5 0%, transparent 70%);
+}
+
+.bg-blob-2 {
+  bottom: 15%;
+  left: -15%;
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, #6366f1 0%, transparent 70%);
 }
 </style>

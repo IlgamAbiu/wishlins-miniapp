@@ -7,7 +7,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from src.api.routes import users_router, wishlists_router
+from src.api.routes import users_router, wishlists_router, wishes_router
 from src.config import get_settings
 from src.infrastructure.database import close_db, init_db
 
@@ -47,6 +47,7 @@ def create_app() -> FastAPI:
     # Include routers
     app.include_router(users_router, prefix="/api/v1")
     app.include_router(wishlists_router, prefix="/api/v1")
+    app.include_router(wishes_router, prefix="/api/v1")
 
     # Health check
     @app.get("/health", tags=["health"])

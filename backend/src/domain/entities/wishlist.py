@@ -5,8 +5,18 @@ Pure Python dataclasses with no framework dependencies.
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Union
 from uuid import UUID
+
+
+class _Unset:
+    """Sentinel class to distinguish between None and unset values in updates."""
+    def __repr__(self) -> str:
+        return "UNSET"
+
+
+# Singleton sentinel value
+UNSET = _Unset()
 
 
 @dataclass
@@ -18,6 +28,9 @@ class Wishlist:
     title: str
     description: Optional[str]
     is_public: bool
+    is_default: bool
+    emoji: Optional[str]
+    event_date: Optional[datetime]
     created_at: datetime
     updated_at: datetime
 
@@ -29,6 +42,9 @@ class Wishlist:
             "title": self.title,
             "description": self.description,
             "is_public": self.is_public,
+            "is_default": self.is_default,
+            "emoji": self.emoji,
+            "event_date": self.event_date.isoformat() if self.event_date else None,
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
         }
@@ -42,6 +58,9 @@ class WishlistCreate:
     title: str
     description: Optional[str] = None
     is_public: bool = False
+    is_default: bool = False
+    emoji: Optional[str] = None
+    event_date: Optional[datetime] = None
 
     def __post_init__(self):
         if not self.title or not self.title.strip():
@@ -50,8 +69,14 @@ class WishlistCreate:
 
 @dataclass
 class WishlistUpdate:
-    """Data for updating an existing wishlist."""
+    """Data for updating an existing wishlist.
 
-    title: Optional[str] = None
-    description: Optional[str] = None
-    is_public: Optional[bool] = None
+    Uses UNSET sentinel to distinguish between fields that should not be updated
+    and fields that should be set to None/null.
+    """
+
+    title: Union[str, _Unset] = UNSET
+    description: Union[Optional[str], _Unset] = UNSET
+    is_public: Union[bool, _Unset] = UNSET
+    emoji: Union[Optional[str], _Unset] = UNSET
+    event_date: Union[Optional[datetime], _Unset] = UNSET

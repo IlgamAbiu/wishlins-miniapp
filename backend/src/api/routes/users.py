@@ -11,8 +11,9 @@ from src.api.schemas import (
     UserRegisterRequest,
     UserRegisterResponse,
     UserResponse,
+    UserUpdateRequest,
 )
-from src.domain.entities import UserCreate
+from src.domain.entities import UserCreate, UserUpdate
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -58,6 +59,7 @@ async def register_user(
             first_name=user.first_name,
             last_name=user.last_name,
             avatar_url=user.avatar_url,
+            profile_text=user.profile_text,
             created_at=user.created_at,
             updated_at=user.updated_at,
         ),
@@ -95,6 +97,45 @@ async def get_user_by_telegram_id(
         first_name=user.first_name,
         last_name=user.last_name,
         avatar_url=user.avatar_url,
+        profile_text=user.profile_text,
+        created_at=user.created_at,
+        updated_at=user.updated_at,
+    )
+
+
+@router.patch(
+    "/telegram/{telegram_id}/profile",
+    response_model=UserResponse,
+    responses={
+        200: {"description": "Profile updated successfully"},
+        404: {"model": ErrorResponse, "description": "User not found"},
+    },
+    summary="Update user profile",
+    description="Update user profile information such as profile text/status.",
+)
+async def update_user_profile(
+    telegram_id: int,
+    request: UserUpdateRequest,
+    user_service: UserServiceDep,
+) -> UserResponse:
+    """Update user profile."""
+    update_data = UserUpdate(profile_text=request.profile_text)
+    user = await user_service.update_user_profile(telegram_id, update_data)
+
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+
+    return UserResponse(
+        id=user.id,
+        telegram_id=user.telegram_id,
+        username=user.username,
+        first_name=user.first_name,
+        last_name=user.last_name,
+        avatar_url=user.avatar_url,
+        profile_text=user.profile_text,
         created_at=user.created_at,
         updated_at=user.updated_at,
     )

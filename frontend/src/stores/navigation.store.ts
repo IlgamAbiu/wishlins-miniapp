@@ -23,35 +23,37 @@ import type { TabId, TabConfig, NavigationState } from '@/types'
 /**
  * Tab configurations.
  * Icons use simple text/emoji for MVP, can be replaced with SVG icons.
+ * Order: Profile (Мои желания) → Friends (Друзья) → Search (Поиск)
  */
 export const TAB_CONFIGS: TabConfig[] = [
   {
-    id: 'feed',
-    label: 'Feed',
-    icon: '○',
-    activeIcon: '●',
-  },
-  {
     id: 'profile',
-    label: 'Wishlist',
+    label: 'Мои желания',
     icon: '☆',
     activeIcon: '★',
   },
   {
     id: 'friends',
-    label: 'Friends',
+    label: 'Друзья',
     icon: '◇',
     activeIcon: '◆',
+  },
+  {
+    id: 'search',
+    label: 'Поиск',
+    icon: '○',
+    activeIcon: '●',
   },
 ]
 
 /**
  * Internal mutable state.
+ * Start with profile tab as the default view.
  */
 const state = reactive<NavigationState>({
-  activeTab: 'feed',
+  activeTab: 'profile',
   previousTab: null,
-  history: ['feed'],
+  history: ['profile'],
 })
 
 /**
@@ -86,9 +88,9 @@ function goBack(): boolean {
  * Reset navigation to initial state.
  */
 function reset(): void {
-  state.activeTab = 'feed'
+  state.activeTab = 'profile'
   state.previousTab = null
-  state.history = ['feed']
+  state.history = ['profile']
 }
 
 /**

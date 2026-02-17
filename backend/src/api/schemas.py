@@ -8,6 +8,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
+from src.domain.entities.wish import WishPriority
+
 
 class UserRegisterRequest(BaseModel):
     """Request schema for user registration."""
@@ -40,6 +42,7 @@ class UserResponse(BaseModel):
     first_name: str = Field(..., description="User's first name")
     last_name: Optional[str] = Field(None, description="User's last name")
     avatar_url: Optional[str] = Field(None, description="User's avatar URL")
+    profile_text: Optional[str] = Field(None, description="User's profile text/status")
     created_at: datetime = Field(..., description="Account creation timestamp")
     updated_at: datetime = Field(..., description="Last update timestamp")
 
@@ -85,6 +88,20 @@ class UserRegisterResponse(BaseModel):
     }
 
 
+class UserUpdateRequest(BaseModel):
+    """Request schema for updating user profile."""
+
+    profile_text: str = Field(..., min_length=1, max_length=100, description="User's profile text/status")
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "profile_text": "Saving for a dream ✨"
+            }
+        }
+    }
+
+
 class ErrorResponse(BaseModel):
     """Standard error response schema."""
 
@@ -98,6 +115,8 @@ class WishlistCreateRequest(BaseModel):
     title: str = Field(..., min_length=1, max_length=255, description="Wishlist title")
     description: Optional[str] = Field(None, description="Wishlist description")
     is_public: bool = Field(default=False, description="Whether wishlist is public")
+    emoji: Optional[str] = Field(None, description="Event emoji")
+    event_date: Optional[datetime] = Field(None, description="Date of the event")
 
     model_config = {
         "json_schema_extra": {
@@ -105,6 +124,8 @@ class WishlistCreateRequest(BaseModel):
                 "title": "Birthday Wishlist",
                 "description": "Things I want for my birthday",
                 "is_public": True,
+                "emoji": "🎂",
+                "event_date": "2024-01-15T00:00:00Z"
             }
         }
     }
@@ -116,12 +137,15 @@ class WishlistUpdateRequest(BaseModel):
     title: Optional[str] = Field(None, min_length=1, max_length=255, description="Wishlist title")
     description: Optional[str] = Field(None, description="Wishlist description")
     is_public: Optional[bool] = Field(None, description="Whether wishlist is public")
+    emoji: Optional[str] = Field(None, description="Event emoji")
+    event_date: Optional[datetime] = Field(None, description="Date of the event")
 
     model_config = {
         "json_schema_extra": {
             "example": {
                 "title": "Updated Birthday Wishlist",
                 "is_public": False,
+                "emoji": "🎉"
             }
         }
     }
@@ -135,6 +159,9 @@ class WishlistResponse(BaseModel):
     title: str = Field(..., description="Wishlist title")
     description: Optional[str] = Field(None, description="Wishlist description")
     is_public: bool = Field(..., description="Whether wishlist is public")
+    is_default: bool = Field(..., description="Whether this is the default wishlist")
+    emoji: Optional[str] = Field(None, description="Event emoji")
+    event_date: Optional[datetime] = Field(None, description="Date of the event")
     created_at: datetime = Field(..., description="Creation timestamp")
     updated_at: datetime = Field(..., description="Last update timestamp")
 
@@ -147,6 +174,8 @@ class WishlistResponse(BaseModel):
                 "title": "Birthday Wishlist",
                 "description": "Things I want for my birthday",
                 "is_public": True,
+                "emoji": "🎂",
+                "event_date": "2024-01-15T00:00:00Z",
                 "created_at": "2024-01-15T10:30:00Z",
                 "updated_at": "2024-01-15T10:30:00Z",
             }
@@ -178,3 +207,51 @@ class WishlistListResponse(BaseModel):
             }
         }
     }
+
+
+class WishBase(BaseModel):
+    """Base Wish schema."""
+
+    title: str = Field(..., min_length=1, max_length=255)
+    subtitle: Optional[str] = None
+    description: Optional[str] = None
+    link: Optional[str] = None
+    image_url: Optional[str] = None
+    price: Optional[float] = None
+    currency: Optional[str] = "RUB"
+    priority: WishPriority = Field(default=WishPriority.JUST_WANT, description="Wish priority level")
+
+
+class WishCreateRequest(WishBase):
+    """Schema for creating a wish."""
+
+    wishlist_id: UUID = Field(..., description="Wishlist ID to add the wish to")
+
+
+class WishUpdateRequest(BaseModel):
+    """Schema for updating a wish."""
+
+    title: Optional[str] = Field(None, min_length=1, max_length=255)
+    subtitle: Optional[str] = None
+    description: Optional[str] = None
+    link: Optional[str] = None
+    image_url: Optional[str] = None
+    price: Optional[float] = None
+    currency: Optional[str] = None
+    is_booked: Optional[bool] = None
+    priority: Optional[WishPriority] = None
+
+
+class WishResponse(WishBase):
+    """Schema for wish response."""
+
+    id: UUID
+    wishlist_id: UUID
+    is_booked: bool
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {
+        "from_attributes": True
+    }
+

@@ -1,7 +1,3 @@
-"""
-Telegram Bot entry point.
-"""
-
 import asyncio
 import logging
 import sys
@@ -9,17 +5,14 @@ import sys
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
+from aiogram.types import BotCommand
 
-from src.api import BackendAPIClient
+from src.api.client import BackendAPIClient
 from src.config import get_settings
-from src.handlers import start_router
+from src.handlers import start
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    stream=sys.stdout,
-)
+logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 logger = logging.getLogger(__name__)
 
 # Bot description texts
@@ -53,11 +46,12 @@ async def main() -> None:
     api_client = BackendAPIClient()
 
     # Register routers
-    dp.include_router(start_router)
+    dp.include_router(start.router)
 
     # Inject dependencies into handlers
-    dp["api_client"] = api_client
-
+    # We pass api_client via workflow_data (kwarg injection)
+    # This works because dp.start_polling(..., api_client=api_client) passes it
+    
     logger.info(f"Starting {settings.bot_name}...")
 
     try:
@@ -65,7 +59,12 @@ async def main() -> None:
         try:
             await bot.set_my_description(description=BOT_DESCRIPTION)
             await bot.set_my_short_description(short_description=BOT_DESCRIPTION)
-            logger.info("Bot description set successfully")
+            
+            await bot.set_my_commands([
+                BotCommand(command="start", description="Start the bot"),
+                BotCommand(command="webapp", description="Open Mini App"),
+            ])
+            logger.info("Bot description and commands set successfully")
         except Exception as e:
             logger.warning(f"Failed to set bot description: {e}")
 

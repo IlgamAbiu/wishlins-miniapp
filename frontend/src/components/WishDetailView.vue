@@ -722,7 +722,8 @@ async function handleDeleteWish(id: string) {
 }
 
 .floating-actions .primary-btn,
-.floating-actions .book-btn {
+.floating-actions .book-btn,
+.floating-actions .fulfill-btn {
     pointer-events: auto; /* Re-enable clicks */
 }
 

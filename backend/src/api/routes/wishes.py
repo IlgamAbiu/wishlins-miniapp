@@ -129,6 +129,7 @@ async def update_wish(
 
     try:
         update_data = WishUpdate(
+            wishlist_id=request.wishlist_id,
             title=request.title,
             subtitle=request.subtitle,
             description=request.description,

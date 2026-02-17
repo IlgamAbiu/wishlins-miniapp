@@ -1,16 +1,29 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useWishes } from '@/composables/useWishes'
 import { useWishlists } from '@/composables/useWishlists'
 import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
+import { useUser } from '@/composables/useUser'
 import type { Wish } from '@/types'
 import AddWishModal from '@/components/AddWishModal.vue'
 
 const { selectedWish, closeWish, updateWish, deleteWish, fulfillWish } = useWishes()
 const { wishlists } = useWishlists()
 const { user } = useTelegramWebApp()
+const { getUserByTelegramId } = useUser()
 
 const showEditModal = ref(false)
+const internalUserId = ref<string | null>(null)
+
+// Fetch internal user ID for ownership check
+onMounted(async () => {
+    if (user.value) {
+        const internalUser = await getUserByTelegramId(user.value.id)
+        if (internalUser) {
+            internalUserId.value = internalUser.id
+        }
+    }
+})
 
 const wish = computed(() => selectedWish.value)
 
@@ -26,15 +39,13 @@ const formattedPrice = computed(() => {
 })
 
 const isOwner = computed(() => {
-    if (!user.value || !safeWish.value) return false
+    if (!internalUserId.value || !safeWish.value) return false
     // Find the wishlist this wish belongs to
     const wishlist = wishlists.value.find(w => w.id === safeWish.value.wishlist_id)
     if (wishlist) {
-        return wishlist.user_id === user.value.id
+        return wishlist.user_id === internalUserId.value
     }
-    // Fallback: if wishlist not found in loaded list, we might implement a check or default to false
-    // BUT, if we are in "My Wishes" view, we likely own it. 
-    // For now, stricly check existence in user's loaded wishlists (if they are loaded)
+    // Fallback if wishlist not found in loaded list (unlikely if we just navigated)
     return false
 })
 

@@ -50,7 +50,7 @@ const currentComponent = computed(() => tabComponents[activeTab.value])
     <div class="mesh-gradient"></div>
 
     <main class="app__content">
-      <KeepAlive>
+      <KeepAlive :max="2">
         <component :is="currentComponent" :key="activeTab" />
       </KeepAlive>
     </main>

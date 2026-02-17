@@ -244,8 +244,9 @@ async function handleDeleteWish(id: string) {
     width: 140%;
     height: 80%;
     background: radial-gradient(circle at 50% 30%, rgba(10, 13, 194, 0.4), transparent 60%);
-    filter: blur(80px);
+    filter: blur(60px); /* Reduced from 80px */
     opacity: 0.7;
+    will-change: transform;
 }
 
 .blur-circle {
@@ -255,8 +256,9 @@ async function handleDeleteWish(id: string) {
     width: 80%;
     height: 60%;
     background: rgba(88, 28, 135, 0.3);
-    filter: blur(100px);
+    filter: blur(60px); /* Reduced from 100px */
     border-radius: 50%;
+    will-change: transform;
 }
 
 /* Fixed Header */
@@ -286,8 +288,8 @@ async function handleDeleteWish(id: string) {
 /* Buttons */
 .glass-btn {
     background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(26px); /* Liquid Glass Effect */
-    -webkit-backdrop-filter: blur(26px);
+    backdrop-filter: blur(10px); /* Reduced from 26px */
+    -webkit-backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: rgba(255, 255, 255, 0.9);
     transition: all 0.2s ease;
@@ -343,15 +345,15 @@ async function handleDeleteWish(id: string) {
     inset: 0;
     background: rgba(10, 13, 194, 0.3);
     border-radius: 63% 37% 54% 46% / 55% 48% 52% 45%;
-    filter: blur(40px);
-    transform: scale(1.1);
-    animation: pulse 2s infinite;
+    filter: blur(20px); /* Reduced from 40px */
+    transform: scale(1); /* Removed scale 1.1 */
 }
 
-@keyframes pulse {
+/* Animation removed for performance */
+/* @keyframes pulse {
     0%, 100% { transform: scale(1.1); opacity: 1; }
     50% { transform: scale(1.05); opacity: 0.8; }
-}
+} */
 
 .liquid-container {
     position: relative;
@@ -381,7 +383,7 @@ async function handleDeleteWish(id: string) {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transform: scale(1.1);
+    transform: scale(1); /* Removed scale 1.1 */
     opacity: 0.9;
 }
 
@@ -429,7 +431,7 @@ async function handleDeleteWish(id: string) {
     padding: 8px 24px;
     border-radius: 9999px;
     background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(16px);
+    backdrop-filter: blur(10px); /* Reduced from 16px */
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 0 10px rgba(245, 158, 11, 0.3), inset 0 0 5px rgba(245, 158, 11, 0.2);
     display: flex;
@@ -521,9 +523,9 @@ async function handleDeleteWish(id: string) {
     margin-top: 16px; /* Match side margins (16px) */
     /* margin-bottom handled by spacer-bottom */
     
-    backdrop-filter: blur(26px) saturate(180%);
-    -webkit-backdrop-filter: blur(26px) saturate(180%);
-    background: rgba(30, 30, 45, 0.7);
+    backdrop-filter: blur(16px) saturate(180%); /* Reduced from 26px */
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    background: rgba(30, 30, 45, 0.85); /* Increased opacity */
     border: 1px solid rgba(255, 255, 255, 0.15);
     box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.3);
     
@@ -532,7 +534,7 @@ async function handleDeleteWish(id: string) {
 }
 
 [data-theme='light'] .glass-panel {
-    background: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.9);
     border: 1px solid rgba(255, 255, 255, 0.8);
 }
 
@@ -680,8 +682,8 @@ async function handleDeleteWish(id: string) {
     transition: all 0.2s ease;
     
     background: linear-gradient(135deg, rgba(10, 13, 194, 0.9) 0%, rgba(76, 29, 149, 0.9) 100%);
-    backdrop-filter: blur(26px);
-    -webkit-backdrop-filter: blur(26px);
+    backdrop-filter: blur(10px); /* Reduced from 26px */
+    -webkit-backdrop-filter: blur(10px);
     box-shadow: 0 10px 30px rgba(10, 13, 194, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.4);
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: white;
@@ -717,8 +719,8 @@ async function handleDeleteWish(id: string) {
     transition: all 0.2s ease;
     
     background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(26px);
-    -webkit-backdrop-filter: blur(26px);
+    backdrop-filter: blur(10px); /* Reduced from 26px */
+    -webkit-backdrop-filter: blur(10px);
     box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.2);
     border: 1px solid rgba(16, 185, 129, 0.3);
     color: rgba(16, 185, 129, 1);

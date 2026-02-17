@@ -70,17 +70,19 @@
   --transition-normal: 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
   --transition-slow: 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 
-  /* Glassmorphism - Thick Refractive Glass */
-  --glass-bg: rgba(255, 255, 255, 0.65);
+  /* Glassmorphism - Thick Refractive Glass (Optimized) */
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  /* More opaque */
   --glass-border: rgba(255, 255, 255, 0.6);
   --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
-  --glass-blur: 30px;
+  --glass-blur: 10px;
+  /* Reduced from 30px */
 
   /* Glass variations */
-  --glass-panel-bg: rgba(255, 255, 255, 0.65);
-  --glass-card-bg: rgba(255, 255, 255, 0.5);
-  --glass-btn-bg: rgba(255, 255, 255, 0.4);
-  --glass-card-shadow: inset 0 0 20px rgba(255, 255, 255, 0.5), 0 4px 6px rgba(0,0,0,0.02);
+  --glass-panel-bg: rgba(255, 255, 255, 0.85);
+  --glass-card-bg: rgba(255, 255, 255, 0.7);
+  --glass-btn-bg: rgba(255, 255, 255, 0.6);
+  --glass-card-shadow: inset 0 0 20px rgba(255, 255, 255, 0.5), 0 4px 6px rgba(0, 0, 0, 0.02);
 }
 
 /* Dark Theme */
@@ -127,15 +129,17 @@
   --color-success-rgb: 16, 185, 129;
 
   /* Glass - Dark Mode (Ultra Transparent) */
-  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-bg: rgba(20, 20, 30, 0.6);
+  /* More opaque */
   --glass-border: rgba(255, 255, 255, 0.08);
   --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
-  --glass-blur: 40px;
+  --glass-blur: 15px;
+  /* Reduced from 40px */
 
   /* Glass variations - Dark Mode */
-  --glass-panel-bg: rgba(255, 255, 255, 0.03);
-  --glass-card-bg: rgba(255, 255, 255, 0.04);
-  --glass-btn-bg: rgba(255, 255, 255, 0.06);
+  --glass-panel-bg: rgba(20, 20, 30, 0.7);
+  --glass-card-bg: rgba(30, 30, 40, 0.6);
+  --glass-btn-bg: rgba(40, 40, 50, 0.5);
   --glass-card-shadow: inset 0 0 20px rgba(255, 255, 255, 0.02), 0 8px 24px rgba(0, 0, 0, 0.4);
 
   /* === GLASS BORDERS - NEW === */
@@ -163,9 +167,9 @@
 /* Dark Theme Body Background */
 [data-theme='dark'] body {
   background: radial-gradient(circle at 50% 0%,
-    #1a1a3a 0%,
-    #030308 60%,
-    #030308 100%);
+      #1a1a3a 0%,
+      #030308 60%,
+      #030308 100%);
   background-attachment: fixed;
   min-height: 100vh;
   color: #f8fafc;
@@ -331,8 +335,8 @@ select:focus {
 /* Glass Card Utility */
 .glass-card {
   background: var(--glass-bg);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
   border: 1px solid var(--glass-border);
   box-shadow:
     0 4px 24px -1px rgba(0, 0, 0, 0.1),
@@ -354,10 +358,10 @@ select:focus {
 
 /* Floating HUD Utility (for TabBar/Modals) */
 .floating-hud {
-  background: rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.9);
   /* Higher opacity for readability */
-  backdrop-filter: blur(30px) saturate(180%);
-  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.5);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
   border-radius: 32px;
@@ -365,7 +369,7 @@ select:focus {
 }
 
 [data-theme='dark'] .floating-hud {
-  background: rgba(30, 30, 32, 0.75);
+  background: rgba(30, 30, 32, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
@@ -374,8 +378,8 @@ select:focus {
 /* Glass Panel - Headers, Navigation */
 .glass-panel {
   background: var(--glass-panel-bg);
-  backdrop-filter: blur(30px);
-  -webkit-backdrop-filter: blur(30px);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow);
   border-radius: var(--border-radius-3xl);
@@ -384,8 +388,8 @@ select:focus {
 /* Glass Card - Content Cards */
 .glass-card-new {
   background: var(--glass-card-bg);
-  backdrop-filter: blur(30px);
-  -webkit-backdrop-filter: blur(30px);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
   border: 1px solid rgba(255, 255, 255, 0.5);
   box-shadow: var(--glass-card-shadow);
   border-radius: var(--border-radius-3xl);
@@ -395,8 +399,8 @@ select:focus {
 /* Glass Button - Interactive Elements */
 .glass-btn {
   background: var(--glass-btn-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
   border: 1px solid var(--glass-border);
   transition: all 0.2s ease;
   cursor: pointer;
@@ -415,14 +419,14 @@ select:focus {
 .active-pill {
   background: #ffffff;
   border: 1px solid rgba(255, 255, 255, 0.8);
-  box-shadow: 0 4px 12px rgba(10, 13, 194, 0.08), inset 0 0 10px rgba(255,255,255,0.8);
+  box-shadow: 0 4px 12px rgba(10, 13, 194, 0.08), inset 0 0 10px rgba(255, 255, 255, 0.8);
 }
 
 [data-theme='dark'] .active-pill {
   background: rgba(79, 70, 229, 0.15);
   border: 1px solid rgba(79, 70, 229, 0.4);
   box-shadow: 0 0 20px rgba(79, 70, 229, 0.3),
-              0 4px 12px rgba(0, 0, 0, 0.4);
+    0 4px 12px rgba(0, 0, 0, 0.4);
   color: #f8fafc;
 }
 
@@ -433,7 +437,10 @@ select:focus {
   z-index: 0;
   mix-blend-mode: multiply;
   filter: blur(100px);
-  opacity: 0.2;
+  opacity: 0.1;
+  /* Reduced opacity */
+  will-change: transform;
+  /* Hint to browser */
 }
 
 .blur-circle-blue {
@@ -468,9 +475,9 @@ select:focus {
   width: 300px;
   height: 300px;
   background: radial-gradient(circle,
-    rgba(79, 70, 229, 0.15) 0%,
-    rgba(79, 70, 229, 0.05) 40%,
-    transparent 70%);
+      rgba(79, 70, 229, 0.15) 0%,
+      rgba(79, 70, 229, 0.05) 40%,
+      transparent 70%);
   filter: blur(40px);
   transform: translateX(-50%);
   pointer-events: none;
@@ -493,8 +500,8 @@ select:focus {
   position: absolute;
   inset: -20px;
   background: radial-gradient(circle at center,
-    rgba(79, 70, 229, 0.2) 0%,
-    transparent 60%);
+      rgba(79, 70, 229, 0.2) 0%,
+      transparent 60%);
   filter: blur(30px);
   pointer-events: none;
   z-index: -1;
@@ -509,12 +516,15 @@ select:focus {
 .bg-blob {
   position: fixed;
   border-radius: 50%;
-  filter: blur(120px);
+  filter: blur(80px);
+  /* Reduced blur */
   opacity: 0;
   pointer-events: none;
   z-index: -1;
   mix-blend-mode: screen;
   transition: opacity 0.5s ease;
+  will-change: transform;
+  /* Optimization */
 }
 
 [data-theme='dark'] .bg-blob {
@@ -539,21 +549,28 @@ select:focus {
 
 /* Floating animation for blobs */
 @keyframes blob-float {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translate(0, 0) scale(1);
   }
+
   33% {
-    transform: translate(30px, -30px) scale(1.1);
+    transform: translate(30px, -30px) scale(1.05);
+    /* Reduced scale diff */
   }
+
   66% {
-    transform: translate(-20px, 20px) scale(0.9);
+    transform: translate(-20px, 20px) scale(0.95);
   }
 }
 
 [data-theme='dark'] .bg-blob-1 {
-  animation: blob-float 20s ease-in-out infinite;
+  animation: blob-float 40s ease-in-out infinite;
+  /* Slower */
 }
 
 [data-theme='dark'] .bg-blob-2 {
-  animation: blob-float 25s ease-in-out infinite reverse;
+  animation: blob-float 50s ease-in-out infinite reverse;
+  /* Slower */
 }

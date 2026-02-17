@@ -3,7 +3,7 @@
  * Add/Edit Wish Modal.
  * Bottom sheet modal to add or edit a wish.
  */
-import { ref, reactive, watch } from 'vue'
+import { ref, reactive, watch, onBeforeUnmount } from 'vue'
 import type { Wish, WishPriority } from '@/types'
 
 const props = defineProps<{
@@ -27,6 +27,8 @@ const emit = defineEmits<{
 
 const isSubmitting = ref(false)
 const isDeleting = ref(false)
+let submitTimeout: ReturnType<typeof setTimeout>
+let scrollTimeout: ReturnType<typeof setTimeout>
 
 const form = reactive({
   title: '',
@@ -80,7 +82,8 @@ function handleSubmit() {
   })
   
   // Reset submitting state after emit, parent handles closing or error
-  setTimeout(() => { isSubmitting.value = false }, 500)
+  if (submitTimeout) clearTimeout(submitTimeout)
+  submitTimeout = setTimeout(() => { isSubmitting.value = false }, 500)
 }
 
 function handleDelete() {
@@ -91,10 +94,16 @@ function handleDelete() {
 }
 
 function onInputFocus(event: FocusEvent) {
-  setTimeout(() => {
+  if (scrollTimeout) clearTimeout(scrollTimeout)
+  scrollTimeout = setTimeout(() => {
     (event.target as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'center' })
   }, 300)
 }
+
+onBeforeUnmount(() => {
+  if (submitTimeout) clearTimeout(submitTimeout)
+  if (scrollTimeout) clearTimeout(scrollTimeout)
+})
 </script>
 
 <template>

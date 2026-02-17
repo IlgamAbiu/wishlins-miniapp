@@ -1,25 +1,66 @@
 <script setup lang="ts">
 /**
- * Add Wish Modal.
- * Bottom sheet modal to add a new wish.
+ * Add/Edit Wish Modal.
+ * Bottom sheet modal to add or edit a wish.
  */
-import { ref, reactive } from 'vue'
-import type { WishPriority } from '@/types'
+import { ref, reactive, watch, onBeforeUnmount } from 'vue'
+import type { Wish, WishPriority } from '@/types'
+
+const props = defineProps<{
+  initialWish?: Wish
+}>()
 
 const emit = defineEmits<{
   (e: 'close'): void
-  (e: 'submit', data: { title: string; priority: WishPriority; price?: number; currency?: string; link?: string; description?: string }): void
+  (e: 'submit', data: { 
+    id?: string;
+    title: string; 
+    subtitle?: string; 
+    priority: WishPriority; 
+    price?: number; 
+    currency?: string; 
+    link?: string; 
+    description?: string 
+  }): void
+  (e: 'delete', id: string): void
 }>()
 
 const isSubmitting = ref(false)
+const isDeleting = ref(false)
+let submitTimeout: ReturnType<typeof setTimeout>
+let scrollTimeout: ReturnType<typeof setTimeout>
+
 const form = reactive({
   title: '',
+  subtitle: '',
   priority: 'just_want' as WishPriority,
   price: '',
   currency: 'RUB',
   link: '',
   description: ''
 })
+
+// Initialize form with existing data if editing
+watch(() => props.initialWish, (wish) => {
+  if (wish) {
+    form.title = wish.title
+    form.subtitle = wish.subtitle || ''
+    form.priority = wish.priority
+    form.price = wish.price?.toString() || ''
+    form.currency = wish.currency || 'RUB'
+    form.link = wish.link || ''
+    form.description = wish.description || ''
+  } else {
+    // Reset form
+    form.title = ''
+    form.subtitle = ''
+    form.priority = 'just_want'
+    form.price = ''
+    form.currency = 'RUB'
+    form.link = ''
+    form.description = ''
+  }
+}, { immediate: true })
 
 function handleSubmit() {
   if (!form.title.trim()) return
@@ -30,27 +71,46 @@ function handleSubmit() {
   const priceNumber = form.price ? parseFloat(form.price) : undefined
   
   emit('submit', {
+    id: props.initialWish?.id,
     title: form.title,
+    subtitle: form.subtitle,
     priority: form.priority,
     price: priceNumber,
     currency: form.currency,
     link: form.link,
     description: form.description
   })
+  
+  // Reset submitting state after emit, parent handles closing or error
+  if (submitTimeout) clearTimeout(submitTimeout)
+  submitTimeout = setTimeout(() => { isSubmitting.value = false }, 500)
+}
+
+function handleDelete() {
+  if (!props.initialWish || !confirm('Вы уверены, что хотите удалить это желание?')) return
+  
+  isDeleting.value = true
+  emit('delete', props.initialWish.id)
 }
 
 function onInputFocus(event: FocusEvent) {
-  setTimeout(() => {
+  if (scrollTimeout) clearTimeout(scrollTimeout)
+  scrollTimeout = setTimeout(() => {
     (event.target as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'center' })
   }, 300)
 }
+
+onBeforeUnmount(() => {
+  if (submitTimeout) clearTimeout(submitTimeout)
+  if (scrollTimeout) clearTimeout(scrollTimeout)
+})
 </script>
 
 <template>
   <div class="modal-overlay" @click.self="$emit('close')">
     <div class="modal-content">
       <div class="modal-header">
-        <h3>Новое желание</h3>
+        <h3>{{ initialWish ? 'Редактирование' : 'Новое желание' }}</h3>
         <button class="close-btn" @click="$emit('close')">✕</button>
       </div>
 
@@ -63,6 +123,16 @@ function onInputFocus(event: FocusEvent) {
             placeholder="Что вы хотите?"
             required
             autofocus
+            @focus="onInputFocus"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Подзаголовок</label>
+          <input
+            v-model="form.subtitle"
+            type="text"
+            placeholder="Короткое описание или магазин"
             @focus="onInputFocus"
           />
         </div>
@@ -127,7 +197,6 @@ function onInputFocus(event: FocusEvent) {
             placeholder="https://..."
             @focus="onInputFocus"
           />
-          <span class="field-hint">Магазин будет определен автоматически</span>
         </div>
 
         <!-- Photo Upload Placeholder -->
@@ -137,7 +206,6 @@ function onInputFocus(event: FocusEvent) {
             <span class="icon">📷</span>
             <span>Загрузка фото скоро станет доступна</span>
           </button>
-          <span class="field-hint">Пока можно вставить ссылку на изображение в поле "Ссылка"</span>
         </div>
 
         <div class="form-group">
@@ -150,13 +218,25 @@ function onInputFocus(event: FocusEvent) {
           ></textarea>
         </div>
 
-        <button
-          type="submit"
-          class="submit-btn"
-          :disabled="isSubmitting || !form.title.trim()"
-        >
-          {{ isSubmitting ? 'Добавление...' : 'Добавить желание' }}
-        </button>
+        <div class="button-group">
+            <button
+              type="submit"
+              class="submit-btn"
+              :disabled="isSubmitting || !form.title.trim()"
+            >
+              {{ isSubmitting ? 'Сохранение...' : (initialWish ? 'Сохранить' : 'Добавить желание') }}
+            </button>
+            
+            <button
+              v-if="initialWish"
+              type="button"
+              class="delete-btn"
+              @click="handleDelete"
+              :disabled="isDeleting"
+            >
+                {{ isDeleting ? 'Удаление...' : 'Удалить желание' }}
+            </button>
+        </div>
       </form>
     </div>
   </div>
@@ -271,6 +351,7 @@ input, select, textarea {
   font-weight: 600;
   cursor: pointer;
   transition: opacity var(--transition-fast), transform var(--transition-fast);
+  width: 100%;
 }
 
 .submit-btn:active {
@@ -278,6 +359,31 @@ input, select, textarea {
 }
 
 .submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.delete-btn {
+  margin-top: var(--spacing-sm);
+  padding: 16px;
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--border-radius-lg);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  width: 100%;
+}
+
+.delete-btn:active {
+  background: rgba(239, 68, 68, 0.2);
+  transform: scale(0.98);
+}
+
+.delete-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;

@@ -8,7 +8,6 @@ from uuid import UUID, uuid4
 
 from src.domain.entities.wish import Wish, WishCreate, WishUpdate
 from src.repositories import WishlistRepository, WishRepository
-from src.infrastructure.utils.url_parser import extract_store_from_url
 
 
 class WishService:
@@ -29,16 +28,12 @@ class WishService:
         if not wishlist:
             raise ValueError(f"Wishlist with id {data.wishlist_id} not found")
 
-        # Auto-extract store from link if not provided
-        store = data.store
-        if not store and data.link:
-            store = extract_store_from_url(data.link)
-
         now = datetime.now(timezone.utc)
         wish = Wish(
             id=uuid4(),
             wishlist_id=data.wishlist_id,
             title=data.title,
+            subtitle=data.subtitle,
             description=data.description,
             link=data.link,
             image_url=data.image_url,
@@ -46,7 +41,6 @@ class WishService:
             currency=data.currency,
             is_booked=False,
             priority=data.priority,
-            store=store,
             created_at=now,
             updated_at=now,
         )
@@ -73,6 +67,9 @@ class WishService:
                 raise ValueError("title cannot be empty")
             wish.title = data.title
 
+        if data.subtitle is not None:
+            wish.subtitle = data.subtitle
+
         if data.description is not None:
             wish.description = data.description
 
@@ -91,12 +88,8 @@ class WishService:
         if data.priority is not None:
             wish.priority = data.priority
 
-        # If link is updated, update it and re-extract store
         if data.link is not None:
             wish.link = data.link
-            wish.store = extract_store_from_url(data.link) or data.store
-        elif data.store is not None:
-            wish.store = data.store
 
         wish.updated_at = datetime.now(timezone.utc)
 

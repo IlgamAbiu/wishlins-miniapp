@@ -57,6 +57,7 @@ export interface Wish {
   id: string
   wishlist_id: string
   title: string
+  subtitle: string | null
   description: string | null
   link: string | null
   image_url: string | null
@@ -75,6 +76,7 @@ export interface Wish {
 export interface CreateWishRequest {
   wishlist_id: string
   title: string
+  subtitle?: string
   description?: string
   link?: string
   image_url?: string

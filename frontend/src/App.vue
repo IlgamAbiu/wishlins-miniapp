@@ -6,9 +6,11 @@
 import { computed, defineAsyncComponent } from 'vue'
 import { useNavigation } from '@/composables/useNavigation'
 import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
+import { useWishes } from '@/composables/useWishes'
 import { TabBar } from '@/components/navigation'
 import BlockedScreen from '@/components/BlockedScreen.vue'
 import FestiveBackground from '@/components/ui/FestiveBackground.vue'
+import WishDetailView from '@/components/WishDetailView.vue'
 
 // Lazy load views
 const ProfileView = defineAsyncComponent(() => import('@/views/ProfileView.vue'))
@@ -17,6 +19,7 @@ const SearchView = defineAsyncComponent(() => import('@/views/SearchView.vue'))
 
 const { activeTab } = useNavigation()
 const { isReady, isInTelegram } = useTelegramWebApp()
+const { selectedWish } = useWishes()
 
 // Map tab IDs to components
 const tabComponents = {
@@ -47,12 +50,16 @@ const currentComponent = computed(() => tabComponents[activeTab.value])
     <div class="mesh-gradient"></div>
 
     <main class="app__content">
-      <KeepAlive>
+      <KeepAlive :max="2">
         <component :is="currentComponent" :key="activeTab" />
       </KeepAlive>
     </main>
 
-    <TabBar />
+    <Transition name="fade-scale">
+      <WishDetailView v-if="selectedWish" />
+    </Transition>
+
+    <TabBar v-show="!selectedWish" />
   </div>
 </template>
 
@@ -162,5 +169,16 @@ a {
 /* Hide blur circles in dark theme */
 [data-theme='dark'] .blur-decoration {
   opacity: 0;
+}
+
+.fade-scale-enter-active,
+.fade-scale-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.fade-scale-enter-from,
+.fade-scale-leave-to {
+  opacity: 0;
+  transform: scale(0.95);
 }
 </style>

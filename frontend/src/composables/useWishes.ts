@@ -7,10 +7,20 @@ import type { Wish, CreateWishRequest } from '@/types'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
 
+const wishes = ref<Wish[]>([])
+const selectedWish = ref<Wish | null>(null)
+const loading = ref(false)
+const error = ref<string | null>(null)
+
 export function useWishes() {
-    const wishes = ref<Wish[]>([])
-    const loading = ref(false)
-    const error = ref<string | null>(null)
+
+    function openWish(wish: Wish) {
+        selectedWish.value = wish
+    }
+
+    function closeWish() {
+        selectedWish.value = null
+    }
 
     async function fetchWishes(wishlistId: string): Promise<void> {
         loading.value = true
@@ -99,6 +109,12 @@ export function useWishes() {
             const updated = await response.json()
             const index = wishes.value.findIndex(w => w.id === wishId)
             if (index !== -1) wishes.value[index] = updated
+
+            // Update selectedWish if it's the one being updated
+            if (selectedWish.value && selectedWish.value.id === wishId) {
+                selectedWish.value = updated
+            }
+
             return updated
         } catch (err) {
             error.value = err instanceof Error ? err.message : 'Failed to update wish'
@@ -154,12 +170,15 @@ export function useWishes() {
 
     return {
         wishes,
+        selectedWish,
         loading,
         error,
         fetchWishes,
         createWish,
         deleteWish,
         updateWish,
-        moveWishesToWishlist
+        moveWishesToWishlist,
+        openWish,
+        closeWish
     }
 }

@@ -22,6 +22,7 @@ class Wish:
     id: UUID
     wishlist_id: UUID
     title: str
+    subtitle: Optional[str]
     description: Optional[str]
     link: Optional[str]
     image_url: Optional[str]
@@ -29,7 +30,6 @@ class Wish:
     currency: Optional[str]
     is_booked: bool
     priority: WishPriority
-    store: Optional[str]
     created_at: datetime
     updated_at: datetime
 
@@ -39,6 +39,7 @@ class Wish:
             "id": str(self.id),
             "wishlist_id": str(self.wishlist_id),
             "title": self.title,
+            "subtitle": self.subtitle,
             "description": self.description,
             "link": self.link,
             "image_url": self.image_url,
@@ -46,7 +47,6 @@ class Wish:
             "currency": self.currency,
             "is_booked": self.is_booked,
             "priority": self.priority.value,
-            "store": self.store,
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
         }
@@ -58,13 +58,13 @@ class WishCreate:
 
     wishlist_id: UUID
     title: str
+    subtitle: Optional[str] = None
     description: Optional[str] = None
     link: Optional[str] = None
     image_url: Optional[str] = None
     price: Optional[float] = None
     currency: Optional[str] = "RUB"
     priority: WishPriority = WishPriority.JUST_WANT
-    store: Optional[str] = None
 
     def __post_init__(self):
         if not self.title or not self.title.strip():
@@ -78,6 +78,7 @@ class WishUpdate:
     """Data for updating an existing wish."""
 
     title: Optional[str] = None
+    subtitle: Optional[str] = None
     description: Optional[str] = None
     link: Optional[str] = None
     image_url: Optional[str] = None
@@ -85,4 +86,3 @@ class WishUpdate:
     currency: Optional[str] = None
     is_booked: Optional[bool] = None
     priority: Optional[WishPriority] = None
-    store: Optional[str] = None

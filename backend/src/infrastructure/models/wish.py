@@ -33,6 +33,10 @@ class WishModel(Base):
         String(255),
         nullable=False,
     )
+    subtitle: Mapped[str | None] = mapped_column(
+        String(255),
+        nullable=True,
+    )
     description: Mapped[str | None] = mapped_column(
         Text,
         nullable=True,
@@ -64,10 +68,6 @@ class WishModel(Base):
         nullable=False,
         default=WishPriority.JUST_WANT,
         index=True,
-    )
-    store: Mapped[str | None] = mapped_column(
-        String(255),
-        nullable=True,
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

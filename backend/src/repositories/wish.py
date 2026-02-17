@@ -24,6 +24,7 @@ class WishRepository:
             id=wish.id,
             wishlist_id=wish.wishlist_id,
             title=wish.title,
+            subtitle=wish.subtitle,
             description=wish.description,
             link=wish.link,
             image_url=wish.image_url,
@@ -31,7 +32,6 @@ class WishRepository:
             currency=wish.currency,
             is_booked=wish.is_booked,
             priority=wish.priority,
-            store=wish.store,
             created_at=wish.created_at,
             updated_at=wish.updated_at,
         )
@@ -74,6 +74,7 @@ class WishRepository:
             raise ValueError(f"Wish with id {wish.id} not found")
 
         model.title = wish.title
+        model.subtitle = wish.subtitle
         model.description = wish.description
         model.link = wish.link
         model.image_url = wish.image_url
@@ -81,7 +82,6 @@ class WishRepository:
         model.currency = wish.currency
         model.is_booked = wish.is_booked
         model.priority = wish.priority
-        model.store = wish.store
         model.updated_at = wish.updated_at
 
         await self._session.flush()
@@ -98,6 +98,7 @@ class WishRepository:
             id=model.id,
             wishlist_id=model.wishlist_id,
             title=model.title,
+            subtitle=model.subtitle,
             description=model.description,
             link=model.link,
             image_url=model.image_url,
@@ -105,7 +106,6 @@ class WishRepository:
             currency=model.currency,
             is_booked=model.is_booked,
             priority=model.priority,
-            store=model.store,
             created_at=model.created_at,
             updated_at=model.updated_at,
         )

@@ -19,9 +19,6 @@
     opacity: 0;
     transform: scale(0.92);
   }
-  50% {
-    transform: scale(1.02);
-  }
   100% {
     opacity: 1;
     transform: scale(1);
@@ -44,11 +41,11 @@
 @keyframes liquid-slide-up {
   0% {
     opacity: 0;
-    transform: translateY(40px) scale(0.96);
+    transform: translateY(20px);
   }
   100% {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
 }
 
@@ -56,11 +53,11 @@
 @keyframes liquid-slide-down {
   0% {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
   100% {
     opacity: 0;
-    transform: translateY(40px) scale(0.96);
+    transform: translateY(20px);
   }
 }
 
@@ -68,7 +65,7 @@
 @keyframes liquid-slide-left {
   0% {
     opacity: 0;
-    transform: translateX(60px);
+    transform: translateX(20px);
   }
   100% {
     opacity: 1;
@@ -80,7 +77,7 @@
 @keyframes liquid-slide-right {
   0% {
     opacity: 0;
-    transform: translateX(-60px);
+    transform: translateX(-20px);
   }
   100% {
     opacity: 1;
@@ -110,29 +107,29 @@
 
 /* === GLASS MORPH EFFECTS === */
 
-/* Glass Morph - Breathing Effect */
+/* Glass Morph - Breathing Effect (Disabled for performance) */
 @keyframes glass-morph {
   0%, 100% {
-    backdrop-filter: blur(24px) saturate(180%);
+    opacity: 1;
   }
   50% {
-    backdrop-filter: blur(32px) saturate(200%);
+    opacity: 0.9;
   }
 }
 
-/* Glass Pulse - Subtle Glow */
+/* Glass Pulse - Subtle Glow (Optimized) */
 @keyframes glass-pulse {
   0%, 100% {
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    opacity: 1;
   }
   50% {
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), inset 0 1px 2px rgba(255, 255, 255, 0.6);
+    opacity: 0.8;
   }
 }
 
 /* === SHIMMER EFFECT === */
 
-/* Shimmer - Loading Skeleton */
+/* Shimmer - Loading Skeleton (Optimized) */
 @keyframes shimmer {
   0% {
     background-position: -200% center;
@@ -149,7 +146,7 @@
     rgba(255, 255, 255, 0.4) 50%,
     rgba(255, 255, 255, 0) 100%);
   background-size: 200% 100%;
-  animation: shimmer 2s infinite ease-in-out;
+  animation: shimmer 3s infinite ease-in-out; /* Slower animation */
 }
 
 [data-theme='dark'] .shimmer {
@@ -165,10 +162,10 @@
 @keyframes ripple {
   0% {
     transform: scale(0);
-    opacity: 0.6;
+    opacity: 0.4;
   }
   100% {
-    transform: scale(4);
+    transform: scale(2);
     opacity: 0;
   }
 }
@@ -197,7 +194,7 @@
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-10px);
+    transform: translateY(-5px);
   }
 }
 
@@ -206,17 +203,8 @@
   0% {
     transform: scale(1);
   }
-  20% {
-    transform: scale(0.9);
-  }
-  40% {
-    transform: scale(1.1);
-  }
-  60% {
-    transform: scale(0.98);
-  }
-  80% {
-    transform: scale(1.02);
+  50% {
+    transform: scale(1.05);
   }
   100% {
     transform: scale(1);
@@ -227,27 +215,27 @@
 
 /* Apply Animations */
 .animate-liquid-in {
-  animation: liquid-scale-in 0.5s var(--liquid-spring) both;
+  animation: liquid-scale-in 0.3s ease-out both;
 }
 
 .animate-liquid-out {
-  animation: liquid-scale-out 0.3s var(--liquid-ease) both;
+  animation: liquid-scale-out 0.2s ease-in both;
 }
 
 .animate-slide-up {
-  animation: liquid-slide-up 0.6s var(--liquid-ease) both;
+  animation: liquid-slide-up 0.4s ease-out both;
 }
 
 .animate-slide-down {
-  animation: liquid-slide-down 0.4s var(--liquid-ease) both;
+  animation: liquid-slide-down 0.3s ease-in both;
 }
 
 .animate-slide-left {
-  animation: liquid-slide-left 0.4s var(--liquid-ease) both;
+  animation: liquid-slide-left 0.3s ease-out both;
 }
 
 .animate-slide-right {
-  animation: liquid-slide-right 0.4s var(--liquid-ease) both;
+  animation: liquid-slide-right 0.3s ease-out both;
 }
 
 .animate-fade-in {
@@ -259,31 +247,31 @@
 }
 
 .animate-glass-morph {
-  animation: glass-morph 3s ease-in-out infinite;
+  animation: none; /* Disabled */
 }
 
 .animate-glass-pulse {
-  animation: glass-pulse 2s ease-in-out infinite;
+  animation: none; /* Disabled */
 }
 
 .animate-shimmer {
-  animation: shimmer 2s infinite ease-in-out;
+  animation: shimmer 3s infinite ease-in-out;
 }
 
 .animate-spin {
-  animation: spin 0.8s linear infinite;
+  animation: spin 1s linear infinite;
 }
 
 .animate-spin-slow {
-  animation: spin-slow 3s linear infinite;
+  animation: spin-slow 4s linear infinite;
 }
 
 .animate-bounce {
-  animation: bounce 1s ease-in-out infinite;
+  animation: bounce 2s ease-in-out infinite;
 }
 
 .animate-elastic {
-  animation: elastic-bounce 0.6s var(--liquid-bounce) both;
+  animation: elastic-bounce 0.4s ease-out both;
 }
 
 /* === STAGGER ANIMATIONS === */

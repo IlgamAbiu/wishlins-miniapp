@@ -213,13 +213,13 @@ class WishBase(BaseModel):
     """Base Wish schema."""
 
     title: str = Field(..., min_length=1, max_length=255)
+    subtitle: Optional[str] = None
     description: Optional[str] = None
     link: Optional[str] = None
     image_url: Optional[str] = None
     price: Optional[float] = None
     currency: Optional[str] = "RUB"
     priority: WishPriority = Field(default=WishPriority.JUST_WANT, description="Wish priority level")
-    store: Optional[str] = Field(None, description="Store name (auto-extracted from link)")
 
 
 class WishCreateRequest(WishBase):
@@ -232,6 +232,7 @@ class WishUpdateRequest(BaseModel):
     """Schema for updating a wish."""
 
     title: Optional[str] = Field(None, min_length=1, max_length=255)
+    subtitle: Optional[str] = None
     description: Optional[str] = None
     link: Optional[str] = None
     image_url: Optional[str] = None
@@ -239,7 +240,6 @@ class WishUpdateRequest(BaseModel):
     currency: Optional[str] = None
     is_booked: Optional[bool] = None
     priority: Optional[WishPriority] = None
-    store: Optional[str] = None
 
 
 class WishResponse(WishBase):

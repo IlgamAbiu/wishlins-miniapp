@@ -17,7 +17,7 @@ import EventLimitModal from '@/components/EventLimitModal.vue'
 
 const { isInTelegram, user, userDisplayName } = useTelegramWebApp()
 const { wishlists, fetchWishlists, createWishlist, updateWishlist, deleteWishlist } = useWishlists()
-const { wishes, loading: wishesLoading, error: wishesError, fetchWishes, createWish, moveWishesToWishlist } = useWishes()
+const { wishes, loading: wishesLoading, error: wishesError, fetchWishes, createWish, moveWishesToWishlist, openWish } = useWishes()
 const { updateProfileText, getUserByTelegramId } = useUser()
 
 const selectedEventId = ref<string | null>(null)
@@ -61,9 +61,14 @@ watch(() => user.value, (newUser) => {
 }, { immediate: true })
 
 // Watch for event selection to fetch wishes
+let fetchTimeout: ReturnType<typeof setTimeout>
 watch(selectedEventId, (newId) => {
   if (newId) {
-    fetchWishes(newId)
+    // Debounce fetch to avoid lag during rapid scanning
+    if (fetchTimeout) clearTimeout(fetchTimeout)
+    fetchTimeout = setTimeout(() => {
+      fetchWishes(newId)
+    }, 300)
   }
 })
 
@@ -190,8 +195,7 @@ async function handleAddWish(data: any) {
 }
 
 function onWishClick(wish: any) {
-  // TODO: Open detailed wish view or edit modal
-  console.log("Clicked wish", wish)
+  openWish(wish)
 }
 
 function handleEditProfile() {
@@ -641,12 +645,13 @@ function pluralizeWishes(count: number): string {
 .bg-blob {
   position: fixed;
   border-radius: 50%;
-  filter: blur(120px);
+  filter: blur(80px); /* Reduced from 120px */
   opacity: 0;
   pointer-events: none;
   z-index: 0;
   mix-blend-mode: screen;
   transition: opacity 0.5s ease;
+  will-change: transform;
 }
 
 [data-theme='dark'] .bg-blob {

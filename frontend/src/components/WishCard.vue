@@ -55,6 +55,7 @@ const backgroundStyle = computed(() => {
         :src="wish.image_url"
         :alt="wish.title"
         loading="lazy"
+        decoding="async"
         class="card-image"
       />
       <div v-else class="image-gradient" :style="backgroundStyle">

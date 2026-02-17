@@ -3,7 +3,7 @@
  * Add Event Modal.
  * Bottom sheet to add a new event (wishlist).
  */
-import { ref, computed } from 'vue'
+import { ref, computed, onBeforeUnmount } from 'vue'
 
 const props = defineProps<{
   initialData?: {
@@ -43,6 +43,7 @@ const displayDate = computed(() =>
 const isSubmitting = ref(false)
 const isEditMode = computed(() => !!props.initialData)
 const dateInput = ref<HTMLInputElement>()
+let scrollTimeout: ReturnType<typeof setTimeout>
 
 function handleDateClick() {
   dateInput.value?.showPicker?.()
@@ -73,10 +74,15 @@ function handleSubmit() {
 
 function onInputFocus(event: FocusEvent) {
   // Ensure the input is visible above keyboard
-  setTimeout(() => {
+  if (scrollTimeout) clearTimeout(scrollTimeout)
+  scrollTimeout = setTimeout(() => {
     (event.target as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'center' })
   }, 300)
 }
+
+onBeforeUnmount(() => {
+  if (scrollTimeout) clearTimeout(scrollTimeout)
+})
 </script>
 
 <template>

@@ -69,3 +69,4 @@ class UserUpdate:
     last_name: Optional[str] = None
     avatar_url: Optional[str] = None
     profile_text: Optional[str] = None
+    birth_date: Optional[date] = None

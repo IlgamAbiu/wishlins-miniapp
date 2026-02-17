@@ -59,7 +59,9 @@ async def register_user(
             first_name=user.first_name,
             last_name=user.last_name,
             avatar_url=user.avatar_url,
+            avatar_url=user.avatar_url,
             profile_text=user.profile_text,
+            birth_date=user.birth_date,
             created_at=user.created_at,
             updated_at=user.updated_at,
         ),
@@ -98,9 +100,47 @@ async def get_user_by_telegram_id(
         last_name=user.last_name,
         avatar_url=user.avatar_url,
         profile_text=user.profile_text,
+        birth_date=user.birth_date,
         created_at=user.created_at,
         updated_at=user.updated_at,
     )
+
+
+@router.get(
+    "/friends",
+    response_model=list[UserResponse],
+    summary="Get friends list",
+    description="Get list of friends (currently all other users) sorted by next birthday.",
+)
+async def get_friends(
+    telegram_id: int,
+    user_service: UserServiceDep,
+) -> list[UserResponse]:
+    """Get friends list."""
+    current_user = await user_service.get_user_by_telegram_id(telegram_id)
+    if not current_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+
+    friends = await user_service.get_friends(current_user.id)
+    
+    return [
+        UserResponse(
+            id=friend.id,
+            telegram_id=friend.telegram_id,
+            username=friend.username,
+            first_name=friend.first_name,
+            last_name=friend.last_name,
+            avatar_url=friend.avatar_url,
+            profile_text=friend.profile_text,
+            birth_date=friend.birth_date,
+            created_at=friend.created_at,
+            updated_at=friend.updated_at,
+        )
+        for friend in friends
+    ]
 
 
 @router.patch(
@@ -119,7 +159,10 @@ async def update_user_profile(
     user_service: UserServiceDep,
 ) -> UserResponse:
     """Update user profile."""
-    update_data = UserUpdate(profile_text=request.profile_text)
+    update_data = UserUpdate(
+        profile_text=request.profile_text,
+        birth_date=request.birth_date
+    )
     user = await user_service.update_user_profile(telegram_id, update_data)
 
     if user is None:
@@ -136,6 +179,7 @@ async def update_user_profile(
         last_name=user.last_name,
         avatar_url=user.avatar_url,
         profile_text=user.profile_text,
+        birth_date=user.birth_date,
         created_at=user.created_at,
         updated_at=user.updated_at,
     )

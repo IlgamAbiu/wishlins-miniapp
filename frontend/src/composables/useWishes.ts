@@ -11,10 +11,9 @@ const wishes = ref<Wish[]>([])
 const selectedWish = ref<Wish | null>(null)
 const loading = ref(false)
 const error = ref<string | null>(null)
+const currentWishlistId = ref<string | null>(null) // Global state - shared across all components
 
 export function useWishes() {
-
-    const currentWishlistId = ref<string | null>(null)
 
     function openWish(wish: Wish) {
         selectedWish.value = wish

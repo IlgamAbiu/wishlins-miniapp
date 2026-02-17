@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref, onMounted, nextTick } from 'vue'
 import { useWishes } from '@/composables/useWishes'
 import { useWishlists } from '@/composables/useWishlists'
 import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
@@ -14,6 +14,7 @@ const { getUserByTelegramId } = useUser()
 
 const showEditModal = ref(false)
 const internalUserId = ref<string | null>(null)
+const loadingOwnership = ref(true)
 
 // Fetch internal user ID for ownership check
 onMounted(async () => {
@@ -22,6 +23,7 @@ onMounted(async () => {
         if (internalUser) {
             internalUserId.value = internalUser.id
         }
+        loadingOwnership.value = false
     }
 })
 
@@ -78,14 +80,27 @@ function handleStoreLink() {
 async function handleFulfill() {
     if (!user.value || !safeWish.value) return
 
-    // Optimistic UI or wait? useWishes handles loading
-    const updated = await fulfillWish(safeWish.value.id, user.value.id)
-    if (updated) {
+    try {
+        // Optimistic UI or wait? useWishes handles loading
+        const updated = await fulfillWish(safeWish.value.id, user.value.id)
+
+        if (!updated) {
+            alert('Не удалось выполнить желание. Попробуйте еще раз.')
+            return
+        }
+
         // Refresh wishlists to include newly created "Сбывшиеся мечты" if it was just created
         await fetchWishlists(user.value.id)
+
+        // Wait for next tick to ensure Vue has processed all reactive updates
+        await nextTick()
+
         // Updated requirement: Do NOT close wish. Just update state.
         // useWishes updates selectedWish value, which triggers reactivity.
         // isFulfilled computed property should update to true.
+    } catch (err) {
+        console.error('Error fulfilling wish:', err)
+        alert('Произошла ошибка при выполнении желания')
     }
 }
 
@@ -103,13 +118,30 @@ async function handleRestore() {
         return
     }
 
-    // Move wish to default wishlist
-    const updated = await updateWish(safeWish.value.id, { wishlist_id: defaultWishlist.id }, user.value.id)
-    if (updated) {
+    try {
+        // Move wish to default wishlist
+        const updated = await updateWish(safeWish.value.id, { wishlist_id: defaultWishlist.id }, user.value.id)
+
+        if (!updated) {
+            alert('Не удалось переместить желание. Попробуйте еще раз.')
+            return
+        }
+
         // Refresh wishlists to ensure wishlists.value is up-to-date
         await fetchWishlists(user.value.id)
-        // useWishes updates selectedWish value, which triggers reactivity.
-        // isFulfilled computed property should update to false since wish is now in default list.
+
+        // Wait for next tick to ensure Vue has processed all reactive updates
+        await nextTick()
+
+        // Force re-check: ensure selectedWish has the updated wishlist_id
+        // This triggers isFulfilled to re-compute with fresh wishlists data
+        if (selectedWish.value && selectedWish.value.id === updated.id) {
+            // selectedWish should already be updated by updateWish, but double-check
+            selectedWish.value = { ...updated }
+        }
+    } catch (err) {
+        console.error('Error restoring wish:', err)
+        alert('Произошла ошибка при возврате желания из архива')
     }
 }
 
@@ -238,15 +270,20 @@ async function handleDeleteWish(id: string) {
             <span class="btn-text">Где купить</span>
             <span class="material-symbols-outlined btn-icon">arrow_outward</span>
         </button>
-        
+
+        <!-- Loading skeleton while checking ownership -->
+        <div v-if="loadingOwnership" class="skeleton-btn"></div>
+
+        <!-- Owner: Fulfill button -->
         <button
-            v-if="isOwner && !isFulfilled"
+            v-else-if="isOwner && !isFulfilled"
             @click="handleFulfill"
             class="fulfill-btn">
             <span class="btn-text">Исполнено</span>
             <span class="material-symbols-outlined btn-icon">check_circle</span>
         </button>
 
+        <!-- Owner: Archive button -->
         <button
             v-else-if="isOwner && isFulfilled"
             @click="handleRestore"
@@ -254,9 +291,10 @@ async function handleDeleteWish(id: string) {
             <span class="btn-text">В архиве</span>
             <span class="material-symbols-outlined btn-icon">archive</span>
         </button>
-        
+
+        <!-- Non-owner: Book button -->
         <button
-            v-else-if="!isOwner"
+            v-else
             @click="handleBook"
             class="book-btn">
             <span class="btn-text">Забронировать</span>
@@ -906,5 +944,26 @@ async function handleDeleteWish(id: string) {
     background: linear-gradient(to top, rgba(0,0,0,0.2), transparent);
     pointer-events: none;
     z-index: 60;
+}
+
+/* Skeleton loading state */
+.skeleton-btn {
+    flex-grow: 1;
+    height: 56px;
+    border-radius: 9999px;
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.05) 0%,
+        rgba(255, 255, 255, 0.1) 50%,
+        rgba(255, 255, 255, 0.05) 100%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes skeleton-loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
 }
 </style>

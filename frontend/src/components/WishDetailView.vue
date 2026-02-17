@@ -272,7 +272,7 @@ async function handleDeleteWish(id: string) {
     align-items: center;
     padding: 20px;
     padding-top: calc(20px + env(safe-area-inset-top, 0px));
-    z-index: 50; /* Above everything */
+    z-index: 70; /* Above everything, including gloss (60) */
     pointer-events: none; /* Let clicks pass through if needed, but buttons enable valid clicks */
 }
 .header button {

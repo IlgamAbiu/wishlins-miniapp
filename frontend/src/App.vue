@@ -171,9 +171,12 @@ a {
   opacity: 0;
 }
 
-.fade-scale-enter-active,
+.fade-scale-enter-active {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
 .fade-scale-leave-active {
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition: opacity 0.15s ease, transform 0.15s ease;
 }
 
 .fade-scale-enter-from,

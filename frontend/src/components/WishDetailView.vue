@@ -56,8 +56,23 @@ const isFulfilled = computed(() => {
     return wishlist?.title === 'Сбывшиеся мечты'
 })
 
+const isClosing = ref(false)
+
 function handleBack() {
+  // Prevent multiple rapid clicks
+  if (isClosing.value) {
+    console.log('Already closing, ignoring click')
+    return
+  }
+
+  console.log('Back button clicked, closing wish')
+  isClosing.value = true
   closeWish()
+
+  // Reset after transition completes
+  setTimeout(() => {
+    isClosing.value = false
+  }, 400)
 }
 
 function handleEdit() {
@@ -119,16 +134,39 @@ async function handleRestore() {
     }
 
     try {
-        // Move wish to default wishlist
-        const updated = await updateWish(safeWish.value.id, { wishlist_id: defaultWishlist.id }, user.value.id)
+        console.log('Restoring wish from archive:', safeWish.value.id)
+        console.log('Moving to default wishlist:', defaultWishlist.id)
+
+        // Move wish to default wishlist - send full object for PUT request
+        const updated = await updateWish(
+            safeWish.value.id,
+            {
+                title: safeWish.value.title,
+                subtitle: safeWish.value.subtitle ?? undefined,
+                description: safeWish.value.description ?? undefined,
+                link: safeWish.value.link ?? undefined,
+                image_url: safeWish.value.image_url ?? undefined,
+                price: safeWish.value.price ?? undefined,
+                currency: safeWish.value.currency ?? undefined,
+                priority: safeWish.value.priority,
+                store: safeWish.value.store ?? undefined,
+                wishlist_id: defaultWishlist.id
+            },
+            user.value.id
+        )
 
         if (!updated) {
+            console.error('Failed to update wish - received null response')
             alert('Не удалось переместить желание. Попробуйте еще раз.')
             return
         }
 
+        console.log('Wish updated successfully:', updated)
+        console.log('New wishlist_id:', updated.wishlist_id)
+
         // Refresh wishlists to ensure wishlists.value is up-to-date
         await fetchWishlists(user.value.id)
+        console.log('Wishlists refreshed')
 
         // Wait for next tick to ensure Vue has processed all reactive updates
         await nextTick()
@@ -138,6 +176,7 @@ async function handleRestore() {
         if (selectedWish.value && selectedWish.value.id === updated.id) {
             // selectedWish should already be updated by updateWish, but double-check
             selectedWish.value = { ...updated }
+            console.log('selectedWish updated, isFulfilled should now be:', isFulfilled.value)
         }
     } catch (err) {
         console.error('Error restoring wish:', err)
@@ -303,7 +342,11 @@ async function handleDeleteWish(id: string) {
 
     <!-- Fixed Header (Top of everything) -->
     <header class="header">
-        <button @click="handleBack" class="glass-btn back-btn">
+        <button
+            type="button"
+            @click.stop="handleBack"
+            :disabled="isClosing"
+            class="glass-btn back-btn">
             <span class="material-symbols-outlined icon">arrow_back</span>
         </button>
         
@@ -397,10 +440,16 @@ async function handleDeleteWish(id: string) {
     padding: 20px;
     padding-top: calc(20px + env(safe-area-inset-top, 0px));
     z-index: 70; /* Above everything, including gloss (60) */
-    pointer-events: none; /* Let clicks pass through if needed, but buttons enable valid clicks */
+    pointer-events: auto; /* Enable pointer events for header */
 }
 .header button {
     pointer-events: auto;
+    position: relative;
+    z-index: 1;
+}
+.header button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 .header-actions {

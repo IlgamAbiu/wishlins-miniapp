@@ -110,9 +110,10 @@ async function handleRestore() {
         // If it was removed, updateWish won't find it in the list to update.
         // But `selectedWish` is updated.
         // Ideally we should re-fetch or push it back to the list if the current view matches.
+        // useWishes now handles adding it back if currentWishlistId matches.
         // But for now, let's just update the wish.
-        alert('Желание возвращено!')
-        closeWish() // Close to refresh/go back to list
+        // alert('Желание возвращено!') - not needed logic button state update is enough?
+        // closeWish() - Removed as per user request to stay on screen.
     }
 }
 

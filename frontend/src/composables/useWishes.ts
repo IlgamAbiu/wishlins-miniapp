@@ -14,6 +14,8 @@ const error = ref<string | null>(null)
 
 export function useWishes() {
 
+    const currentWishlistId = ref<string | null>(null)
+
     function openWish(wish: Wish) {
         selectedWish.value = wish
     }
@@ -25,6 +27,7 @@ export function useWishes() {
     async function fetchWishes(wishlistId: string): Promise<void> {
         loading.value = true
         error.value = null
+        currentWishlistId.value = wishlistId // Track current list
 
         try {
             const response = await fetch(`${API_BASE_URL}/wishes?wishlist_id=${wishlistId}`)
@@ -60,7 +63,11 @@ export function useWishes() {
             }
 
             const newWish = await response.json()
-            wishes.value.unshift(newWish)
+
+            // Add to list only if matches current context
+            if (currentWishlistId.value === newWish.wishlist_id || !currentWishlistId.value) {
+                wishes.value.unshift(newWish)
+            }
             return newWish
         } catch (err) {
             error.value = err instanceof Error ? err.message : 'Failed to create wish'
@@ -108,7 +115,22 @@ export function useWishes() {
 
             const updated = await response.json()
             const index = wishes.value.findIndex(w => w.id === wishId)
-            if (index !== -1) wishes.value[index] = updated
+
+            // Smart list update
+            if (currentWishlistId.value && updated.wishlist_id !== currentWishlistId.value) {
+                // Moved out of current list
+                if (index !== -1) wishes.value.splice(index, 1)
+            } else if (currentWishlistId.value && updated.wishlist_id === currentWishlistId.value) {
+                // Moved into or updated in current list
+                if (index !== -1) {
+                    wishes.value[index] = updated
+                } else {
+                    wishes.value.unshift(updated) // Add back if it was removed
+                }
+            } else {
+                // No current list context or generic update
+                if (index !== -1) wishes.value[index] = updated
+            }
 
             // Update selectedWish if it's the one being updated
             if (selectedWish.value && selectedWish.value.id === wishId) {
@@ -180,10 +202,20 @@ export function useWishes() {
             }
 
             const updated = await response.json()
-            // Update local state - remove because it moved to another list/event
-            // The user wants to see it disappear from "My Wishes" immediately
+
+            // Smart list update
             const index = wishes.value.findIndex(w => w.id === wishId)
-            if (index !== -1) wishes.value.splice(index, 1)
+
+            if (currentWishlistId.value && updated.wishlist_id !== currentWishlistId.value) {
+                // Moved out (fulfilled)
+                if (index !== -1) wishes.value.splice(index, 1)
+            } else if (currentWishlistId.value && updated.wishlist_id === currentWishlistId.value) {
+                // Should be here (e.g. restoring to current list if fulfill logic was reverse? unlikely for fulfill)
+                if (index !== -1) wishes.value[index] = updated
+                else wishes.value.unshift(updated)
+            } else {
+                if (index !== -1) wishes.value[index] = updated
+            }
 
             // Update selectedWish (keep it open and updated)
             if (selectedWish.value && selectedWish.value.id === wishId) {

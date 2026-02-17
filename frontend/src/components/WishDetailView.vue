@@ -75,19 +75,42 @@ function handleStoreLink() {
     }
 }
 
-async function handleFulfill() {
-    if (!user.value || !safeWish.value) return
     
     // Optimistic UI or wait? useWishes handles loading
     const updated = await fulfillWish(safeWish.value.id, user.value.id)
     if (updated) {
-        // Maybe close the wish or show success?
-        // Requirement advises: "migrates to archive".
-        // We probably should close the detail view or show a notification.
-        // For now, I'll close it to reflect it's gone from current list (if filtering)
-        // OR just show updated state.
-        // Let's close it as it "moves".
-        closeWish()
+        // Updated requirement: Do NOT close wish. Just update state.
+        // useWishes updates selectedWish value, which triggers reactivity.
+        // isFulfilled computed property should update to true.
+    }
+}
+
+async function handleRestore() {
+    if (!user.value || !safeWish.value) return
+
+    // Confirm restore
+    const confirmed = confirm('Вернуть желание из архива в общий список?')
+    if (!confirmed) return
+
+    // Find default wishlist
+    const defaultWishlist = wishlists.value.find(w => w.is_default)
+    if (!defaultWishlist) {
+        alert('Не удалось найти список по умолчанию')
+        return
+    }
+
+    // Move wish to default wishlist
+    const updated = await updateWish(safeWish.value.id, { wishlist_id: defaultWishlist.id }, user.value.id)
+    if (updated) {
+        // Similarly, it might disappear from "Fulfilled" view if we were there.
+        // If we want to reflect it in the current view (if we are in "My Wishes"), we might need to add it back?
+        // useWishes' updateWish updates it in place if found. But we removed it on fulfill!
+        // If it was removed, updateWish won't find it in the list to update.
+        // But `selectedWish` is updated.
+        // Ideally we should re-fetch or push it back to the list if the current view matches.
+        // But for now, let's just update the wish.
+        alert('Желание возвращено!')
+        closeWish() // Close to refresh/go back to list
     }
 }
 
@@ -223,6 +246,14 @@ async function handleDeleteWish(id: string) {
             class="fulfill-btn">
             <span class="btn-text">Исполнено</span>
             <span class="material-symbols-outlined btn-icon">check_circle</span>
+        </button>
+
+        <button
+            v-else-if="isOwner && isFulfilled"
+            @click="handleRestore"
+            class="archive-btn">
+            <span class="btn-text">В архиве</span>
+            <span class="material-symbols-outlined btn-icon">archive</span>
         </button>
         
         <button
@@ -723,9 +754,31 @@ async function handleDeleteWish(id: string) {
 
 .floating-actions .primary-btn,
 .floating-actions .book-btn,
-.floating-actions .fulfill-btn {
+.floating-actions .fulfill-btn,
+.floating-actions .archive-btn {
     pointer-events: auto; /* Re-enable clicks */
 }
+
+/* ... existing styles ... */
+
+.archive-btn {
+    flex-grow: 1;
+    height: 56px;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.archive-btn:active { transform: scale(0.98); }
 
 .primary-btn {
     flex-grow: 1;

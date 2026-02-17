@@ -180,11 +180,12 @@ export function useWishes() {
             }
 
             const updated = await response.json()
-            // Update local state
+            // Update local state - remove because it moved to another list/event
+            // The user wants to see it disappear from "My Wishes" immediately
             const index = wishes.value.findIndex(w => w.id === wishId)
-            if (index !== -1) wishes.value[index] = updated
+            if (index !== -1) wishes.value.splice(index, 1)
 
-            // Update selectedWish if it's the one being updated
+            // Update selectedWish (keep it open and updated)
             if (selectedWish.value && selectedWish.value.id === wishId) {
                 selectedWish.value = updated
             }

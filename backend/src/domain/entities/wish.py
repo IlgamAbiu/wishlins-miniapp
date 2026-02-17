@@ -77,6 +77,7 @@ class WishCreate:
 class WishUpdate:
     """Data for updating an existing wish."""
 
+    wishlist_id: Optional[UUID] = None
     title: Optional[str] = None
     subtitle: Optional[str] = None
     description: Optional[str] = None

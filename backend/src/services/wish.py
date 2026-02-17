@@ -92,6 +92,13 @@ class WishService:
         if data.link is not None:
             wish.link = data.link
 
+        if data.wishlist_id is not None:
+            # Verify new wishlist exists
+            new_wishlist = await self._wishlist_repository.get_by_id(data.wishlist_id)
+            if not new_wishlist:
+                raise ValueError(f"Wishlist with id {data.wishlist_id} not found")
+            wish.wishlist_id = data.wishlist_id
+
         wish.updated_at = datetime.now(timezone.utc)
 
         return await self._wish_repository.update(wish)

@@ -231,6 +231,7 @@ class WishCreateRequest(WishBase):
 class WishUpdateRequest(BaseModel):
     """Schema for updating a wish."""
 
+    wishlist_id: Optional[UUID] = Field(None, description="New wishlist ID")
     title: Optional[str] = Field(None, min_length=1, max_length=255)
     subtitle: Optional[str] = None
     description: Optional[str] = None

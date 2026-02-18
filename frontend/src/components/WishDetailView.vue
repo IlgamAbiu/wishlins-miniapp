@@ -22,6 +22,10 @@ onMounted(async () => {
         const internalUser = await getUserByTelegramId(user.value.id)
         if (internalUser) {
             internalUserId.value = internalUser.id
+            // Ensure we have the user's wishlists loaded to check ownership
+            if (wishlists.value.length === 0) {
+                await fetchWishlists(user.value.id)
+            }
         }
         loadingOwnership.value = false
     }
@@ -45,19 +49,29 @@ import { navigationStore } from '@/stores/navigation.store'
 // ...
 
 const isOwner = computed(() => {
-    // If we are in Friends tab AND a friend is selected, we are NOT the owner
-    // This allows editing own wishes in Profile tab even if a friend was left open in Friends tab
-    if (navigationStore.state.activeTab === 'friends' && navigationStore.state.selectedFriendId) {
-        return false
-    }
-    
     if (!internalUserId.value || !safeWish.value) return false
+    
     // Find the wishlist this wish belongs to
+    // We search in the currently loaded wishlists. 
+    // IMPORTANT: If we are viewing a friend's profile, 'wishlists' state from useWishlists might contain THEIR wishlists if they were just fetched.
+    // However, since we re-fetch YOUR wishlists in onMounted above, strict id comparison is key.
+    
+    // Better approach: Check if the wishlist's user_id matches internalUserId
     const wishlist = wishlists.value.find(w => w.id === safeWish.value.wishlist_id)
     if (wishlist) {
         return wishlist.user_id === internalUserId.value
     }
-    // Fallback if wishlist not found in loaded list
+    
+    // Fallback/Edge case:
+    // If we are in "Friends" tab, we might have loaded the FRIEND'S wishlists into the global store.
+    // If so, `wishlists` contains friend's lists.
+    // So finding the wishlist there and checking user_id should still work:
+    // friend's wishlist user_id != internalUserId -> isOwner = false. Correct.
+    
+    // But what if we haven't loaded the wishlist for this wish?
+    // (e.g. deep link or some other flow)
+    // We assume data consistency for now.
+    
     return false
 })
 

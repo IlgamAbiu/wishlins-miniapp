@@ -261,8 +261,9 @@ onMounted(() => {
 
 .search-bar:focus-within {
   border-color: rgba(255, 255, 255, 0.2);
-  background: rgba(0, 0, 0, 0.3);
+  /* background: rgba(0, 0, 0, 0.3); Removed darkening effect */
 }
+
 
 .search-icon {
   color: var(--text-secondary); /* or #64748b */
@@ -297,6 +298,7 @@ onMounted(() => {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
+  padding: 0 16px; /* Added padding to prevent edge touching */
 }
 
 

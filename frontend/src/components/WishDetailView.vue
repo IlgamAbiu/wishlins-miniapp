@@ -40,14 +40,21 @@ const formattedPrice = computed(() => {
   }).format(safeWish.value.price)
 })
 
+import { navigationStore } from '@/stores/navigation.store'
+
+// ...
+
 const isOwner = computed(() => {
+    // If we are viewing a friend/searching (selectedFriendId is set), we are NOT the owner
+    if (navigationStore.state.selectedFriendId) return false
+    
     if (!internalUserId.value || !safeWish.value) return false
     // Find the wishlist this wish belongs to
     const wishlist = wishlists.value.find(w => w.id === safeWish.value.wishlist_id)
     if (wishlist) {
         return wishlist.user_id === internalUserId.value
     }
-    // Fallback if wishlist not found in loaded list (unlikely if we just navigated)
+    // Fallback if wishlist not found in loaded list
     return false
 })
 

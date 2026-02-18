@@ -825,16 +825,27 @@ function pluralizeWishes(count: number): string {
 }
 
 .back-header-btn {
-    width: 40px;
-    height: 40px;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(0, 0, 0, 0.3);
+    
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    color: white;
+    color: rgba(255, 255, 255, 0.9);
+    
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
     cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.back-header-btn:active {
+    background: rgba(255, 255, 255, 0.15);
+    transform: scale(0.98);
 }
 
 </style>

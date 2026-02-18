@@ -121,6 +121,10 @@ const emit = defineEmits<{
   grid-column: span 1;
 }
 
+.span-full {
+  grid-column: 1 / -1;
+}
+
 /* Use a deep selector or ensure higher specificity if needed, 
    but since the class is added in the parent template, it should work.
    Adding !important to force layout if there are conflicting styles. */

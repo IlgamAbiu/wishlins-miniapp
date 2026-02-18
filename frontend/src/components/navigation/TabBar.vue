@@ -35,7 +35,7 @@ function handleTabSelect(tabId: string) {
   transform: translateX(-50%);
   width: 92%;
   max-width: 480px;
-  z-index: 100;
+  z-index: 9999;
 }
 
 .tab-bar__content {

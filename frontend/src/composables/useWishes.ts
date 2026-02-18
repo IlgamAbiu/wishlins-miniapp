@@ -166,7 +166,7 @@ export function useWishes() {
         }
     }
 
-    // copy moveWishesToWishlist impl (emit 'move' event if needed, but mostly bulk op)
+    // Optimized moveWishesToWishlist with batching (max 5 simultaneous requests)
     async function moveWishesToWishlist(
         fromWishlistId: string,
         toWishlistId: string,
@@ -174,22 +174,26 @@ export function useWishes() {
     ): Promise<boolean> {
         loading.value = true
         try {
-            // ... existing impl ...
+            // 1. Fetch wishes to move
             const response = await fetch(`${API_BASE_URL}/wishes?wishlist_id=${fromWishlistId}`)
             if (!response.ok) throw new Error('Failed to fetch wishes')
             const wishesToMove: Wish[] = await response.json()
 
-            const updatePromises = wishesToMove.map(wish =>
-                fetch(`${API_BASE_URL}/wishes/${wish.id}?telegram_id=${telegramId}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ wishlist_id: toWishlistId }),
-                })
-            )
-            const results = await Promise.all(updatePromises)
-            if (results.some(r => !r.ok)) throw new Error('Failed to move some wishes')
+            // 2. Batch update - max 5 simultaneous requests to avoid overload
+            const BATCH_SIZE = 5
+            for (let i = 0; i < wishesToMove.length; i += BATCH_SIZE) {
+                const batch = wishesToMove.slice(i, i + BATCH_SIZE)
+                const batchPromises = batch.map(wish =>
+                    fetch(`${API_BASE_URL}/wishes/${wish.id}?telegram_id=${telegramId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ wishlist_id: toWishlistId }),
+                    })
+                )
+                const results = await Promise.all(batchPromises)
+                if (results.some(r => !r.ok)) throw new Error('Failed to move some wishes')
+            }
 
-            // Emit bulk update not really supported by simple event, maybe just reload?
             emitWishEvent('move')
 
             return true

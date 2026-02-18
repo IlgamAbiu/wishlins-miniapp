@@ -2,7 +2,7 @@
 /**
  * ProfileView - User profile with Events (Wishlists) and Wishes.
  */
-import { ref, watch, computed, onMounted } from 'vue'
+import { ref, watch, computed, onMounted, onUnmounted } from 'vue'
 import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
 import { useWishlists } from '@/composables/useWishlists'
 import { useWishes } from '@/composables/useWishes'
@@ -75,28 +75,38 @@ const displayUser = computed(() => {
 })
 
 // Subscribe to global wish updates to keep this list fresh
+let wishUpdateUnsubscribe: (() => void) | null = null
+
 onMounted(() => {
     // If a global wish update happens (e.g. from Detail View), re-fetch or update local list
-    const unsubscribe = onWishUpdate((type, wish, id) => {
+    wishUpdateUnsubscribe = onWishUpdate((type, wish, id) => {
         // Simple strategy: if we are viewing the wishlist that was modified, refresh it
         // Or if we don't know, just refresh everything if it affects current user context
         // For MVP, if we are owner, just refresh or let reactivity handle it if we used shared store (but we split it)
-        
+
         // If we are the owner, we definitely want to refresh
-        if (isOwner.value && type !== 'create') { 
-            // 'create' is usually handled by the creating component adding it, 
+        if (isOwner.value && type !== 'create') {
+            // 'create' is usually handled by the creating component adding it,
             // but if created from somewhere else?
         }
-        
+
         // Actually, easiest way is just to re-fetch wishes for current selected event if any
         if (selectedEventId.value) {
              fetchWishes(selectedEventId.value)
         }
     })
-    
-    // Clean up on unmount is handled automatically by Vue for top-level setup? 
-    // No, onMounted needs explicit onUnmounted if we cared, but script setup is fine usually.
-    // Let's add onUnmounted to be safe.
+})
+
+onUnmounted(() => {
+    // Clean up wish update listener
+    if (wishUpdateUnsubscribe) {
+        wishUpdateUnsubscribe()
+    }
+
+    // Clean up fetch timeout
+    if (fetchTimeout) {
+        clearTimeout(fetchTimeout)
+    }
 })
 
 function handleGoBack() {
@@ -316,10 +326,6 @@ function pluralizeWishes(count: number): string {
 
 <template>
   <div class="profile-view">
-    <!-- Background Decorative Blobs -->
-    <div class="bg-blob bg-blob-1"></div>
-    <div class="bg-blob bg-blob-2"></div>
-
     <!-- Not in Telegram -->
     <div v-if="!isInTelegram" class="not-telegram">
       <p>Only works in Telegram</p>
@@ -782,39 +788,6 @@ function pluralizeWishes(count: number): string {
 .v-enter-from,
 .v-leave-to {
   opacity: 0;
-}
-
-/* === BACKGROUND BLOBS === */
-.bg-blob {
-  position: fixed;
-  border-radius: 50%;
-  filter: blur(80px); /* Reduced from 120px */
-  opacity: 0;
-  pointer-events: none;
-  z-index: -1;
-  mix-blend-mode: screen;
-  transition: opacity 0.5s ease;
-  will-change: transform;
-}
-
-[data-theme='dark'] .bg-blob {
-  opacity: 0.12;
-}
-
-.bg-blob-1 {
-  top: 5%;
-  right: -10%;
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, #4f46e5 0%, transparent 70%);
-}
-
-.bg-blob-2 {
-  bottom: 15%;
-  left: -15%;
-  width: 350px;
-  height: 350px;
-  background: radial-gradient(circle, #6366f1 0%, transparent 70%);
 }
 
 .back-button-container {

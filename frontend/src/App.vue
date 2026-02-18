@@ -9,7 +9,6 @@ import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
 import { useWishes } from '@/composables/useWishes'
 import { TabBar } from '@/components/navigation'
 import BlockedScreen from '@/components/BlockedScreen.vue'
-import FestiveBackground from '@/components/ui/FestiveBackground.vue'
 import WishDetailView from '@/components/WishDetailView.vue'
 
 // Lazy load views
@@ -53,10 +52,6 @@ const currentComponent = computed(() => tabComponents[activeTab.value])
 
   <!-- Main app when in Telegram -->
   <div v-else class="app">
-    <!-- Decorative blur circles (light theme) -->
-    <div class="blur-decoration blur-circle-blue"></div>
-    <div class="blur-decoration blur-circle-purple"></div>
-
     <!-- Mesh gradients (dark theme) -->
     <div class="mesh-gradient"></div>
 

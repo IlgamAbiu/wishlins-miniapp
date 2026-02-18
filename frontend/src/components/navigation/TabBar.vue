@@ -61,20 +61,18 @@ function handleTabSelect(tabId: string) {
   padding: 8px;
   gap: 8px;
 
-  /* Glass Panel Style */
-  background: var(--glass-panel-bg);
-  backdrop-filter: blur(30px);
-  -webkit-backdrop-filter: blur(30px);
+  /* Solid Background (optimized) */
+  background: rgba(255, 255, 255, 0.95);
   border: 1px solid var(--glass-border);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05), 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
   border-radius: 9999px;
 
   transition: all var(--transition-normal);
 }
 
 [data-theme='dark'] .tab-bar__content {
-  background: rgba(40, 40, 42, 0.75);
+  background: rgba(28, 28, 30, 0.95);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3), 0 8px 32px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 </style>

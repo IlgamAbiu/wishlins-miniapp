@@ -24,6 +24,19 @@ export function useKeyboard() {
         }
     }
 
+    // Fallback resize handler for older browsers
+    function handleResizeFallback() {
+        const currentHeight = window.innerHeight
+        const diff = originalHeight - currentHeight
+        if (diff > 150) {
+            isKeyboardOpen.value = true
+            keyboardHeight.value = diff
+        } else {
+            isKeyboardOpen.value = false
+            keyboardHeight.value = 0
+        }
+    }
+
     // Also listen to focusin/focusout as a backup/helper
     // Note: focusin doesn't guarantee keyboard, but it's a strong signal on mobile
     function handleFocusIn(e: FocusEvent) {
@@ -40,23 +53,15 @@ export function useKeyboard() {
             window.visualViewport.addEventListener('resize', handleResize)
         } else {
             // Fallback for older browsers (unlikely needed for Telegram Webview but good practice)
-            window.addEventListener('resize', () => {
-                const currentHeight = window.innerHeight
-                const diff = originalHeight - currentHeight
-                if (diff > 150) {
-                    isKeyboardOpen.value = true
-                    keyboardHeight.value = diff
-                } else {
-                    isKeyboardOpen.value = false
-                    keyboardHeight.value = 0
-                }
-            })
+            window.addEventListener('resize', handleResizeFallback)
         }
     })
 
     onUnmounted(() => {
         if (window.visualViewport) {
             window.visualViewport.removeEventListener('resize', handleResize)
+        } else {
+            window.removeEventListener('resize', handleResizeFallback)
         }
     })
 

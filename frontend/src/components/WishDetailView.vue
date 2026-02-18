@@ -45,8 +45,11 @@ import { navigationStore } from '@/stores/navigation.store'
 // ...
 
 const isOwner = computed(() => {
-    // If we are viewing a friend/searching (selectedFriendId is set), we are NOT the owner
-    if (navigationStore.state.selectedFriendId) return false
+    // If we are in Friends tab AND a friend is selected, we are NOT the owner
+    // This allows editing own wishes in Profile tab even if a friend was left open in Friends tab
+    if (navigationStore.state.activeTab === 'friends' && navigationStore.state.selectedFriendId) {
+        return false
+    }
     
     if (!internalUserId.value || !safeWish.value) return false
     // Find the wishlist this wish belongs to
@@ -773,9 +776,10 @@ async function handleDeleteWish(id: string) {
     /* Max 2 lines */
     display: -webkit-box;
     -webkit-line-clamp: 2;
-    -webkit-line-clamp: 2; /* Autoprefixer fallback */
+    line-clamp: 2; /* Standard property */
     -webkit-box-orient: vertical;
     overflow: hidden;
+
     line-height: 1.4;
 }
 [data-theme='light'] .short-description { color: #555; }

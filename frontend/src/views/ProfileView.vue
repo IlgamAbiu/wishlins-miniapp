@@ -516,7 +516,7 @@ function pluralizeWishes(count: number): string {
 }
 
 .header-with-back-btn {
-  margin-top: 40px; /* Space for the absolute back button */
+  margin-top: 60px; /* Increased from 40px to prevent overlap with 48px button + offset */
 }
 
 

@@ -184,7 +184,7 @@ onMounted(() => {
 .friends-view__header {
   display: flex;
   flex-direction: column;
-  padding: 16px 4px;
+  padding: 16px 16px; /* Increased side padding to match grid */
   margin-bottom: 16px;
 }
 

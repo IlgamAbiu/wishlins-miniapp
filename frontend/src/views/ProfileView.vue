@@ -277,6 +277,7 @@ function pluralizeWishes(count: number): string {
         <div v-if="selectedEvent" class="actions-row">
           <div class="actions-buttons">
             <button
+              v-if="selectedEvent.title !== 'Сбывшиеся мечты'"
               class="glass-btn action-btn"
               @click="handleEditEvent"
             >

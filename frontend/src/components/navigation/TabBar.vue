@@ -3,10 +3,12 @@
  * TabBar - Bottom navigation bar component.
  */
 import { useNavigation } from '@/composables/useNavigation'
+import { useKeyboard } from '@/composables/useKeyboard'
 import TabBarItem from './TabBarItem.vue'
 import type { TabId } from '@/types'
 
 const { tabs, activeTab, navigateToTab, isActive } = useNavigation()
+const { isKeyboardOpen } = useKeyboard()
 
 function handleTabSelect(tabId: string) {
   navigateToTab(tabId as TabId)
@@ -14,7 +16,12 @@ function handleTabSelect(tabId: string) {
 </script>
 
 <template>
-  <nav class="tab-bar" role="tablist" aria-label="Main navigation">
+  <nav 
+    class="tab-bar" 
+    :class="{ 'tab-bar--hidden': isKeyboardOpen }"
+    role="tablist" 
+    aria-label="Main navigation"
+  >
     <div class="tab-bar__content">
       <TabBarItem
         v-for="tab in tabs"
@@ -35,8 +42,16 @@ function handleTabSelect(tabId: string) {
   transform: translateX(-50%);
   width: 92%;
   max-width: 480px;
-  z-index: 9999;
+  z-index: 100; /* Lower than Modal (1000) */
   pointer-events: auto; /* Force clickable */
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.tab-bar--hidden {
+  transform: translate(-50%, 200%); /* Move down out of view */
+  opacity: 0;
+  pointer-events: none;
 }
 
 .tab-bar__content {

@@ -3,7 +3,7 @@
  * FriendsView - Friends tab.
  * Displays list of friends sorted by birthday.
  */
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
 import FriendCard from '@/components/FriendCard.vue'
 import type { User } from '@/types'
@@ -117,11 +117,26 @@ async function fetchFriends() {
 
 function handleAddFriend() {
     // Open Telegram Share
-    const message = encodeURIComponent('Join me on Wishlins and see my wishlist! 🎁')
+    const message = encodeURIComponent('Присоединяйся ко мне в Wishlins и смотри мой вишлист! 🎁')
     const url = encodeURIComponent('https://t.me/WishlinsBot/app')
     
     webapp.value?.openTelegramLink(`https://t.me/share/url?url=${url}&text=${message}`)
 }
+
+const friendsCountText = computed(() => {
+  const count = friends.value.length
+  const lastDigit = count % 10
+  const lastTwoDigits = count % 100
+  
+  let word = 'друзей'
+  if (lastDigit === 1 && lastTwoDigits !== 11) {
+    word = 'друг'
+  } else if ([2, 3, 4].includes(lastDigit) && ![12, 13, 14].includes(lastTwoDigits)) {
+    word = 'друга'
+  }
+  
+  return `${count} ${word} с обновлениями`
+})
 
 onMounted(() => {
   fetchFriends()
@@ -131,14 +146,14 @@ onMounted(() => {
 <template>
   <div class="friends-view">
     <div class="friends-view__header">
-      <h1 class="friends-view__title">Friends</h1>
-      <button class="friends-view__add-btn" @click="handleAddFriend" aria-label="Add friend">
+      <h1 class="friends-view__title">Друзья</h1>
+      <button class="friends-view__add-btn" @click="handleAddFriend" aria-label="Добавить друга">
         <span class="friends-view__add-icon">+</span>
       </button>
     </div>
     
     <div v-if="isLoading" class="friends-view__loading">
-      Loading...
+      Загрузка...
     </div>
     
     <div v-else-if="friends.length === 0" class="friends-view__empty">
@@ -147,14 +162,14 @@ onMounted(() => {
           <div class="placeholder__icon">🎁</div>
           <div class="placeholder__sparkle">🌟</div>
         </div>
-        <h2 class="placeholder__title">No friends yet</h2>
-        <p class="placeholder__text">Invite your friends to share wishlists!</p>
-        <button class="primary-button" @click="handleAddFriend">Invite Friends</button>
+        <h2 class="placeholder__title">Пока нет друзей</h2>
+        <p class="placeholder__text">Пригласите друзей, чтобы делиться вишлистами!</p>
+        <button class="primary-button" @click="handleAddFriend">Пригласить друзей</button>
       </div>
     </div>
     
     <div v-else class="friends-view__grid">
-      <p class="friends-view__count">{{ friends.length }} friends have updates</p>
+      <p class="friends-view__count">{{ friendsCountText }}</p>
       <FriendCard 
         v-for="friend in friends" 
         :key="friend.id" 

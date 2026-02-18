@@ -3,11 +3,6 @@
  * FriendCard.vue
  * 
  * Displays a friend in the list.
- * features:
- * - Avatar
- * - Name
- * - Wish count (mocked for now)
- * - Next event (Birthday)
  */
 import { computed } from 'vue'
 import type { User } from '@/types'
@@ -22,22 +17,37 @@ const props = defineProps<Props>()
 const wishCount = computed(() => Math.floor(Math.random() * 20) + 1)
 
 const birthdayText = computed(() => {
-  if (!props.friend.birth_date) return 'No birthday set'
+  if (!props.friend.birth_date) return 'День рождения не указан'
   
   const today = new Date()
   const birthDate = new Date(props.friend.birth_date)
   const nextBirthday = new Date(today.getFullYear(), birthDate.getMonth(), birthDate.getDate())
   
+  // Reset hours to avoid timezone issues affecting day diff
+  today.setHours(0, 0, 0, 0)
+  nextBirthday.setHours(0, 0, 0, 0)
+
   if (nextBirthday < today) {
     nextBirthday.setFullYear(today.getFullYear() + 1)
   }
   
-  const diffTime = Math.abs(nextBirthday.getTime() - today.getTime())
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  const diffTime = nextBirthday.getTime() - today.getTime()
+  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24))
   
-  if (diffDays === 0) return 'Birthday today! 🎂'
-  if (diffDays === 1) return 'Birthday tomorrow'
-  return `Birthday in ${diffDays} days`
+  if (diffDays === 0) return 'День рождения сегодня! 🎂'
+  if (diffDays === 1) return 'День рождения завтра'
+  
+  const lastDigit = diffDays % 10
+  const lastTwoDigits = diffDays % 100
+  
+  let dayWord = 'дней'
+  if (lastDigit === 1 && lastTwoDigits !== 11) {
+    dayWord = 'день'
+  } else if ([2, 3, 4].includes(lastDigit) && ![12, 13, 14].includes(lastTwoDigits)) {
+    dayWord = 'дня'
+  }
+  
+  return `До дня рождения ${diffDays} ${dayWord}`
 })
 
 const displayName = computed(() => {
@@ -57,15 +67,15 @@ const avatarInitial = computed(() => {
     <div class="friend-card__avatar">
       <img v-if="friend.avatar_url" :src="friend.avatar_url" :alt="displayName" />
       <div v-else class="friend-card__avatar-placeholder">{{ avatarInitial }}</div>
-      <div class="friend-card__gift-icon">🎁</div>
+      <!-- Badge removed as requested -->
     </div>
     
     <div class="friend-card__info">
       <h3 class="friend-card__name">{{ displayName }}</h3>
-      <p class="friend-card__wishes">{{ wishCount }} WISHES</p>
+      <p class="friend-card__wishes">{{ wishCount }} ЖЕЛАНИЙ</p>
       
       <div class="friend-card__next-event">
-        <span class="friend-card__event-label">NEXT EVENT</span>
+        <!-- Label removed as requested -->
         <span class="friend-card__event-date">{{ birthdayText }}</span>
       </div>
     </div>
@@ -122,20 +132,7 @@ const avatarInitial = computed(() => {
   border: 2px solid rgba(255, 255, 255, 0.2);
 }
 
-.friend-card__gift-icon {
-  position: absolute;
-  top: 0;
-  right: -4px;
-  background: #3b82f6;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  border: 2px solid var(--bg-color);
-}
+/* Removed friend-card__gift-icon styles */
 
 .friend-card__name {
   margin: 0;
@@ -163,12 +160,7 @@ const avatarInitial = computed(() => {
   gap: 2px;
 }
 
-.friend-card__event-label {
-  font-size: 10px;
-  text-transform: uppercase;
-  color: var(--text-secondary);
-  opacity: 0.6;
-}
+/* Removed friend-card__event-label styles */
 
 .friend-card__event-date {
   font-size: 13px;

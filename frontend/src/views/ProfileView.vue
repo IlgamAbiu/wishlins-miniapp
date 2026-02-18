@@ -561,7 +561,7 @@ function pluralizeWishes(count: number): string {
 .avatar-placeholder {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #FF9F0A, #FF375F);
+  background: var(--gradient-festive); /* Use themed gradient */
   color: white;
   display: flex;
   align-items: center;
@@ -746,7 +746,7 @@ function pluralizeWishes(count: number): string {
   background: var(--tg-button-color);
   color: white;
   border: 4px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 8px 24px rgba(10, 13, 194, 0.3);
+  box-shadow: 0 8px 24px rgba(79, 70, 229, 0.3); /* Indigo shadow */
   display: flex;
   align-items: center;
   justify-content: center;

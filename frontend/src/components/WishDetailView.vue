@@ -406,15 +406,15 @@ async function handleDeleteWish(id: string) {
     width: 100%;
     height: 100%;
     z-index: 1000;
-    background-color: #f5f6f8;
-    color: #111;
+    background: var(--tg-bg-color); /* Use variable */
+    color: var(--tg-text-color);
     font-family: 'Plus Jakarta Sans', sans-serif;
     overflow: hidden; /* Main view doesn't scroll, inner container does */
 }
 
 [data-theme='dark'] .wish-detail-view {
-    background-color: #101022;
-    color: #fff;
+    background: var(--tg-bg-color); /* Use variable */
+    color: var(--tg-text-color);
 }
 
 /* Ambient Background */
@@ -537,7 +537,7 @@ async function handleDeleteWish(id: string) {
 .liquid-bg {
     position: absolute;
     inset: 0;
-    background: rgba(10, 13, 194, 0.3);
+    background: rgba(79, 70, 229, 0.3); /* Indigo tint matching primary */
     border-radius: 63% 37% 54% 46% / 55% 48% 52% 45%;
     filter: blur(20px); /* Reduced from 40px */
     transform: scale(1); /* Removed scale 1.1 */

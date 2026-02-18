@@ -28,6 +28,7 @@ export interface NavigationState {
   activeTab: TabId
   previousTab: TabId | null
   viewedUserId: number | null // Telegram ID of the user being viewed (null = current user)
+  selectedFriendId: number | null // ID of friend selected in Friends tab (Stack navigation)
   history: TabId[]
 }
 

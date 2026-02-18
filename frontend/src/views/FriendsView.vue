@@ -1,27 +1,46 @@
+```html
 <script setup lang="ts">
 /**
  * FriendsView - Friends tab.
  * Displays list of friends sorted by birthday.
  */
-import { ref, onMounted, computed } from 'vue'
-import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
+import { ref, computed, onMounted, watch, defineAsyncComponent } from 'vue'
 import FriendCard from '@/components/FriendCard.vue'
 import type { User } from '@/types'
 
 import { userService } from '@/services/user.service'
 import { navigationStore } from '@/stores/navigation.store'
+import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
 
-const { webapp, user } = useTelegramWebApp()
+// Async helper for ProfileView (circular dep potential if static import, but AsyncComponent handles it well)
+const ProfileView = defineAsyncComponent(() => import('@/views/ProfileView.vue'))
+
+const { webapp, user, backButton } = useTelegramWebApp()
 const friends = ref<User[]>([])
 const isLoading = ref(true)
 const error = ref<string | null>(null)
+const searchQuery = ref('') // Search state
+
+const selectedFriendId = computed(() => navigationStore.state.selectedFriendId)
+
+// Filtered friends list
+const filteredFriends = computed(() => {
+    if (!searchQuery.value) return friends.value
+    
+    const query = searchQuery.value.toLowerCase()
+    return friends.value.filter(friend => {
+        const firstName = friend.first_name?.toLowerCase() || ''
+        const lastName = friend.last_name?.toLowerCase() || ''
+        const username = friend.username?.toLowerCase() || ''
+        
+        return firstName.includes(query) || 
+               lastName.includes(query) || 
+               username.includes(query)
+    })
+})
 
 async function fetchFriends() {
   if (!user.value) {
-    // If user is not available (e.g. running outside Telegram without mock), 
-    // we can't fetch friends specific to them.
-    // Ideally, we should show a login prompt or handle this gracefully.
-    // For now, let's just stop loading.
     console.warn('User not available, cannot fetch friends.')
     isLoading.value = false
     return
@@ -30,10 +49,7 @@ async function fetchFriends() {
   try {
     isLoading.value = true
     error.value = null
-    
-    // Pass the user's Telegram ID to the service
     friends.value = await userService.getFriends(user.value.id)
-
   } catch (e) {
     console.error('Error fetching friends:', e)
     error.value = 'Не удалось загрузить список друзей'
@@ -43,16 +59,29 @@ async function fetchFriends() {
 }
 
 function handleAddFriend() {
-    // Open Telegram Share
     const message = encodeURIComponent('Присоединяйся ко мне в Wishlins и смотри мой вишлист! 🎁')
     const url = encodeURIComponent('https://t.me/WishlinsBot/app')
-    
     webapp.value?.openTelegramLink(`https://t.me/share/url?url=${url}&text=${message}`)
 }
 
 function openFriendProfile(friendId: number) {
-    navigationStore.openUserProfile(friendId)
+    navigationStore.openFriendProfile(friendId)
 }
+
+function handleBackButton() {
+    navigationStore.closeFriendProfile()
+}
+
+// Watch selectedFriendId to toggle Back Button
+watch(selectedFriendId, (newId) => {
+    if (newId) {
+        backButton.value.show()
+        backButton.value.onClick(handleBackButton)
+    } else {
+        backButton.value.hide()
+        backButton.value.offClick(handleBackButton)
+    }
+})
 
 onMounted(() => {
   fetchFriends()
@@ -60,61 +89,88 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="friends-view">
-    <div class="friends-view__header">
-      <div class="header-text-column">
-        <h1 class="friends-view__title">Друзья</h1>
-        <p class="friends-view__subtitle">Ваш круг общения</p>
+  <div class="friends-view-stack">
+      <!-- 1. Profile View (Nested) -->
+      <div v-if="selectedFriendId" class="nested-profile-view">
+          <ProfileView :user-id="selectedFriendId" />
       </div>
-      <button class="friends-view__add-btn" @click="handleAddFriend" aria-label="Добавить друга">
-        <span class="friends-view__add-icon">+</span>
-      </button>
-    </div>
-    
-    <div v-if="isLoading" class="friends-view__grid">
-      <div v-for="i in 6" :key="i" class="friend-card skeleton-card">
-        <div class="skeleton skeleton-circle" style="width: 80px; height: 80px; margin-bottom: 16px;"></div>
-        <div class="skeleton skeleton-text" style="width: 60%; height: 20px; margin-bottom: 8px;"></div>
-        <div class="skeleton skeleton-text" style="width: 40%; height: 14px; margin-bottom: 16px;"></div>
-        <div class="skeleton skeleton-text" style="width: 90%; height: 32px; border-radius: 12px;"></div>
-      </div>
-    </div>
 
-    <div v-else-if="error" class="friends-view__error">
-      <p>{{ error }}</p>
-      <button class="primary-button" @click="fetchFriends">Попробовать снова</button>
-    </div>
-    
-    <div v-else-if="friends.length === 0" class="friends-view__empty">
-      <div class="placeholder">
-        <div class="placeholder__icon-wrapper">
-          <div class="placeholder__icon">🎁</div>
-          <div class="placeholder__sparkle">🌟</div>
-        </div>
-        <h2 class="placeholder__title">Пока нет друзей</h2>
-        <p class="placeholder__text">Пригласите друзей, чтобы делиться вишлистами!</p>
-        <button class="primary-button" @click="handleAddFriend">Пригласить друзей</button>
-      </div>
-    </div>
-    
-    <div v-else class="friends-view__grid">
-      <!-- Subtitle removed from here -->
-      <FriendCard 
-        v-for="friend in friends" 
-        :key="friend.id" 
-        :friend="friend"
-        @click="openFriendProfile(friend.telegram_id)"
-      />
+      <!-- 2. Friends List (Default) -->
+      <div v-else class="friends-list-view">
+            <div class="friends-view__header">
+            <div class="header-top">
+                <div class="header-text-column">
+                    <h1 class="friends-view__title">Друзья</h1>
+                    <p class="friends-view__subtitle">Ваш круг общения</p>
+                </div>
+                <button class="friends-view__add-btn" @click="handleAddFriend" aria-label="Добавить друга">
+                    <span class="friends-view__add-icon">+</span>
+                </button>
+            </div>
+            
+            <!-- Search Bar -->
+            <div class="search-bar-wrapper">
+                <div class="search-bar glass-panel">
+                    <span class="material-symbols-outlined search-icon">search</span>
+                    <input 
+                        v-model="searchQuery" 
+                        type="text" 
+                        class="search-input" 
+                        placeholder="Поиск друзей..." 
+                    />
+                </div>
+            </div>
+            </div>
+            
+            <div v-if="isLoading" class="friends-view__grid">
+            <div v-for="i in 6" :key="i" class="friend-card skeleton-card">
+                <div class="skeleton skeleton-circle" style="width: 80px; height: 80px; margin-bottom: 16px;"></div>
+                <div class="skeleton skeleton-text" style="width: 60%; height: 20px; margin-bottom: 8px;"></div>
+                <div class="skeleton skeleton-text" style="width: 40%; height: 14px; margin-bottom: 16px;"></div>
+                <div class="skeleton skeleton-text" style="width: 90%; height: 32px; border-radius: 12px;"></div>
+            </div>
+            </div>
+
+            <div v-else-if="error" class="friends-view__error">
+            <p>{{ error }}</p>
+            <button class="primary-button" @click="fetchFriends">Попробовать снова</button>
+            </div>
+            
+            <!-- Empty State: No friends at all -->
+            <div v-else-if="friends.length === 0" class="friends-view__empty">
+            <div class="placeholder">
+                <div class="placeholder__icon-wrapper">
+                <div class="placeholder__icon">🎁</div>
+                <div class="placeholder__sparkle">🌟</div>
+                </div>
+                <h2 class="placeholder__title">Пока нет друзей</h2>
+                <p class="placeholder__text">Пригласите друзей, чтобы делиться вишлистами!</p>
+                <button class="primary-button" @click="handleAddFriend">Пригласить друзей</button>
+            </div>
+            </div>
+            
+            <!-- Search Result: Not Found -->
+            <div v-else-if="filteredFriends.length === 0" class="friends-view__empty search-empty">
+                <div class="placeholder">
+                    <p class="placeholder__text">Такого пользователя нет в Wishlist</p>
+                    <button class="primary-button" @click="handleAddFriend">Пригласить?</button>
+                </div>
+            </div>
+            
+            <div v-else class="friends-view__grid">
+            <!-- Subtitle removed from here -->
+            <FriendCard 
+                v-for="friend in filteredFriends" 
+                :key="friend.id" 
+                :friend="friend"
+                @click="openFriendProfile(friend.telegram_id)"
+            />
+            </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.friends-view {
-  height: 100vh;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding: 2px 16px 100px; /* Bottom padding for tab bar */
   box-sizing: border-box;
 }
 
@@ -147,9 +203,17 @@ onMounted(() => {
   font-weight: 400;
 }
 
+
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
 .friends-view__add-btn {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.05);
@@ -159,6 +223,7 @@ onMounted(() => {
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s;
+  flex-shrink: 0;
 }
 
 .friends-view__add-btn:active {
@@ -167,9 +232,60 @@ onMounted(() => {
 }
 
 .friends-view__add-icon {
-  font-size: 24px;
+  font-size: 26px;
   line-height: 1;
+  font-weight: 300;
 }
+
+/* === Search Bar === */
+.search-bar-wrapper {
+  margin-bottom: 8px;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  height: 48px;
+  border-radius: 24px;
+  background: rgba(0, 0, 0, 0.2); /* Darker background for input */
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.2s ease;
+}
+
+.search-bar:focus-within {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.search-icon {
+  color: var(--text-secondary); /* or #64748b */
+  font-size: 20px;
+  margin-right: 12px;
+  opacity: 0.7;
+}
+
+.search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 16px;
+  font-weight: 400;
+  outline: none;
+  width: 100%;
+}
+
+.search-input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.6;
+}
+
+/* Search Empty State */
+.search-empty {
+    height: 50vh; /* Slightly smaller height than main empty state */
+}
+
 
 .friends-view__grid {
   display: grid;

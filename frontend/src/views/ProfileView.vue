@@ -16,6 +16,10 @@ import EditProfileTextModal from '@/components/EditProfileTextModal.vue'
 import DeleteEventModal from '@/components/DeleteEventModal.vue'
 import EventLimitModal from '@/components/EventLimitModal.vue'
 
+const props = defineProps<{
+    userId?: number // Optional prop for direct user ID (Stack Navigation)
+}>()
+
 const { isInTelegram, user, userDisplayName } = useTelegramWebApp()
 const { wishlists, fetchWishlists, createWishlist, updateWishlist, deleteWishlist } = useWishlists()
 const { wishes, loading: wishesLoading, error: wishesError, fetchWishes, createWish, moveWishesToWishlist, openWish } = useWishes()
@@ -33,13 +37,17 @@ const profileText = ref('Saving for a dream ✨')
 
 // Guest Mode Logic
 const targetUserId = computed(() => {
+    if (props.userId) return props.userId
     return navigationStore.state.viewedUserId || user.value?.id
 })
 
 const isOwner = computed(() => {
+    // If prop is passed, check if it matches current user
+    if (props.userId) return props.userId === user.value?.id
+    
     // If viewedUserId is null, we are viewing our own profile
-    // If viewedUserId is set, check if it matches our own ID
     if (!navigationStore.state.viewedUserId) return true
+    
     return navigationStore.state.viewedUserId === user.value?.id
 })
 
@@ -106,8 +114,8 @@ async function initData() {
   }
 }
 
-// Watch for user changes OR navigation state changes
-watch([() => user.value, () => navigationStore.state.viewedUserId], () => {
+// Watch for user changes OR navigation state changes OR prop changes
+watch([() => user.value, () => navigationStore.state.viewedUserId, () => props.userId], () => {
    // Reset selected event when switching profiles
    selectedEventId.value = null
    initData()

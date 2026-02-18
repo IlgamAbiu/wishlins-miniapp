@@ -53,7 +53,8 @@ export const TAB_CONFIGS: TabConfig[] = [
 const state = reactive<NavigationState>({
   activeTab: 'profile',
   previousTab: null,
-  viewedUserId: null,
+  viewedUserId: null, // For 'profile' tab guest mode (legacy/main profile tab)
+  selectedFriendId: null, // For 'friends' tab nested navigation
   history: ['profile'],
 })
 
@@ -63,14 +64,18 @@ const state = reactive<NavigationState>({
  */
 function switchTab(tabId: TabId): void {
   console.log(`[Navigation] Switching to tab: ${tabId}`) // Debug log
-  if (tabId === state.activeTab && state.viewedUserId === null) return
+  if (tabId === state.activeTab && state.viewedUserId === null && state.selectedFriendId === null) return
 
-  // If we are switching TO profile tab explicitly (e.g. from bottom bar),
-  // we usually want to see OUR profile.
-  // But if we are already on profile (guest) and click profile...
-  // Let's say: Manual switch to 'profile' resets viewedUserId.
+  // If clicking "Profile" tab explicitly, reset to "My Profile"
   if (tabId === 'profile') {
     state.viewedUserId = null
+  }
+
+  // If clicking "Friends" tab explicitly while deep in stack?
+  // Usually tapping the active tab again pops to root.
+  if (tabId === 'friends' && state.activeTab === 'friends' && state.selectedFriendId !== null) {
+    state.selectedFriendId = null
+    return
   }
 
   state.previousTab = state.activeTab
@@ -83,7 +88,7 @@ function switchTab(tabId: TabId): void {
 }
 
 /**
- * Open a specific user's profile.
+ * Open a specific user's profile in the MAIN profile tab (switches tab).
  * @param telegramId The Telegram ID of the user to view.
  */
 function openUserProfile(telegramId: number): void {
@@ -98,14 +103,33 @@ function openUserProfile(telegramId: number): void {
 }
 
 /**
- * Go back to previous tab.
+ * Open a friend's profile within the Friends tab (Stack Navigation).
+ */
+function openFriendProfile(telegramId: number): void {
+  state.selectedFriendId = telegramId
+}
+
+/**
+ * Close friend profile and return to list (Stack Navigation).
+ */
+function closeFriendProfile(): void {
+  state.selectedFriendId = null
+}
+
+/**
+ * Go back to previous tab or pop stack.
  */
 function goBack(): boolean {
-  // If we are in guest mode, maybe back should take us back to friends?
-  // Simply using previousTab logic might be enough if we came from friends.
+  // 1. Priority: Close nested friend profile if open
+  if (state.selectedFriendId !== null) {
+    state.selectedFriendId = null
+    return true
+  }
+
+  // 2. Priority: Reset guest mode on profile tab
   if (state.viewedUserId !== null) {
-    state.viewedUserId = null // Reset guest mode on back?
-    // Or just standard back logic:
+    state.viewedUserId = null
+    // maybe verify if we should switch tab?
   }
 
   if (!state.previousTab) return false
@@ -124,6 +148,7 @@ function reset(): void {
   state.activeTab = 'profile'
   state.previousTab = null
   state.viewedUserId = null
+  state.selectedFriendId = null
   state.history = ['profile']
 }
 
@@ -160,7 +185,9 @@ export const navigationStore = {
 
   // Actions
   switchTab,
-  openUserProfile, // Export new action
+  openUserProfile,
+  openFriendProfile, // New action
+  closeFriendProfile, // New action
   goBack,
   reset,
   getTabConfig,

@@ -59,7 +59,6 @@ async def register_user(
             first_name=user.first_name,
             last_name=user.last_name,
             avatar_url=user.avatar_url,
-            avatar_url=user.avatar_url,
             profile_text=user.profile_text,
             birth_date=user.birth_date,
             created_at=user.created_at,

@@ -38,20 +38,29 @@ const selectedEvent = computed(() =>
 )
 
 // Initial Data Fetch
+const isLoading = ref(true)
+
 async function initData() {
   if (user.value) {
-    // Load user profile data including profile_text
-    const userData = await getUserByTelegramId(user.value.id)
-    if (userData && userData.profile_text) {
-      profileText.value = userData.profile_text
-    }
+    isLoading.value = true
+    try {
+      // Load user profile data including profile_text
+      const userData = await getUserByTelegramId(user.value.id)
+      if (userData && userData.profile_text) {
+        profileText.value = userData.profile_text
+      }
 
-    await fetchWishlists(user.value.id)
+      await fetchWishlists(user.value.id)
 
-    // Select default event or first one
-    if (wishlists.value.length > 0) {
-      const defaultEvent = wishlists.value.find(w => w.is_default)
-      selectedEventId.value = defaultEvent ? defaultEvent.id : wishlists.value[0].id
+      // Select default event or first one
+      if (wishlists.value.length > 0) {
+        const defaultEvent = wishlists.value.find(w => w.is_default)
+        selectedEventId.value = defaultEvent ? defaultEvent.id : wishlists.value[0].id
+      }
+    } finally {
+      // Artificial delay to show skeleton (optional, for smooth UX)
+      // await new Promise(resolve => setTimeout(resolve, 500)) 
+      isLoading.value = false
     }
   }
 }
@@ -246,8 +255,14 @@ function pluralizeWishes(count: number): string {
             </div>
           </div>
           <div class="user-info">
-            <h1 class="user-name">{{ userDisplayName }}</h1>
-            <p class="user-subtitle">{{ profileText }}</p>
+            <template v-if="isLoading">
+              <div class="skeleton skeleton-text" style="width: 120px; height: 24px; margin-bottom: 4px;"></div>
+              <div class="skeleton skeleton-text" style="width: 180px; height: 16px;"></div>
+            </template>
+            <template v-else>
+              <h1 class="user-name">{{ userDisplayName }}</h1>
+              <p class="user-subtitle">{{ profileText }}</p>
+            </template>
           </div>
           <button class="glass-btn edit-header-btn">
             <span class="material-symbols-outlined text-[20px]">edit</span>
@@ -256,7 +271,14 @@ function pluralizeWishes(count: number): string {
 
         <!-- Events Carousel -->
         <div class="carousel-wrapper">
+          <div v-if="isLoading" class="skeleton-carousel">
+             <div class="skeleton event-pill" style="width: 100px;"></div>
+             <div class="skeleton event-add-btn"></div>
+             <div class="skeleton event-pill" style="width: 120px;"></div>
+             <div class="skeleton event-pill" style="width: 90px;"></div>
+          </div>
           <EventCarousel
+            v-else
             :events="wishlists"
             :selected-event-id="selectedEventId"
             @select="handleEventSelect"
@@ -312,7 +334,11 @@ function pluralizeWishes(count: number): string {
       </section>
 
       <!-- Floating FAB Button -->
-      <button class="fab-button" @click="showAddWishModal = true">
+      <button 
+        v-if="selectedEvent?.title !== 'Сбывшиеся мечты'" 
+        class="fab-button" 
+        @click="showAddWishModal = true"
+      >
         <span class="fab-icon">+</span>
       </button>
 
@@ -503,6 +529,24 @@ function pluralizeWishes(count: number): string {
   padding: 0 20px;
   /* Prevent shadow clipping in carousel */
   overflow: visible;
+}
+
+.skeleton-carousel {
+  display: flex;
+  gap: 8px;
+  padding: 4px 0; /* Match EventCarousel padding */
+}
+
+.skeleton-carousel .event-pill {
+  height: 44px;
+  border-radius: 22px;
+}
+
+.skeleton-carousel .event-add-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 /* === EVENT DESCRIPTION === */

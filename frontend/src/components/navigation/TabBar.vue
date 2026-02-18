@@ -37,7 +37,7 @@ function handleTabSelect(tabId: string) {
 <style scoped>
 .tab-bar {
   position: fixed;
-  bottom: 24px;
+  bottom: 0;
   left: 50%;
   transform: translateX(-50%);
   width: 92%;
@@ -45,7 +45,7 @@ function handleTabSelect(tabId: string) {
   z-index: 100; /* Lower than Modal (1000) */
   pointer-events: auto; /* Force clickable */
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
-  padding-bottom: env(safe-area-inset-bottom);
+  padding-bottom: calc(env(safe-area-inset-bottom) + 12px);
 }
 
 .tab-bar--hidden {

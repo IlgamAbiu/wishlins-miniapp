@@ -20,9 +20,15 @@ const emit = defineEmits<{
 
 <template>
   <div class="wish-grid">
-    <!-- Loading State -->
-    <div v-if="loading" class="grid-loading">
-      <div class="spinner"></div>
+    <!-- Loading State (Skeletons) -->
+    <div v-if="loading" class="grid-content">
+      <div v-for="i in 4" :key="i" class="wish-card skeleton-card">
+        <div class="skeleton skeleton-image"></div>
+        <div class="skeleton-content">
+          <div class="skeleton skeleton-text" style="width: 70%;"></div>
+          <div class="skeleton skeleton-text" style="width: 40%;"></div>
+        </div>
+      </div>
     </div>
 
     <!-- Error State -->
@@ -118,7 +124,27 @@ const emit = defineEmits<{
 /* Use a deep selector or ensure higher specificity if needed, 
    but since the class is added in the parent template, it should work.
    Adding !important to force layout if there are conflicting styles. */
-.span-full {
-  grid-column: 1 / -1 !important;
+/* Skeleton Card */
+.skeleton-card {
+  background: var(--tg-secondary-bg-color);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 200px; /* Approx height of a card */
+}
+
+.skeleton-image {
+  width: 100%;
+  height: 120px;
+  flex-shrink: 0;
+}
+
+.skeleton-content {
+  padding: 12px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 </style>

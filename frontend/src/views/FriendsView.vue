@@ -123,20 +123,7 @@ function handleAddFriend() {
     webapp.value?.openTelegramLink(`https://t.me/share/url?url=${url}&text=${message}`)
 }
 
-const friendsCountText = computed(() => {
-  const count = friends.value.length
-  const lastDigit = count % 10
-  const lastTwoDigits = count % 100
-  
-  let word = 'друзей'
-  if (lastDigit === 1 && lastTwoDigits !== 11) {
-    word = 'друг'
-  } else if ([2, 3, 4].includes(lastDigit) && ![12, 13, 14].includes(lastTwoDigits)) {
-    word = 'друга'
-  }
-  
-  return `${count} ${word} с обновлениями`
-})
+
 
 onMounted(() => {
   fetchFriends()
@@ -169,7 +156,7 @@ onMounted(() => {
     </div>
     
     <div v-else class="friends-view__grid">
-      <p class="friends-view__count">{{ friendsCountText }}</p>
+      <p class="friends-view__count">Ваш круг общения</p>
       <FriendCard 
         v-for="friend in friends" 
         :key="friend.id" 
@@ -181,7 +168,9 @@ onMounted(() => {
 
 <style scoped>
 .friends-view {
-  min-height: 100%;
+  height: 100vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   padding: 2px 16px 100px; /* Bottom padding for tab bar */
   box-sizing: border-box;
 }

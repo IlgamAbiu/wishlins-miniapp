@@ -17,7 +17,7 @@
  * - Open/Closed: Easy to add new tabs without modifying core logic
  */
 
-import { reactive, readonly, computed } from 'vue'
+import { reactive, computed } from 'vue'
 import type { TabId, TabConfig, NavigationState } from '@/types'
 
 /**
@@ -117,8 +117,8 @@ function isTabActive(tabId: TabId): boolean {
  * State is readonly to enforce unidirectional data flow.
  */
 export const navigationStore = {
-  // Readonly state
-  state: readonly(state),
+  // Expose state directly (reactive) instead of readonly to preserve reactivity
+  state,
 
   // Computed
   activeTabConfig,

@@ -133,7 +133,10 @@ onMounted(() => {
 <template>
   <div class="friends-view">
     <div class="friends-view__header">
-      <h1 class="friends-view__title">Друзья</h1>
+      <div class="header-text-column">
+        <h1 class="friends-view__title">Друзья</h1>
+        <p class="friends-view__subtitle">Ваш круг общения</p>
+      </div>
       <button class="friends-view__add-btn" @click="handleAddFriend" aria-label="Добавить друга">
         <span class="friends-view__add-icon">+</span>
       </button>
@@ -161,7 +164,7 @@ onMounted(() => {
     </div>
     
     <div v-else class="friends-view__grid">
-      <p class="friends-view__count">Ваш круг общения</p>
+      <!-- Subtitle removed from here -->
       <FriendCard 
         v-for="friend in friends" 
         :key="friend.id" 
@@ -182,17 +185,31 @@ onMounted(() => {
 
 .friends-view__header {
   display: flex;
-  align-items: center;
+  align-items: flex-start; /* Align to top */
   justify-content: space-between;
-  padding: 16px 0;
-  margin-bottom: 8px;
+  padding: 16px 4px;
+  margin-bottom: 16px;
+}
+
+.header-text-column {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .friends-view__title {
-  font-size: 32px;
-  font-weight: 800;
+  font-size: 34px; /* Design seems larger */
+  font-weight: 700;
   margin: 0;
   color: white;
+  line-height: 1.1;
+}
+
+.friends-view__subtitle {
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.6); /* Grayish transparent white */
+  margin: 0;
+  font-weight: 400;
 }
 
 .friends-view__add-btn {
@@ -225,12 +242,7 @@ onMounted(() => {
   gap: 12px;
 }
 
-.friends-view__count {
-  grid-column: 1 / -1;
-  font-size: 14px;
-  color: var(--text-secondary);
-  margin: 0 0 8px;
-}
+
 
 .friends-view__loading {
   display: flex;

@@ -2,11 +2,12 @@
 /**
  * ProfileView - User profile with Events (Wishlists) and Wishes.
  */
-import { ref, watch, computed } from 'vue'
+import { ref, watch, computed, onMounted } from 'vue'
 import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
 import { useWishlists } from '@/composables/useWishlists'
 import { useWishes } from '@/composables/useWishes'
 import { useUser } from '@/composables/useUser'
+import { navigationStore } from '@/stores/navigation.store'
 import EventCarousel from '@/components/EventCarousel.vue'
 import WishGrid from '@/components/WishGrid.vue'
 import AddWishModal from '@/components/AddWishModal.vue'
@@ -30,6 +31,42 @@ const editingEvent = ref<any>(null) // Event being edited
 const eventToDelete = ref<any>(null) // Event being deleted
 const profileText = ref('Saving for a dream ✨')
 
+// Guest Mode Logic
+const targetUserId = computed(() => {
+    return navigationStore.state.viewedUserId || user.value?.id
+})
+
+const isOwner = computed(() => {
+    // If viewedUserId is null, we are viewing our own profile
+    // If viewedUserId is set, check if it matches our own ID
+    if (!navigationStore.state.viewedUserId) return true
+    return navigationStore.state.viewedUserId === user.value?.id
+})
+
+// Current User Display (Owner or Friend)
+const currentProfileUser = ref<any>(null)
+
+const displayUser = computed(() => {
+    if (isOwner.value) {
+        return {
+            displayName: userDisplayName.value,
+            photoUrl: user.value?.photo_url,
+            initial: userDisplayName.value?.charAt(0)
+        }
+    } else {
+        // Friend data
+        if (!currentProfileUser.value) return { displayName: 'Loading...', photoUrl: null, initial: '?' }
+        const u = currentProfileUser.value
+        const name = u.last_name ? `${u.first_name} ${u.last_name}` : u.first_name
+        return {
+            displayName: name,
+            photoUrl: u.avatar_url,
+            initial: name?.charAt(0) || '?'
+        }
+    }
+})
+
+
 // Event limit constant
 const MAX_EVENTS = 5
 
@@ -41,32 +78,39 @@ const selectedEvent = computed(() =>
 const isLoading = ref(true)
 
 async function initData() {
-  if (user.value) {
+  const userId = targetUserId.value
+  if (userId) {
     isLoading.value = true
     try {
       // Load user profile data including profile_text
-      const userData = await getUserByTelegramId(user.value.id)
-      if (userData && userData.profile_text) {
-        profileText.value = userData.profile_text
+      const userData = await getUserByTelegramId(userId)
+      if (userData) {
+        currentProfileUser.value = userData
+        if (userData.profile_text) {
+          profileText.value = userData.profile_text
+        }
       }
 
-      await fetchWishlists(user.value.id)
+      await fetchWishlists(userId)
 
       // Select default event or first one
       if (wishlists.value.length > 0) {
         const defaultEvent = wishlists.value.find(w => w.is_default)
         selectedEventId.value = defaultEvent ? defaultEvent.id : wishlists.value[0].id
+      } else {
+          selectedEventId.value = null
       }
     } finally {
-      // Artificial delay to show skeleton (optional, for smooth UX)
-      // await new Promise(resolve => setTimeout(resolve, 500)) 
       isLoading.value = false
     }
   }
 }
 
-watch(() => user.value, (newUser) => {
-  if (newUser) initData()
+// Watch for user changes OR navigation state changes
+watch([() => user.value, () => navigationStore.state.viewedUserId], () => {
+   // Reset selected event when switching profiles
+   selectedEventId.value = null
+   initData()
 }, { immediate: true })
 
 // Watch for event selection to fetch wishes
@@ -246,11 +290,11 @@ function pluralizeWishes(count: number): string {
     <div v-else class="content">
       <!-- Header with glass-panel -->
       <header class="header-section">
-        <div class="glass-panel header-panel" @click="handleEditProfile">
+        <div class="glass-panel header-panel" @click="isOwner && handleEditProfile()">
           <div class="avatar-wrapper">
             <div class="avatar">
-              <img v-if="user?.photo_url" :src="user.photo_url" alt="avatar" />
-              <div v-else class="avatar-placeholder">{{ userDisplayName.charAt(0) }}</div>
+              <img v-if="displayUser.photoUrl" :src="displayUser.photoUrl" alt="avatar" />
+              <div v-else class="avatar-placeholder">{{ displayUser.initial }}</div>
               <div class="avatar-status"></div>
             </div>
           </div>
@@ -260,11 +304,11 @@ function pluralizeWishes(count: number): string {
               <div class="skeleton skeleton-text" style="width: 180px; height: 16px;"></div>
             </template>
             <template v-else>
-              <h1 class="user-name">{{ userDisplayName }}</h1>
+              <h1 class="user-name">{{ displayUser.displayName }}</h1>
               <p class="user-subtitle">{{ profileText }}</p>
             </template>
           </div>
-          <button class="glass-btn edit-header-btn">
+          <button v-if="isOwner" class="glass-btn edit-header-btn">
             <span class="material-symbols-outlined text-[20px]">edit</span>
           </button>
         </div>
@@ -281,6 +325,7 @@ function pluralizeWishes(count: number): string {
             v-else
             :events="wishlists"
             :selected-event-id="selectedEventId"
+            :is-owner="isOwner"
             @select="handleEventSelect"
             @add="openCreateEventModal"
           />
@@ -299,14 +344,14 @@ function pluralizeWishes(count: number): string {
         <div v-if="selectedEvent" class="actions-row">
           <div class="actions-buttons">
             <button
-              v-if="selectedEvent.title !== 'Сбывшиеся мечты'"
+              v-if="isOwner && selectedEvent.title !== 'Сбывшиеся мечты'"
               class="glass-btn action-btn"
               @click="handleEditEvent"
             >
               <span class="material-symbols-outlined text-[18px]">edit</span>
             </button>
             <button
-              v-if="!selectedEvent.is_default"
+              v-if="isOwner && !selectedEvent.is_default"
               class="glass-btn action-btn"
               @click="handleDeleteEvent"
             >
@@ -335,7 +380,7 @@ function pluralizeWishes(count: number): string {
 
       <!-- Floating FAB Button -->
       <button 
-        v-if="selectedEvent?.title !== 'Сбывшиеся мечты'" 
+        v-if="isOwner && selectedEvent?.title !== 'Сбывшиеся мечты'" 
         class="fab-button" 
         @click="showAddWishModal = true"
       >

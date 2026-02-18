@@ -8,108 +8,35 @@ import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
 import FriendCard from '@/components/FriendCard.vue'
 import type { User } from '@/types'
 
-const { webapp } = useTelegramWebApp()
+import { userService } from '@/services/user.service'
+import { navigationStore } from '@/stores/navigation.store'
+
+const { webapp, user } = useTelegramWebApp()
 const friends = ref<User[]>([])
 const isLoading = ref(true)
+const error = ref<string | null>(null)
 
-// Mock API call for now, replacing with real fetch later
 async function fetchFriends() {
+  if (!user.value) {
+    // If user is not available (e.g. running outside Telegram without mock), 
+    // we can't fetch friends specific to them.
+    // Ideally, we should show a login prompt or handle this gracefully.
+    // For now, let's just stop loading.
+    console.warn('User not available, cannot fetch friends.')
+    isLoading.value = false
+    return
+  }
+
   try {
     isLoading.value = true
+    error.value = null
     
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 800))
-    
-    // Generate mock data for testing
-    const today = new Date()
-    const tomorrow = new Date(today)
-    tomorrow.setDate(today.getDate() + 1)
-    
-    const nextWeek = new Date(today)
-    nextWeek.setDate(today.getDate() + 7)
-    
-    const nextMonth = new Date(today)
-    nextMonth.setMonth(today.getMonth() + 1)
-    
-    const mockFriends: User[] = [
-        {
-            id: '1',
-            telegram_id: 111,
-            username: 'alex_dev',
-            first_name: 'Alex',
-            last_name: 'D.',
-            avatar_url: 'https://i.pravatar.cc/150?u=1',
-            profile_text: 'Coding all day',
-            birth_date: nextWeek.toISOString().split('T')[0], // Birthday in a week
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-        },
-        {
-            id: '2',
-            telegram_id: 222,
-            username: 'sarah_design',
-            first_name: 'Sarah',
-            last_name: 'Connor',
-            avatar_url: 'https://i.pravatar.cc/150?u=2',
-            profile_text: 'Saving the future',
-            birth_date: today.toISOString().split('T')[0], // Birthday today!
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-        },
-        {
-            id: '3',
-            telegram_id: 333,
-            username: 'mike_tyson',
-            first_name: 'Mike',
-            last_name: null,
-            avatar_url: null, // Placeholder test
-            profile_text: 'Champ',
-            birth_date: tomorrow.toISOString().split('T')[0], // Birthday tomorrow
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-        },
-        {
-            id: '4',
-            telegram_id: 444,
-            username: null,
-            first_name: 'Elena',
-            last_name: 'Gilbert',
-            avatar_url: 'https://i.pravatar.cc/150?u=4',
-            profile_text: 'Vampire diaries',
-            birth_date: nextMonth.toISOString().split('T')[0], // Birthday next month
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-        }
-    ]
-    
-    // Sort logic mimics backend: sort by next birthday
-    friends.value = mockFriends.sort((a, b) => {
-        // Safe check for missing dates
-        if (!a.birth_date && !b.birth_date) return 0
-        if (!a.birth_date) return 1
-        if (!b.birth_date) return -1
-    
-        const getNextBday = (d: string) => {
-            const date = new Date(d)
-            const currentYear = new Date().getFullYear()
-            const bday = new Date(date)
-            bday.setFullYear(currentYear)
-            
-            // If birthday has passed this year, next one is next year
-            // Use end of day for comparison to avoid timezone edge cases
-            const today = new Date()
-            today.setHours(0, 0, 0, 0)
-            if (bday < today) {
-                bday.setFullYear(currentYear + 1)
-            }
-            return bday
-        }
-        
-        return getNextBday(a.birth_date!).getTime() - getNextBday(b.birth_date!).getTime()
-    })
+    // Pass the user's Telegram ID to the service
+    friends.value = await userService.getFriends(user.value.id)
 
   } catch (e) {
     console.error('Error fetching friends:', e)
+    error.value = 'Не удалось загрузить список друзей'
   } finally {
     isLoading.value = false
   }
@@ -123,7 +50,9 @@ function handleAddFriend() {
     webapp.value?.openTelegramLink(`https://t.me/share/url?url=${url}&text=${message}`)
 }
 
-
+function openFriendProfile(friendId: number) {
+    navigationStore.openUserProfile(friendId)
+}
 
 onMounted(() => {
   fetchFriends()
@@ -150,6 +79,11 @@ onMounted(() => {
         <div class="skeleton skeleton-text" style="width: 90%; height: 32px; border-radius: 12px;"></div>
       </div>
     </div>
+
+    <div v-else-if="error" class="friends-view__error">
+      <p>{{ error }}</p>
+      <button class="primary-button" @click="fetchFriends">Попробовать снова</button>
+    </div>
     
     <div v-else-if="friends.length === 0" class="friends-view__empty">
       <div class="placeholder">
@@ -168,7 +102,8 @@ onMounted(() => {
       <FriendCard 
         v-for="friend in friends" 
         :key="friend.id" 
-        :friend="friend" 
+        :friend="friend"
+        @click="openFriendProfile(friend.telegram_id)"
       />
     </div>
   </div>
@@ -249,6 +184,17 @@ onMounted(() => {
   justify-content: center;
   padding: 40px;
   color: var(--text-secondary);
+}
+
+.friends-view__error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  text-align: center;
+  gap: 16px;
+  color: var(--status-error);
 }
 
 /* Empty State */

@@ -27,6 +27,7 @@ export interface TabConfig {
 export interface NavigationState {
   activeTab: TabId
   previousTab: TabId | null
+  viewedUserId: number | null // Telegram ID of the user being viewed (null = current user)
   history: TabId[]
 }
 

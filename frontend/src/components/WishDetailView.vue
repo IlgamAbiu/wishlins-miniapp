@@ -22,10 +22,7 @@ onMounted(async () => {
         const internalUser = await getUserByTelegramId(user.value.id)
         if (internalUser) {
             internalUserId.value = internalUser.id
-            // Ensure we have the user's wishlists loaded to check ownership
-            if (wishlists.value.length === 0) {
-                await fetchWishlists(user.value.id)
-            }
+            await fetchWishlists(user.value.id)
         }
         loadingOwnership.value = false
     }

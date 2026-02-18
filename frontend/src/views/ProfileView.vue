@@ -161,6 +161,13 @@ watch([() => user.value, () => navigationStore.state.viewedUserId, () => props.u
    initData()
 }, { immediate: true })
 
+// Re-fetch own data when returning to "Мои желания" tab (KeepAlive keeps stale state)
+watch(() => navigationStore.state.activeTab, (newTab) => {
+  if (newTab === 'profile' && !isStackMode.value) {
+    initData()
+  }
+})
+
 // Watch for event selection to fetch wishes
 let fetchTimeout: ReturnType<typeof setTimeout>
 watch(selectedEventId, (newId) => {

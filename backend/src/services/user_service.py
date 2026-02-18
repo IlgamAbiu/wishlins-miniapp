@@ -43,27 +43,30 @@ class UserService:
         users = await self._repository.get_all(exclude_user_id=user_id)
         
         # Sort by upcoming birthday
-        from datetime import date, datetime
+        from datetime import datetime
         today = datetime.now().date()
-        
-        def days_until_birthday(birth_date: Optional[date]) -> int:
-            if not birth_date:
+
+        def days_until_birthday(birth_datetime: Optional[datetime]) -> int:
+            if not birth_datetime:
                 return 366  # Put users without birthday at the end
-                
+
+            # Convert datetime to date
+            birth_date = birth_datetime.date()
+
             # Create birthday for current year
             try:
                 next_bday = birth_date.replace(year=today.year)
             except ValueError:
                 # Handle Feb 29 for non-leap years
                 next_bday = birth_date.replace(year=today.year, day=28)
-                
+
             if next_bday < today:
                 # Birthday passed this year, look at next year
                 try:
                     next_bday = birth_date.replace(year=today.year + 1)
                 except ValueError:
                     next_bday = birth_date.replace(year=today.year + 1, day=28)
-                    
+
             return (next_bday - today).days
 
         return sorted(users, key=lambda u: days_until_birthday(u.birth_date))

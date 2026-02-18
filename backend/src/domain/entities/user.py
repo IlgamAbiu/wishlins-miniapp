@@ -20,6 +20,7 @@ class User:
     last_name: Optional[str]
     avatar_url: Optional[str]
     profile_text: Optional[str]
+    birth_date: Optional[datetime]
     created_at: datetime
     updated_at: datetime
 
@@ -33,6 +34,7 @@ class User:
             "last_name": self.last_name,
             "avatar_url": self.avatar_url,
             "profile_text": self.profile_text,
+            "birth_date": self.birth_date.isoformat() if self.birth_date else None,
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
         }
@@ -54,6 +56,7 @@ class UserCreate:
     first_name: str = ""
     last_name: Optional[str] = None
     avatar_url: Optional[str] = None
+    birth_date: Optional[datetime] = None
 
     def __post_init__(self):
         if not self.telegram_id:
@@ -69,4 +72,4 @@ class UserUpdate:
     last_name: Optional[str] = None
     avatar_url: Optional[str] = None
     profile_text: Optional[str] = None
-    birth_date: Optional[date] = None
+    birth_date: Optional[datetime] = None

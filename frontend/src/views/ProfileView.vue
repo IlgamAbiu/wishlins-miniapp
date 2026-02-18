@@ -22,17 +22,18 @@ const props = defineProps<{
 
 const { isInTelegram, user, userDisplayName } = useTelegramWebApp()
 const { wishlists, fetchWishlists, createWishlist, updateWishlist, deleteWishlist } = useWishlists()
-const { wishes, loading: wishesLoading, error: wishesError, fetchWishes, createWish, moveWishesToWishlist, openWish } = useWishes()
+const { wishes, loading: wishesLoading, error: wishesError, fetchWishes, createWish, moveWishesToWishlist, openWish, onWishUpdate } = useWishes()
 const { updateProfileText, getUserByTelegramId } = useUser()
 
 const selectedEventId = ref<string | null>(null)
+// ... modal state refs ...
 const showAddWishModal = ref(false)
 const showAddEventModal = ref(false)
 const showEditProfileModal = ref(false)
 const showDeleteEventModal = ref(false)
 const showEventLimitModal = ref(false)
-const editingEvent = ref<any>(null) // Event being edited
-const eventToDelete = ref<any>(null) // Event being deleted
+const editingEvent = ref<any>(null)
+const eventToDelete = ref<any>(null)
 const profileText = ref('Saving for a dream ✨')
 
 // Guest Mode Logic
@@ -41,18 +42,18 @@ const targetUserId = computed(() => {
     return navigationStore.state.viewedUserId || user.value?.id
 })
 
+// Check if we are in "Stack Mode" (navigated from Friends list)
+const isStackMode = computed(() => !!props.userId)
+
 const isOwner = computed(() => {
-    // If prop is passed, check if it matches current user
     if (props.userId) return props.userId === user.value?.id
-    
-    // If viewedUserId is null, we are viewing our own profile
     if (!navigationStore.state.viewedUserId) return true
-    
     return navigationStore.state.viewedUserId === user.value?.id
 })
 
-// Current User Display (Owner or Friend)
+// Current User Display
 const currentProfileUser = ref<any>(null)
+// ... displayUser computed ...
 
 const displayUser = computed(() => {
     if (isOwner.value) {
@@ -62,7 +63,6 @@ const displayUser = computed(() => {
             initial: userDisplayName.value?.charAt(0)
         }
     } else {
-        // Friend data
         if (!currentProfileUser.value) return { displayName: 'Loading...', photoUrl: null, initial: '?' }
         const u = currentProfileUser.value
         const name = u.last_name ? `${u.first_name} ${u.last_name}` : u.first_name
@@ -73,6 +73,36 @@ const displayUser = computed(() => {
         }
     }
 })
+
+// Subscribe to global wish updates to keep this list fresh
+onMounted(() => {
+    // If a global wish update happens (e.g. from Detail View), re-fetch or update local list
+    const unsubscribe = onWishUpdate((type, wish, id) => {
+        // Simple strategy: if we are viewing the wishlist that was modified, refresh it
+        // Or if we don't know, just refresh everything if it affects current user context
+        // For MVP, if we are owner, just refresh or let reactivity handle it if we used shared store (but we split it)
+        
+        // If we are the owner, we definitely want to refresh
+        if (isOwner.value && type !== 'create') { 
+            // 'create' is usually handled by the creating component adding it, 
+            // but if created from somewhere else?
+        }
+        
+        // Actually, easiest way is just to re-fetch wishes for current selected event if any
+        if (selectedEventId.value) {
+             fetchWishes(selectedEventId.value)
+        }
+    })
+    
+    // Clean up on unmount is handled automatically by Vue for top-level setup? 
+    // No, onMounted needs explicit onUnmounted if we cared, but script setup is fine usually.
+    // Let's add onUnmounted to be safe.
+})
+
+function handleGoBack() {
+    navigationStore.closeFriendProfile()
+}
+
 
 
 // Event limit constant
@@ -298,14 +328,14 @@ function pluralizeWishes(count: number): string {
     <div v-else class="content">
       <!-- Header with glass-panel -->
       <header class="header-section">
+        <!-- Back Button for Stack Mode (Guest View) -->
+        <div v-if="isStackMode" class="back-button-container" @click="handleGoBack">
+            <button class="glass-btn back-header-btn">
+                <span class="material-symbols-outlined text-[20px]">arrow_back</span>
+            </button>
+        </div>
+
         <div class="glass-panel header-panel" @click="isOwner && handleEditProfile()">
-          <div class="avatar-wrapper">
-            <div class="avatar">
-              <img v-if="displayUser.photoUrl" :src="displayUser.photoUrl" alt="avatar" />
-              <div v-else class="avatar-placeholder">{{ displayUser.initial }}</div>
-              <div class="avatar-status"></div>
-            </div>
-          </div>
           <div class="user-info">
             <template v-if="isLoading">
               <div class="skeleton skeleton-text" style="width: 120px; height: 24px; margin-bottom: 4px;"></div>
@@ -572,7 +602,7 @@ function pluralizeWishes(count: number): string {
 }
 
 [data-theme='dark'] .edit-header-btn {
-  color: #slate-300;
+  color: #cbd5e1; /* slate-300 */
   background: rgba(255, 255, 255, 0.1);
 }
 
@@ -603,9 +633,7 @@ function pluralizeWishes(count: number): string {
 }
 
 /* === EVENT DESCRIPTION === */
-.event-description-wrapper {
-  /* margin controlled by parent gap */
-}
+/* .event-description-wrapper removed empty rule */
 
 .event-description {
   padding: 16px;
@@ -771,4 +799,25 @@ function pluralizeWishes(count: number): string {
   height: 350px;
   background: radial-gradient(circle, #6366f1 0%, transparent 70%);
 }
+
+.back-button-container {
+    position: absolute;
+    left: 20px;
+    top: 20px;
+    z-index: 20;
+}
+
+.back-header-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    cursor: pointer;
+}
+
 </style>

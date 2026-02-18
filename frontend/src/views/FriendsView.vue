@@ -83,13 +83,21 @@ watch(selectedFriendId, (newId) => {
     }
 })
 
+// Dismiss keyboard on background click
+function handleBackgroundClick(event: Event) {
+    const target = event.target as HTMLElement
+    if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') {
+        (document.activeElement as HTMLElement)?.blur()
+    }
+}
+
 onMounted(() => {
   fetchFriends()
 })
 </script>
 
 <template>
-  <div class="friends-view-stack">
+  <div class="friends-view-stack" @click="handleBackgroundClick">
       <!-- 1. Profile View (Nested) -->
       <div v-if="selectedFriendId" class="nested-profile-view">
           <ProfileView :user-id="selectedFriendId" />
@@ -175,8 +183,7 @@ onMounted(() => {
 
 .friends-view__header {
   display: flex;
-  align-items: flex-start; /* Align to top */
-  justify-content: space-between;
+  flex-direction: column;
   padding: 16px 4px;
   margin-bottom: 16px;
 }

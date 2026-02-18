@@ -354,7 +354,7 @@ async function handleDeleteWish(id: string) {
             <button @click="handleShare" class="glass-btn icon-btn">
                 <span class="material-symbols-outlined">share</span>
             </button>
-            <button @click="handleEdit" class="glass-btn icon-btn">
+            <button v-if="isOwner" @click="handleEdit" class="glass-btn icon-btn">
                 <span class="material-symbols-outlined">edit</span>
             </button>
         </div>

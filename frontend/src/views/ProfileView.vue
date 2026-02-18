@@ -335,7 +335,19 @@ function pluralizeWishes(count: number): string {
             </button>
         </div>
 
-        <div class="glass-panel header-panel" @click="isOwner && handleEditProfile()">
+        <div 
+          class="glass-panel header-panel" 
+          :class="{ 'header-with-back-btn': isStackMode }"
+          @click="isOwner && handleEditProfile()"
+        >
+          <div class="avatar-wrapper">
+            <div class="avatar">
+              <img v-if="displayUser.photoUrl" :src="displayUser.photoUrl" alt="avatar" />
+              <div v-else class="avatar-placeholder">{{ displayUser.initial }}</div>
+              <div class="avatar-status"></div>
+            </div>
+          </div>
+          
           <div class="user-info">
             <template v-if="isLoading">
               <div class="skeleton skeleton-text" style="width: 120px; height: 24px; margin-bottom: 4px;"></div>
@@ -502,6 +514,11 @@ function pluralizeWishes(count: number): string {
 .header-panel:active {
   transform: scale(0.98);
 }
+
+.header-with-back-btn {
+  margin-top: 40px; /* Space for the absolute back button */
+}
+
 
 .avatar-wrapper {
   position: relative;

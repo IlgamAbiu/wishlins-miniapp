@@ -2,10 +2,10 @@
 User ORM model for SQLAlchemy.
 """
 
-from datetime import datetime
+from datetime import datetime, date
 from uuid import uuid4
 
-from sqlalchemy import BigInteger, DateTime, String, func
+from sqlalchemy import BigInteger, DateTime, String, Date, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -49,9 +49,10 @@ class UserModel(Base):
         nullable=True,
         server_default="Saving for a dream ✨",
     )
-    birth_date: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True),
+    birth_date: Mapped[date | None] = mapped_column(
+        Date,
         nullable=True,
+        comment="User's birth date",
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

@@ -41,6 +41,7 @@ class UserRepository:
             first_name=data.first_name,
             last_name=data.last_name,
             avatar_url=data.avatar_url,
+            birth_date=data.birth_date,
         )
         self._session.add(model)
         await self._session.flush()
@@ -91,6 +92,8 @@ class UserRepository:
             update_data["avatar_url"] = data.avatar_url
         if data.profile_text is not None:
             update_data["profile_text"] = data.profile_text
+        if data.birth_date is not None:
+            update_data["birth_date"] = data.birth_date
 
         if not update_data:
             return await self.get_by_telegram_id(telegram_id)

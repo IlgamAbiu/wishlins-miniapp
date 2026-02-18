@@ -4,7 +4,7 @@ Pure Python dataclasses with no framework dependencies.
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, date
 from typing import Optional
 from uuid import UUID, uuid4
 
@@ -20,7 +20,7 @@ class User:
     last_name: Optional[str]
     avatar_url: Optional[str]
     profile_text: Optional[str]
-    birth_date: Optional[datetime]
+    birth_date: Optional[date]
     created_at: datetime
     updated_at: datetime
 
@@ -56,7 +56,7 @@ class UserCreate:
     first_name: str = ""
     last_name: Optional[str] = None
     avatar_url: Optional[str] = None
-    birth_date: Optional[datetime] = None
+    birth_date: Optional[date] = None
 
     def __post_init__(self):
         if not self.telegram_id:
@@ -72,4 +72,4 @@ class UserUpdate:
     last_name: Optional[str] = None
     avatar_url: Optional[str] = None
     profile_text: Optional[str] = None
-    birth_date: Optional[datetime] = None
+    birth_date: Optional[date] = None

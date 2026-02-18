@@ -47,6 +47,7 @@ async def register_user(
         first_name=request.first_name,
         last_name=request.last_name,
         avatar_url=request.avatar_url,
+        birth_date=request.birth_date,
     )
 
     user, is_new = await user_service.register_or_update_user(user_data)
@@ -159,6 +160,10 @@ async def update_user_profile(
 ) -> UserResponse:
     """Update user profile."""
     update_data = UserUpdate(
+        username=request.username,
+        first_name=request.first_name,
+        last_name=request.last_name,
+        avatar_url=request.avatar_url,
         profile_text=request.profile_text,
         birth_date=request.birth_date
     )

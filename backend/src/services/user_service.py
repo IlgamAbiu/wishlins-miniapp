@@ -43,15 +43,12 @@ class UserService:
         users = await self._repository.get_all(exclude_user_id=user_id)
         
         # Sort by upcoming birthday
-        from datetime import datetime
+        from datetime import datetime, date
         today = datetime.now().date()
 
-        def days_until_birthday(birth_datetime: Optional[datetime]) -> int:
-            if not birth_datetime:
+        def days_until_birthday(birth_date: Optional[date]) -> int:
+            if not birth_date:
                 return 366  # Put users without birthday at the end
-
-            # Convert datetime to date
-            birth_date = birth_datetime.date()
 
             # Create birthday for current year
             try:

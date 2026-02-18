@@ -2,7 +2,7 @@
 Pydantic schemas for API request/response validation.
 """
 
-from datetime import datetime
+from datetime import datetime, date
 from typing import Optional
 from uuid import UUID
 
@@ -19,6 +19,7 @@ class UserRegisterRequest(BaseModel):
     first_name: str = Field(..., description="User's first name")
     last_name: Optional[str] = Field(None, description="User's last name")
     avatar_url: Optional[str] = Field(None, description="User's avatar URL")
+    birth_date: Optional[date] = Field(None, description="User's birth date")
 
     model_config = {
         "json_schema_extra": {
@@ -28,6 +29,7 @@ class UserRegisterRequest(BaseModel):
                 "first_name": "John",
                 "last_name": "Doe",
                 "avatar_url": None,
+                "birth_date": "1990-01-01",
             }
         }
     }
@@ -43,7 +45,7 @@ class UserResponse(BaseModel):
     last_name: Optional[str] = Field(None, description="User's last name")
     avatar_url: Optional[str] = Field(None, description="User's avatar URL")
     profile_text: Optional[str] = Field(None, description="User's profile text/status")
-    birth_date: Optional[datetime] = Field(None, description="User's birth date")
+    birth_date: Optional[date] = Field(None, description="User's birth date")
     created_at: datetime = Field(..., description="Account creation timestamp")
     updated_at: datetime = Field(..., description="Last update timestamp")
 
@@ -94,14 +96,19 @@ class UserRegisterResponse(BaseModel):
 class UserUpdateRequest(BaseModel):
     """Request schema for updating user profile."""
 
+    username: Optional[str] = Field(None, description="Telegram username")
+    first_name: Optional[str] = Field(None, description="User's first name")
+    last_name: Optional[str] = Field(None, description="User's last name")
+    avatar_url: Optional[str] = Field(None, description="User's avatar URL")
     profile_text: Optional[str] = Field(None, min_length=1, max_length=100, description="User's profile text/status")
-    birth_date: Optional[datetime] = Field(None, description="User's birth date")
+    birth_date: Optional[date] = Field(None, description="User's birth date")
 
     model_config = {
         "json_schema_extra": {
             "example": {
                 "profile_text": "Saving for a dream ✨",
-                "birth_date": "1990-01-01"
+                "birth_date": "1990-01-01",
+                "first_name": "John"
             }
         }
     }

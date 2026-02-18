@@ -627,7 +627,7 @@ function pluralizeWishes(count: number): string {
 /* === FAB BUTTON === */
 .fab-button {
   position: fixed;
-  bottom: 100px;
+  bottom: calc(100px + env(safe-area-inset-bottom));
   right: 20px;
   width: 64px;
   height: 64px;

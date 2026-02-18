@@ -139,8 +139,13 @@ onMounted(() => {
       </button>
     </div>
     
-    <div v-if="isLoading" class="friends-view__loading">
-      Загрузка...
+    <div v-if="isLoading" class="friends-view__grid">
+      <div v-for="i in 6" :key="i" class="friend-card skeleton-card">
+        <div class="skeleton skeleton-circle" style="width: 80px; height: 80px; margin-bottom: 16px;"></div>
+        <div class="skeleton skeleton-text" style="width: 60%; height: 20px; margin-bottom: 8px;"></div>
+        <div class="skeleton skeleton-text" style="width: 40%; height: 14px; margin-bottom: 16px;"></div>
+        <div class="skeleton skeleton-text" style="width: 90%; height: 32px; border-radius: 12px;"></div>
+      </div>
     </div>
     
     <div v-else-if="friends.length === 0" class="friends-view__empty">
@@ -297,5 +302,18 @@ onMounted(() => {
   font-weight: 600;
   cursor: pointer;
   width: 100%;
+}
+
+/* Skeleton Card Logic */
+.skeleton-card {
+  background: var(--glass-panel-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0; /* Gap handled by margins in skeleton elements */
+  height: 240px; /* Approx height */
 }
 </style>

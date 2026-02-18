@@ -26,8 +26,14 @@ const { selection } = useHaptic()
 const icon = computed(() => props.isActive ? props.tab.activeIcon : props.tab.icon)
 
 function handleClick() {
-  // Trigger haptic feedback
-  selection()
+  console.log('[TabBarItem] Clicked on tab:', props.tab.id)
+  
+  // Trigger haptic feedback safely
+  try {
+    selection()
+  } catch (err) {
+    console.error('[TabBarItem] Haptic error:', err)
+  }
 
   // Emit select event
   emit('select', props.tab.id)
@@ -60,6 +66,7 @@ function handleClick() {
   border: none;
   background: transparent;
   cursor: pointer;
+  pointer-events: auto; /* Force clickable */
   -webkit-tap-highlight-color: transparent;
   border-radius: 9999px;
   transition: all 0.2s ease;

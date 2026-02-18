@@ -41,6 +41,7 @@ class UserRepository:
             first_name=data.first_name,
             last_name=data.last_name,
             avatar_url=data.avatar_url,
+            birth_date=data.birth_date,
         )
         self._session.add(model)
         await self._session.flush()
@@ -60,6 +61,8 @@ class UserRepository:
             update_data["avatar_url"] = data.avatar_url
         if data.profile_text is not None:
             update_data["profile_text"] = data.profile_text
+        if data.birth_date is not None:
+            update_data["birth_date"] = data.birth_date
 
         if not update_data:
             return await self.get_by_id(user_id)
@@ -89,6 +92,8 @@ class UserRepository:
             update_data["avatar_url"] = data.avatar_url
         if data.profile_text is not None:
             update_data["profile_text"] = data.profile_text
+        if data.birth_date is not None:
+            update_data["birth_date"] = data.birth_date
 
         if not update_data:
             return await self.get_by_telegram_id(telegram_id)
@@ -103,6 +108,16 @@ class UserRepository:
         model = result.scalar_one_or_none()
         return self._to_entity(model) if model else None
 
+    async def get_all(self, exclude_user_id: Optional[UUID] = None) -> list[User]:
+        """Get all users."""
+        stmt = select(UserModel)
+        if exclude_user_id:
+            stmt = stmt.where(UserModel.id != exclude_user_id)
+            
+        result = await self._session.execute(stmt)
+        models = result.scalars().all()
+        return [self._to_entity(model) for model in models]
+
     @staticmethod
     def _to_entity(model: UserModel) -> User:
         """Convert ORM model to domain entity."""
@@ -114,6 +129,7 @@ class UserRepository:
             last_name=model.last_name,
             avatar_url=model.avatar_url,
             profile_text=model.profile_text,
+            birth_date=model.birth_date,
             created_at=model.created_at,
             updated_at=model.updated_at,
         )

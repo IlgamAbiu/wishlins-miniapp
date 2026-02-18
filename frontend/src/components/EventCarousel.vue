@@ -6,10 +6,13 @@
 import { ref, computed } from 'vue'
 import type { Wishlist } from '@/types'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   events: Wishlist[]
   selectedEventId: string | null
-}>()
+  isOwner?: boolean
+}>(), {
+  isOwner: true
+})
 
 const emit = defineEmits<{
   (e: 'select', id: string): void
@@ -78,7 +81,11 @@ function getDaysUntilEvent(eventDate: string | null): string | null {
       </button>
 
       <!-- 2. Add Event Button (Circle with +) -->
-      <button class="event-add-btn glass-btn" @click="$emit('add')">
+      <button
+        v-if="isOwner"
+        class="event-add-btn glass-btn"
+        @click="$emit('add')"
+      >
         <span class="add-icon">+</span>
       </button>
 

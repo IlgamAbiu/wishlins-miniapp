@@ -182,6 +182,38 @@ export function useTelegramWebApp() {
     isReady.value = true
   })
 
+  // Helper for BackButton
+  const backButton = computed(() => {
+    return webapp.value?.BackButton || {
+      isVisible: false,
+      show: () => { },
+      hide: () => { },
+      onClick: () => { },
+      offClick: () => { },
+    }
+  })
+
+  // Helper for MainButton
+  const mainButton = computed(() => {
+    return webapp.value?.MainButton || {
+      text: '',
+      color: '',
+      textColor: '',
+      isVisible: false,
+      isActive: false,
+      isProgressVisible: false,
+      setText: () => { },
+      show: () => { },
+      hide: () => { },
+      enable: () => { },
+      disable: () => { },
+      showProgress: () => { },
+      hideProgress: () => { },
+      onClick: () => { },
+      offClick: () => { },
+    }
+  })
+
   return {
     isReady,
     isAvailable,
@@ -190,5 +222,7 @@ export function useTelegramWebApp() {
     user,
     userDisplayName,
     webapp,
+    backButton,
+    mainButton,
   }
 }

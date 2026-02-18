@@ -1,30 +1,332 @@
+```html
 <script setup lang="ts">
 /**
- * FriendsView - Friends tab placeholder.
+ * FriendsView - Friends tab.
+ * Displays list of friends sorted by birthday.
  */
+import { ref, computed, onMounted, watch, defineAsyncComponent } from 'vue'
+import FriendCard from '@/components/FriendCard.vue'
+import type { User } from '@/types'
+
+import { userService } from '@/services/user.service'
+import { navigationStore } from '@/stores/navigation.store'
+import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
+
+// Async helper for ProfileView (circular dep potential if static import, but AsyncComponent handles it well)
+const ProfileView = defineAsyncComponent(() => import('@/views/ProfileView.vue'))
+
+const { webapp, user, backButton } = useTelegramWebApp()
+const friends = ref<User[]>([])
+const isLoading = ref(true)
+const error = ref<string | null>(null)
+const searchQuery = ref('') // Search state
+
+const selectedFriendId = computed(() => navigationStore.state.selectedFriendId)
+
+// Filtered friends list
+const filteredFriends = computed(() => {
+    if (!searchQuery.value) return friends.value
+    
+    const query = searchQuery.value.toLowerCase()
+    return friends.value.filter(friend => {
+        const firstName = friend.first_name?.toLowerCase() || ''
+        const lastName = friend.last_name?.toLowerCase() || ''
+        const username = friend.username?.toLowerCase() || ''
+        
+        return firstName.includes(query) || 
+               lastName.includes(query) || 
+               username.includes(query)
+    })
+})
+
+async function fetchFriends() {
+  if (!user.value) {
+    console.warn('User not available, cannot fetch friends.')
+    isLoading.value = false
+    return
+  }
+
+  try {
+    isLoading.value = true
+    error.value = null
+    friends.value = await userService.getFriends(user.value.id)
+  } catch (e) {
+    console.error('Error fetching friends:', e)
+    error.value = 'Не удалось загрузить список друзей'
+  } finally {
+    isLoading.value = false
+  }
+}
+
+function handleAddFriend() {
+    const message = encodeURIComponent('Присоединяйся ко мне в Wishlins и смотри мой вишлист! 🎁')
+    const url = encodeURIComponent('https://t.me/WishlinsBot/app')
+    webapp.value?.openTelegramLink(`https://t.me/share/url?url=${url}&text=${message}`)
+}
+
+function openFriendProfile(friendId: number) {
+    navigationStore.openFriendProfile(friendId)
+}
+
+function handleBackButton() {
+    navigationStore.closeFriendProfile()
+}
+
+// Watch selectedFriendId to toggle Back Button
+watch(selectedFriendId, (newId) => {
+    if (newId) {
+        backButton.value.show()
+        backButton.value.onClick(handleBackButton)
+    } else {
+        backButton.value.hide()
+        backButton.value.offClick(handleBackButton)
+    }
+})
+
+// Dismiss keyboard on background click
+function handleBackgroundClick(event: Event) {
+    const target = event.target as HTMLElement
+    if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') {
+        (document.activeElement as HTMLElement)?.blur()
+    }
+}
+
+onMounted(() => {
+  fetchFriends()
+})
 </script>
 
 <template>
-  <div class="friends-view">
-    <div class="placeholder">
-      <div class="placeholder__icon-wrapper">
-        <div class="placeholder__icon">🎁</div>
-        <div class="placeholder__sparkle">🌟</div>
+  <div class="friends-view-stack" @click="handleBackgroundClick">
+      <!-- 1. Profile View (Nested) -->
+      <div v-if="selectedFriendId" class="nested-profile-view">
+          <ProfileView :user-id="selectedFriendId" />
       </div>
-      <h2 class="placeholder__title">Друзья</h2>
-      <p class="placeholder__text">Желания ваших друзей появятся здесь</p>
+
+      <!-- 2. Friends List (Default) -->
+      <div v-else class="friends-list-view">
+            <div class="friends-view__header">
+            <div class="header-top">
+                <div class="header-text-column">
+                    <h1 class="friends-view__title">Друзья</h1>
+                    <p class="friends-view__subtitle">Ваш круг общения</p>
+                </div>
+                <button class="friends-view__add-btn" @click="handleAddFriend" aria-label="Добавить друга">
+                    <span class="friends-view__add-icon">+</span>
+                </button>
+            </div>
+            
+            <!-- Search Bar -->
+            <div class="search-bar-wrapper">
+                <div class="search-bar glass-panel">
+                    <span class="material-symbols-outlined search-icon">search</span>
+                    <input 
+                        v-model="searchQuery" 
+                        type="text" 
+                        class="search-input" 
+                        placeholder="Поиск друзей..." 
+                    />
+                </div>
+            </div>
+            </div>
+            
+            <div v-if="isLoading" class="friends-view__grid">
+            <div v-for="i in 6" :key="i" class="friend-card skeleton-card">
+                <div class="skeleton skeleton-circle" style="width: 80px; height: 80px; margin-bottom: 16px;"></div>
+                <div class="skeleton skeleton-text" style="width: 60%; height: 20px; margin-bottom: 8px;"></div>
+                <div class="skeleton skeleton-text" style="width: 40%; height: 14px; margin-bottom: 16px;"></div>
+                <div class="skeleton skeleton-text" style="width: 90%; height: 32px; border-radius: 12px;"></div>
+            </div>
+            </div>
+
+            <div v-else-if="error" class="friends-view__error">
+            <p>{{ error }}</p>
+            <button class="primary-button" @click="fetchFriends">Попробовать снова</button>
+            </div>
+            
+            <!-- Empty State: No friends at all -->
+            <div v-else-if="friends.length === 0" class="friends-view__empty">
+            <div class="placeholder">
+                <div class="placeholder__icon-wrapper">
+                <div class="placeholder__icon">🎁</div>
+                <div class="placeholder__sparkle">🌟</div>
+                </div>
+                <h2 class="placeholder__title">Пока нет друзей</h2>
+                <p class="placeholder__text">Пригласите друзей, чтобы делиться вишлистами!</p>
+                <button class="primary-button" @click="handleAddFriend">Пригласить друзей</button>
+            </div>
+            </div>
+            
+            <!-- Search Result: Not Found -->
+            <div v-else-if="filteredFriends.length === 0" class="friends-view__empty search-empty">
+                <div class="placeholder">
+                    <p class="placeholder__text">Такого пользователя нет в Wishlist</p>
+                    <button class="primary-button" @click="handleAddFriend">Пригласить?</button>
+                </div>
+            </div>
+            
+            <div v-else class="friends-view__grid">
+            <!-- Subtitle removed from here -->
+            <FriendCard 
+                v-for="friend in filteredFriends" 
+                :key="friend.id" 
+                :friend="friend"
+                @click="openFriendProfile(friend.telegram_id)"
+            />
+            </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.friends-view {
-  height: 100%;
+
+
+.friends-view__header {
+  display: flex;
+  flex-direction: column;
+  padding: 16px 16px; /* Increased side padding to match grid */
+  margin-bottom: 16px;
+}
+
+.header-text-column {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.friends-view__title {
+  font-size: 34px; /* Design seems larger */
+  font-weight: 700;
+  margin: 0;
+  color: white;
+  line-height: 1.1;
+}
+
+.friends-view__subtitle {
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.6); /* Grayish transparent white */
+  margin: 0;
+  font-weight: 400;
+}
+
+
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.friends-view__add-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--spacing-lg);
-  position: relative;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.friends-view__add-btn:active {
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(0.95);
+}
+
+.friends-view__add-icon {
+  font-size: 26px;
+  line-height: 1;
+  font-weight: 300;
+}
+
+/* === Search Bar === */
+.search-bar-wrapper {
+  margin-bottom: 8px;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  height: 48px;
+  border-radius: 24px;
+  background: rgba(0, 0, 0, 0.2); /* Darker background for input */
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.2s ease;
+}
+
+.search-bar:focus-within {
+  border-color: rgba(255, 255, 255, 0.2);
+  /* background: rgba(0, 0, 0, 0.3); Removed darkening effect */
+}
+
+
+.search-icon {
+  color: var(--text-secondary); /* or #64748b */
+  font-size: 20px;
+  margin-right: 12px;
+  opacity: 0.7;
+}
+
+.search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 16px;
+  font-weight: 400;
+  outline: none;
+  width: 100%;
+}
+
+.search-input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.6;
+}
+
+/* Search Empty State */
+.search-empty {
+    height: 50vh; /* Slightly smaller height than main empty state */
+}
+
+
+.friends-view__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 0 16px; /* Added padding to prevent edge touching */
+}
+
+
+
+.friends-view__loading {
+  display: flex;
+  justify-content: center;
+  padding: 40px;
+  color: var(--text-secondary);
+}
+
+.friends-view__error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  text-align: center;
+  gap: 16px;
+  color: var(--status-error);
+}
+
+/* Empty State */
+.friends-view__empty {
+  height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .placeholder {
@@ -55,26 +357,6 @@
   animation: sparkle-rotate 3s ease-in-out infinite;
 }
 
-@keyframes gift-bounce {
-  0%, 100% {
-    transform: translateY(0) scale(1);
-  }
-  50% {
-    transform: translateY(-10px) scale(1.05);
-  }
-}
-
-@keyframes sparkle-rotate {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1) rotate(0deg);
-  }
-  50% {
-    opacity: 0.7;
-    transform: scale(1.3) rotate(180deg);
-  }
-}
-
 .placeholder__title {
   margin: 0 0 var(--spacing-sm);
   font-size: var(--font-size-title-1);
@@ -85,17 +367,35 @@
   background-clip: text;
 }
 
-[data-theme='dark'] .placeholder__title {
-  background: linear-gradient(135deg, #ffb3d9 0%, #ffe89e 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
 .placeholder__text {
-  margin: 0;
+  margin: 0 0 24px;
   font-size: var(--font-size-callout);
   color: var(--tg-hint-color);
   font-weight: var(--font-weight-medium);
+}
+
+.primary-button {
+  background: var(--tg-button-color);
+  color: var(--tg-button-text-color);
+  border: none;
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+}
+
+/* Skeleton Card Logic */
+.skeleton-card {
+  background: var(--glass-panel-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0; /* Gap handled by margins in skeleton elements */
+  height: 240px; /* Approx height */
 }
 </style>

@@ -73,6 +73,7 @@ class WishRepository:
         if not model:
             raise ValueError(f"Wish with id {wish.id} not found")
 
+        model.wishlist_id = wish.wishlist_id
         model.title = wish.title
         model.subtitle = wish.subtitle
         model.description = wish.description
@@ -83,6 +84,14 @@ class WishRepository:
         model.is_booked = wish.is_booked
         model.priority = wish.priority
         model.updated_at = wish.updated_at
+
+        # Ensure we commit changes if not using a transaction middleware
+        # But wait, typically flush is enough if commit happens at the end of request.
+        # But we don't see commit here.
+        # If the calling code (FastAPI dependency) doesn't commit, changes are lost.
+        # Usually flush is fine if `session.commit()` is called later.
+        # Let's check api/dependencies.py if needed.
+        # But for now, updating wishlist_id is definitely missing.
 
         await self._session.flush()
         return wish

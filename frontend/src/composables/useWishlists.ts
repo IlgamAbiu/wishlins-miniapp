@@ -7,11 +7,12 @@ import type { Wishlist, WishlistListResponse } from '@/types'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
 
-export function useWishlists() {
-  const wishlists = ref<Wishlist[]>([])
-  const loading = ref(false)
-  const error = ref<string | null>(null)
+// Global State
+const wishlists = ref<Wishlist[]>([])
+const loading = ref(false)
+const error = ref<string | null>(null)
 
+export function useWishlists() {
   async function fetchWishlists(telegramId: number): Promise<void> {
     loading.value = true
     error.value = null
@@ -66,6 +67,7 @@ export function useWishlists() {
       }
 
       const newWishlist = await response.json()
+      // Add to global state
       wishlists.value.push(newWishlist)
       return newWishlist
     } catch (err) {

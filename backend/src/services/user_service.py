@@ -35,6 +35,39 @@ class UserService:
         """Update user profile by Telegram ID."""
         return await self._repository.update_by_telegram_id(telegram_id, data)
 
+    async def get_friends(self, user_id: UUID) -> list[User]:
+        """
+        Get friends list.
+        Currently returns all other users sorted by next birthday.
+        """
+        users = await self._repository.get_all(exclude_user_id=user_id)
+        
+        # Sort by upcoming birthday
+        from datetime import datetime, date
+        today = datetime.now().date()
+
+        def days_until_birthday(birth_date: Optional[date]) -> int:
+            if not birth_date:
+                return 366  # Put users without birthday at the end
+
+            # Create birthday for current year
+            try:
+                next_bday = birth_date.replace(year=today.year)
+            except ValueError:
+                # Handle Feb 29 for non-leap years
+                next_bday = birth_date.replace(year=today.year, day=28)
+
+            if next_bday < today:
+                # Birthday passed this year, look at next year
+                try:
+                    next_bday = birth_date.replace(year=today.year + 1)
+                except ValueError:
+                    next_bday = birth_date.replace(year=today.year + 1, day=28)
+
+            return (next_bday - today).days
+
+        return sorted(users, key=lambda u: days_until_birthday(u.birth_date))
+
     async def register_or_update_user(self, data: UserCreate) -> tuple[User, bool]:
         """
         Register a new user or update existing one.
@@ -80,6 +113,7 @@ class UserService:
             first_name=data.first_name,
             last_name=data.last_name,
             avatar_url=data.avatar_url,
+            birth_date=data.birth_date,
         )
         updated_user = await self._repository.update_by_telegram_id(
             data.telegram_id, update_data

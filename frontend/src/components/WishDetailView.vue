@@ -1,14 +1,35 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted, nextTick } from 'vue'
 import { useWishes } from '@/composables/useWishes'
+import { useWishlists } from '@/composables/useWishlists'
 import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
+import { useUser } from '@/composables/useUser'
 import type { Wish } from '@/types'
 import AddWishModal from '@/components/AddWishModal.vue'
 
-const { selectedWish, closeWish, updateWish, deleteWish } = useWishes()
+const { selectedWish, closeWish, updateWish, deleteWish, fulfillWish } = useWishes()
+const { wishlists, fetchWishlists } = useWishlists()
 const { user } = useTelegramWebApp()
+const { getUserByTelegramId } = useUser()
 
 const showEditModal = ref(false)
+const internalUserId = ref<string | null>(null)
+const loadingOwnership = ref(true)
+
+// Fetch internal user ID for ownership check
+onMounted(async () => {
+    if (user.value) {
+        const internalUser = await getUserByTelegramId(user.value.id)
+        if (internalUser) {
+            internalUserId.value = internalUser.id
+            // Ensure we have the user's wishlists loaded to check ownership
+            if (wishlists.value.length === 0) {
+                await fetchWishlists(user.value.id)
+            }
+        }
+        loadingOwnership.value = false
+    }
+})
 
 const wish = computed(() => selectedWish.value)
 
@@ -23,8 +44,59 @@ const formattedPrice = computed(() => {
   }).format(safeWish.value.price)
 })
 
+import { navigationStore } from '@/stores/navigation.store'
+
+// ...
+
+const isOwner = computed(() => {
+    if (!internalUserId.value || !safeWish.value) return false
+    
+    // Find the wishlist this wish belongs to
+    // We search in the currently loaded wishlists. 
+    // IMPORTANT: If we are viewing a friend's profile, 'wishlists' state from useWishlists might contain THEIR wishlists if they were just fetched.
+    // However, since we re-fetch YOUR wishlists in onMounted above, strict id comparison is key.
+    
+    // Better approach: Check if the wishlist's user_id matches internalUserId
+    const wishlist = wishlists.value.find(w => w.id === safeWish.value.wishlist_id)
+    if (wishlist) {
+        return wishlist.user_id === internalUserId.value
+    }
+    
+    // Fallback/Edge case:
+    // If we are in "Friends" tab, we might have loaded the FRIEND'S wishlists into the global store.
+    // If so, `wishlists` contains friend's lists.
+    // So finding the wishlist there and checking user_id should still work:
+    // friend's wishlist user_id != internalUserId -> isOwner = false. Correct.
+    
+    // But what if we haven't loaded the wishlist for this wish?
+    // (e.g. deep link or some other flow)
+    // We assume data consistency for now.
+    
+    return false
+})
+
+const isFulfilled = computed(() => {
+    const wishlist = wishlists.value.find(w => w.id === safeWish.value.wishlist_id)
+    return wishlist?.title === 'Сбывшиеся мечты'
+})
+
+const isClosing = ref(false)
+
 function handleBack() {
+  // Prevent multiple rapid clicks
+  if (isClosing.value) {
+    console.log('Already closing, ignoring click')
+    return
+  }
+
+  console.log('Back button clicked, closing wish')
+  isClosing.value = true
   closeWish()
+
+  // Reset after transition completes
+  setTimeout(() => {
+    isClosing.value = false
+  }, 400)
 }
 
 function handleEdit() {
@@ -41,6 +113,98 @@ function handleStoreLink() {
         window.open(safeWish.value.link, '_blank')
     } else {
         alert('Здесь может быть ссылка на магазин, но пока ее нет')
+    }
+}
+
+async function handleFulfill() {
+    if (!user.value || !safeWish.value) return
+
+    try {
+        // Optimistic UI or wait? useWishes handles loading
+        const updated = await fulfillWish(safeWish.value.id, user.value.id)
+
+        if (!updated) {
+            alert('Не удалось выполнить желание. Попробуйте еще раз.')
+            return
+        }
+
+        // Refresh wishlists to include newly created "Сбывшиеся мечты" if it was just created
+        await fetchWishlists(user.value.id)
+
+        // Wait for next tick to ensure Vue has processed all reactive updates
+        await nextTick()
+
+        // Updated requirement: Do NOT close wish. Just update state.
+        // useWishes updates selectedWish value, which triggers reactivity.
+        // isFulfilled computed property should update to true.
+    } catch (err) {
+        console.error('Error fulfilling wish:', err)
+        alert('Произошла ошибка при выполнении желания')
+    }
+}
+
+async function handleRestore() {
+    if (!user.value || !safeWish.value) return
+
+    // Confirm restore
+    const confirmed = confirm('Вернуть желание из архива в общий список?')
+    if (!confirmed) return
+
+    // Find default wishlist
+    const defaultWishlist = wishlists.value.find(w => w.is_default)
+    if (!defaultWishlist) {
+        alert('Не удалось найти список по умолчанию')
+        return
+    }
+
+    try {
+        console.log('Restoring wish from archive:', safeWish.value.id)
+        console.log('Moving to default wishlist:', defaultWishlist.id)
+
+        // Move wish to default wishlist - send full object for PUT request
+        const updated = await updateWish(
+            safeWish.value.id,
+            {
+                title: safeWish.value.title,
+                subtitle: safeWish.value.subtitle ?? undefined,
+                description: safeWish.value.description ?? undefined,
+                link: safeWish.value.link ?? undefined,
+                image_url: safeWish.value.image_url ?? undefined,
+                price: safeWish.value.price ?? undefined,
+                currency: safeWish.value.currency ?? undefined,
+                priority: safeWish.value.priority,
+                store: safeWish.value.store ?? undefined,
+                wishlist_id: defaultWishlist.id
+            },
+            user.value.id
+        )
+
+        if (!updated) {
+            console.error('Failed to update wish - received null response')
+            alert('Не удалось переместить желание. Попробуйте еще раз.')
+            return
+        }
+
+        console.log('Wish updated successfully:', updated)
+        console.log('New wishlist_id:', updated.wishlist_id)
+
+        // Refresh wishlists to ensure wishlists.value is up-to-date
+        await fetchWishlists(user.value.id)
+        console.log('Wishlists refreshed')
+
+        // Wait for next tick to ensure Vue has processed all reactive updates
+        await nextTick()
+
+        // Force re-check: ensure selectedWish has the updated wishlist_id
+        // This triggers isFulfilled to re-compute with fresh wishlists data
+        if (selectedWish.value && selectedWish.value.id === updated.id) {
+            // selectedWish should already be updated by updateWish, but double-check
+            selectedWish.value = { ...updated }
+            console.log('selectedWish updated, isFulfilled should now be:', isFulfilled.value)
+        }
+    } catch (err) {
+        console.error('Error restoring wish:', err)
+        alert('Произошла ошибка при возврате желания из архива')
     }
 }
 
@@ -169,8 +333,31 @@ async function handleDeleteWish(id: string) {
             <span class="btn-text">Где купить</span>
             <span class="material-symbols-outlined btn-icon">arrow_outward</span>
         </button>
-        
+
+        <!-- Loading skeleton while checking ownership -->
+        <div v-if="loadingOwnership" class="skeleton-btn"></div>
+
+        <!-- Owner: Fulfill button -->
         <button
+            v-else-if="isOwner && !isFulfilled"
+            @click="handleFulfill"
+            class="fulfill-btn">
+            <span class="btn-text">Исполнено</span>
+            <span class="material-symbols-outlined btn-icon">check_circle</span>
+        </button>
+
+        <!-- Owner: Archive button -->
+        <button
+            v-else-if="isOwner && isFulfilled"
+            @click="handleRestore"
+            class="archive-btn">
+            <span class="btn-text">В архиве</span>
+            <span class="material-symbols-outlined btn-icon">archive</span>
+        </button>
+
+        <!-- Non-owner: Book button -->
+        <button
+            v-else
             @click="handleBook"
             class="book-btn">
             <span class="btn-text">Забронировать</span>
@@ -179,7 +366,11 @@ async function handleDeleteWish(id: string) {
 
     <!-- Fixed Header (Top of everything) -->
     <header class="header">
-        <button @click="handleBack" class="glass-btn back-btn">
+        <button
+            type="button"
+            @click.stop="handleBack"
+            :disabled="isClosing"
+            class="glass-btn back-btn">
             <span class="material-symbols-outlined icon">arrow_back</span>
         </button>
         
@@ -187,7 +378,7 @@ async function handleDeleteWish(id: string) {
             <button @click="handleShare" class="glass-btn icon-btn">
                 <span class="material-symbols-outlined">share</span>
             </button>
-            <button @click="handleEdit" class="glass-btn icon-btn">
+            <button v-if="isOwner" @click="handleEdit" class="glass-btn icon-btn">
                 <span class="material-symbols-outlined">edit</span>
             </button>
         </div>
@@ -273,10 +464,16 @@ async function handleDeleteWish(id: string) {
     padding: 20px;
     padding-top: calc(20px + env(safe-area-inset-top, 0px));
     z-index: 70; /* Above everything, including gloss (60) */
-    pointer-events: none; /* Let clicks pass through if needed, but buttons enable valid clicks */
+    pointer-events: auto; /* Enable pointer events for header */
 }
 .header button {
     pointer-events: auto;
+    position: relative;
+    z-index: 1;
+}
+.header button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 .header-actions {
@@ -593,9 +790,10 @@ async function handleDeleteWish(id: string) {
     /* Max 2 lines */
     display: -webkit-box;
     -webkit-line-clamp: 2;
-    -webkit-line-clamp: 2; /* Autoprefixer fallback */
+    line-clamp: 2; /* Standard property */
     -webkit-box-orient: vertical;
     overflow: hidden;
+
     line-height: 1.4;
 }
 [data-theme='light'] .short-description { color: #555; }
@@ -666,9 +864,32 @@ async function handleDeleteWish(id: string) {
 }
 
 .floating-actions .primary-btn,
-.floating-actions .book-btn {
+.floating-actions .book-btn,
+.floating-actions .fulfill-btn,
+.floating-actions .archive-btn {
     pointer-events: auto; /* Re-enable clicks */
 }
+
+/* ... existing styles ... */
+
+.archive-btn {
+    flex-grow: 1;
+    height: 56px;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.archive-btn:active { transform: scale(0.98); }
 
 .primary-btn {
     flex-grow: 1;
@@ -731,6 +952,31 @@ async function handleDeleteWish(id: string) {
     background: rgba(16, 185, 129, 0.1);
 }
 
+.fulfill-btn {
+    flex-grow: 1;
+    height: 56px;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.fulfill-btn:active { transform: scale(0.98); }
+
+.fulfill-btn:hover .btn-icon {
+    transform: scale(1.1);
+}
+
 .spacer-flex { flex-grow: 1; }
 
 .secondary-actions { display: flex; gap: 12px; }
@@ -772,5 +1018,26 @@ async function handleDeleteWish(id: string) {
     background: linear-gradient(to top, rgba(0,0,0,0.2), transparent);
     pointer-events: none;
     z-index: 60;
+}
+
+/* Skeleton loading state */
+.skeleton-btn {
+    flex-grow: 1;
+    height: 56px;
+    border-radius: 9999px;
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.05) 0%,
+        rgba(255, 255, 255, 0.1) 50%,
+        rgba(255, 255, 255, 0.05) 100%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes skeleton-loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
 }
 </style>

@@ -9,12 +9,22 @@ import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
 import { useWishes } from '@/composables/useWishes'
 import { TabBar } from '@/components/navigation'
 import BlockedScreen from '@/components/BlockedScreen.vue'
-import FestiveBackground from '@/components/ui/FestiveBackground.vue'
 import WishDetailView from '@/components/WishDetailView.vue'
 
 // Lazy load views
 const ProfileView = defineAsyncComponent(() => import('@/views/ProfileView.vue'))
-const FriendsView = defineAsyncComponent(() => import('@/views/FriendsView.vue'))
+// Robust Async Component Loading for FriendsView
+const FriendsView = defineAsyncComponent({
+  loader: () => import('@/views/FriendsView.vue'),
+  onError: (error, retry, fail, attempts) => {
+    console.error('Error loading FriendsView:', error)
+    if (attempts <= 3) {
+      retry()
+    } else {
+      fail()
+    }
+  },
+})
 const SearchView = defineAsyncComponent(() => import('@/views/SearchView.vue'))
 
 const { activeTab } = useNavigation()
@@ -42,10 +52,6 @@ const currentComponent = computed(() => tabComponents[activeTab.value])
 
   <!-- Main app when in Telegram -->
   <div v-else class="app">
-    <!-- Decorative blur circles (light theme) -->
-    <div class="blur-decoration blur-circle-blue"></div>
-    <div class="blur-decoration blur-circle-purple"></div>
-
     <!-- Mesh gradients (dark theme) -->
     <div class="mesh-gradient"></div>
 
@@ -171,9 +177,12 @@ a {
   opacity: 0;
 }
 
-.fade-scale-enter-active,
+.fade-scale-enter-active {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
 .fade-scale-leave-active {
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition: opacity 0.15s ease, transform 0.15s ease;
 }
 
 .fade-scale-enter-from,

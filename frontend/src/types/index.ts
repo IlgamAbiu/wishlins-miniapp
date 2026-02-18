@@ -27,6 +27,8 @@ export interface TabConfig {
 export interface NavigationState {
   activeTab: TabId
   previousTab: TabId | null
+  viewedUserId: number | null // Telegram ID of the user being viewed (null = current user)
+  selectedFriendId: number | null // ID of friend selected in Friends tab (Stack navigation)
   history: TabId[]
 }
 
@@ -93,4 +95,20 @@ export interface CreateWishRequest {
 export interface WishlistListResponse {
   wishlists: Wishlist[]
   total: number
+}
+
+/**
+ * User interface.
+ */
+export interface User {
+  id: string
+  telegram_id: number
+  username: string | null
+  first_name: string
+  last_name: string | null
+  avatar_url: string | null
+  profile_text: string | null
+  birth_date: string | null
+  created_at: string
+  updated_at: string
 }

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html class="light" lang="ru">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Floating Glass Redesign v1</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#3B82F6",
+                        "glass-border": "rgba(255, 255, 255, 0.4)",
+                        "glass-surface": "rgba(255, 255, 255, 0.25)",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "3xl": "1.75rem",
+                        "4xl": "2.25rem",
+                        "5xl": "2.75rem",
+                    },
+                    boxShadow: {
+                        "soft-glass": "0 8px 32px 0 rgba(31, 38, 135, 0.05), inset 0 0 0 1px rgba(255, 255, 255, 0.4)",
+                        "deep-glass": "0 12px 40px 0 rgba(31, 38, 135, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.5)",
+                        "glow": "0 0 20px rgba(255, 255, 255, 0.6), inset 0 0 10px rgba(255, 255, 255, 0.3)",
+                        "pearlescent": "0 10px 30px -5px rgba(255, 255, 255, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.4)"
+                    },
+                    backgroundImage: {
+                        'mesh-gradient': 'radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%)',
+                    }
+                },
+            },
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer base {
+            body {
+                background-color: #f0f4ff;
+                background-image: 
+                    radial-gradient(at 0% 0%, rgba(219, 234, 254, 0.8) 0px, transparent 50%),
+                    radial-gradient(at 100% 0%, rgba(232, 219, 254, 0.8) 0px, transparent 50%),
+                    radial-gradient(at 100% 100%, rgba(254, 219, 232, 0.8) 0px, transparent 50%),
+                    radial-gradient(at 0% 100%, rgba(219, 254, 234, 0.8) 0px, transparent 50%);
+                background-attachment: fixed;
+                min-height: 100vh;
+            }
+        }.glass-container {
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+        }
+        .glass-bubble {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            transition: transform 0.2s ease, background-color 0.2s;
+        }
+        .glass-bubble:active {
+            transform: scale(0.95);
+            background: rgba(255, 255, 255, 0.6);
+        }.liquid-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.3) 100%);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 
+                0 10px 40px -10px rgba(0,0,0,0.05),
+                inset 0 0 20px rgba(255,255,255,0.6);
+            position: relative;
+            overflow: visible;z-index: 10;
+        }
+        .liquid-card::before {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border-radius: inherit;
+            padding: 1px;
+            background: linear-gradient(45deg, rgba(255,255,255,0.8), rgba(255,255,255,0.2), rgba(255,255,255,0.8));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+        .img-pop {
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .liquid-card:hover .img-pop {
+            transform: scale(1.05) translateY(-5px);
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .active-bubble {
+            background: rgba(255, 255, 255, 0.85);
+            border-color: #fff;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.15), inset 0 0 10px rgba(255,255,255,1);
+        }
+        .float-nav {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.08);
+        }
+    </style>
+    <style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+
+<body class="font-display antialiased text-slate-700 pb-32 relative overflow-x-hidden">
+    <div
+        class="fixed top-[-20%] left-[-20%] w-[80vw] h-[80vw] bg-purple-200 rounded-full mix-blend-multiply filter blur-[80px] opacity-40 animate-pulse pointer-events-none -z-10">
+    </div>
+    <div
+        class="fixed top-[20%] right-[-10%] w-[60vw] h-[60vw] bg-blue-200 rounded-full mix-blend-multiply filter blur-[80px] opacity-40 pointer-events-none -z-10">
+    </div>
+    <div
+        class="fixed bottom-[-10%] left-[20%] w-[70vw] h-[70vw] bg-pink-200 rounded-full mix-blend-multiply filter blur-[80px] opacity-40 pointer-events-none -z-10">
+    </div>
+    <header class="p-6 pt-10 flex flex-col gap-8 z-10 relative">
+        <div class="glass-container rounded-[2.5rem] p-5 flex items-center gap-5 shadow-soft-glass">
+            <div class="relative group shrink-0">
+                <div class="h-16 w-16 rounded-full bg-cover bg-center ring-4 ring-white/50 shadow-lg"
+                    style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDskIpgstj5PvR1Vawnb8Zw6ZIhaWJyT62n0LIsOVvf7-7W7EEMmAMpiuo6YpezpbgGo1k0Mvbj0sDNfIaCDiLG22YrR2gLBiy0LQfYfBD4OLMkxl9pm91FAPEhHMc30Hwy5Owd6GBg4T4ToOcszdWo0Ft8thoHaqZ2FOAHyMw9ZS-ZH1BEWAGhZe6LzeFCF0YRlqF0Vl3P8WH6hUhwXwrMotJu2xcTui3j5_QEEBPL2svGTWIvZLfyxQCZ6IIihnwVczxtRTQGv1c')">
+                </div>
+            </div>
+            <div class="flex flex-col justify-center flex-grow">
+                <h2 class="text-slate-800 text-xl font-bold leading-tight tracking-tight">Alexey</h2>
+                <p class="text-slate-500 text-sm font-medium mt-0.5">Saving for a dream ✨</p>
+            </div>
+            <button
+                class="glass-bubble h-12 w-12 rounded-full flex items-center justify-center text-slate-500 hover:bg-white/60 transition-colors">
+                <span class="material-symbols-outlined text-[22px]">edit</span>
+            </button>
+        </div>
+        <div class="flex gap-3 overflow-x-auto no-scrollbar py-2 px-1 -mx-2 pl-2">
+            <button
+                class="active-bubble flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full px-5 text-blue-600 transition-all">
+                <span class="text-sm font-bold">Мои желания</span>
+            </button>
+            <button
+                class="glass-bubble flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-slate-600">
+                <span class="material-symbols-outlined text-[20px]">add</span>
+            </button>
+            <button
+                class="glass-bubble flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full px-5 text-slate-600">
+                <span class="text-sm font-semibold">Новый год</span>
+            </button>
+            <button
+                class="glass-bubble flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full px-5 text-slate-600">
+                <span class="text-sm font-semibold">День рождения</span>
+            </button>
+            <button
+                class="glass-bubble flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full px-5 text-slate-600">
+                <span class="text-sm font-semibold">Путешествие</span>
+            </button>
+        </div>
+        <div class="flex justify-between items-center px-2">
+            <div class="flex gap-3">
+                <button
+                    class="glass-bubble flex items-center justify-center h-11 w-11 rounded-2xl text-slate-600 hover:text-blue-600">
+                    <span class="material-symbols-outlined text-[20px]">edit</span>
+                </button>
+                <button
+                    class="glass-bubble flex items-center justify-center h-11 w-11 rounded-2xl text-slate-600 hover:text-red-500">
+                    <span class="material-symbols-outlined text-[20px]">delete</span>
+                </button>
+                <button
+                    class="glass-bubble flex items-center justify-center h-11 w-11 rounded-2xl text-slate-600 hover:text-blue-600">
+                    <span class="material-symbols-outlined text-[20px]">ios_share</span>
+                </button>
+            </div>
+            <div class="text-right glass-bubble px-3 py-1 rounded-full">
+                <span class="text-[11px] font-bold text-slate-500 uppercase tracking-widest">3 items</span>
+            </div>
+        </div>
+    </header>
+    <main class="px-6 flex flex-col gap-6 z-0 relative">
+        <div class="liquid-card rounded-[2.5rem] p-5 flex flex-col gap-4 group">
+            <div class="w-full h-56 rounded-[2rem] bg-cover bg-center shadow-md img-pop relative z-10 -mt-2 mx-auto w-[95%]"
+                style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCN0ltreUCK_iqxAvEjwcISU2NrYbvD3Z0nXdNhWvWFtL5syv7bzEjuvpAaOT0WwFKX3bGchXJRrxdnk3nIFqJPEDxJLcyZEizsjrJZg3LmnFsEBK_h01sTmCyF51Xuf6_qiKp8poKY_fB9wBWtPVx_LMwNS89IWrKl13YQtuG9BA4hfquRxjXOS997Y14n_d5OtAudQKvoQn9uZVw7H85KAMc08p0HQ2parIxCCX9X1v-l_7MdgxODXj6dxwfuQl5UrGmezdlZzfE'); box-shadow: 0 15px 30px -5px rgba(0,0,0,0.15);">
+            </div>
+            <div class="flex flex-col gap-1 px-2 pb-2">
+                <div class="flex justify-between items-start mt-2">
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-800">MacBook Pro M3</h3>
+                    </div>
+                    <div class="text-right bg-blue-50/50 px-3 py-1 rounded-full backdrop-blur-sm">
+                        <p class="text-lg font-bold text-blue-600">$2,000</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="grid grid-cols-2 gap-5">
+            <div class="liquid-card rounded-[2.25rem] p-3 flex flex-col gap-3 group">
+                <div class="aspect-square w-[90%] mx-auto -mt-2 rounded-[1.75rem] bg-cover bg-center shadow-md img-pop relative z-10"
+                    style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBiH1iynVH_k2az_FGKGVwptyrvvDPCkgP7matPOGWh2QrGdNmnDxUSQoJtC9qzs1tc0S_9ztR5szfg9cmKA0p0moq5eolnwCh5iLP13jAZJDWlGJO34j_h5PD1cbTjK3SO8aEW4IFkpWS13tGUUjgKvjBXGEhO5uXMlFjJEGAtrNXDfa11SK2pHj_2zPJdexz8NCOVM760bI8-v0PQvSVnSWZm92wnK5HarXAN43JZlA0-aUjcPRkI5knO4LNffui0TGSnW9TGs-Q'); box-shadow: 0 10px 20px -5px rgba(0,0,0,0.1);">
+                </div>
+                <div class="px-2 pb-2 pt-2">
+                    <h4 class="text-sm font-bold text-slate-800 leading-tight">Coffee Machine</h4>
+                    <p class="text-xs font-bold text-blue-600 mt-1">$400</p>
+                </div>
+            </div>
+            <div class="liquid-card rounded-[2.25rem] p-3 flex flex-col gap-3 group">
+                <div class="aspect-square w-[90%] mx-auto -mt-2 rounded-[1.75rem] bg-cover bg-center shadow-md img-pop relative z-10"
+                    style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC2jlFm1Sb4oE3S9dH-hIFolN0PI6awiMmyHHY5fu6QKvlsqU04JVWwiuOBeE_S-4CZKnAn2sr7khOlF18T_DcSQI4nAgMyrWFc_iL2cPp5BqzmlHJ2vdhdWCwiC8BL7eEidkyONrUktnA_3q31JzxlhkZt84UwELwfFCI1MJlkU6oKSuXlEcYK52Ljtg4vXI1TKebdNZVJtGEIpWXOAh_c3BgEvLlNEQbxhBpoKmFC-G6wKSX0BytKzK2riKlZgjOneAZnRrHAnvU'); box-shadow: 0 10px 20px -5px rgba(0,0,0,0.1);">
+                </div>
+                <div class="px-2 pb-2 pt-2">
+                    <h4 class="text-sm font-bold text-slate-800 leading-tight">Trip to Bali</h4>
+                    <p class="text-xs font-bold text-blue-600 mt-1">$1,500</p>
+                </div>
+            </div>
+        </div>
+    </main>
+    <button
+        class="fixed bottom-28 right-6 z-40 h-16 w-16 rounded-[2rem] bg-blue-500 text-white shadow-lg shadow-blue-500/30 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform border border-white/30 backdrop-blur-md">
+        <span class="material-symbols-outlined text-3xl">add</span>
+    </button>
+    <nav class="fixed bottom-8 left-1/2 -translate-x-1/2 w-[90%] max-w-md z-50">
+        <div class="float-nav rounded-full p-2.5 flex justify-between items-center shadow-2xl ring-1 ring-white/40">
+            <button
+                class="flex items-center gap-2 bg-blue-600 text-white pl-5 pr-6 py-3 rounded-full shadow-lg shadow-blue-600/25 transition-all">
+                <span class="material-symbols-outlined text-[22px] fill-1">star</span>
+                <span class="text-sm font-bold whitespace-nowrap">Мои желания</span>
+            </button>
+            <button
+                class="flex items-center justify-center h-12 w-12 rounded-full text-slate-400 hover:text-slate-600 hover:bg-white/40 transition-all">
+                <span class="material-symbols-outlined text-[24px]">lightbulb</span>
+            </button>
+            <button
+                class="flex items-center justify-center h-12 w-12 rounded-full text-slate-400 hover:text-slate-600 hover:bg-white/40 transition-all">
+                <span class="material-symbols-outlined text-[24px]">group</span>
+            </button>
+            <button
+                class="flex items-center justify-center h-12 w-12 rounded-full text-slate-400 hover:text-slate-600 hover:bg-white/40 transition-all">
+                <span class="material-symbols-outlined text-[24px]">person</span>
+            </button>
+        </div>
+    </nav>
+
+</body>
+
+</html>

@@ -198,13 +198,13 @@ onMounted(() => {
   font-size: 34px; /* Design seems larger */
   font-weight: 700;
   margin: 0;
-  color: white;
+  color: var(--tg-text-color);
   line-height: 1.1;
 }
 
 .friends-view__subtitle {
   font-size: 15px;
-  color: rgba(255, 255, 255, 0.6); /* Grayish transparent white */
+  color: var(--tg-subtitle-text-color);
   margin: 0;
   font-weight: 400;
 }
@@ -221,9 +221,9 @@ onMounted(() => {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.05);
-  color: white;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-btn-bg);
+  color: var(--tg-text-color);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -233,7 +233,7 @@ onMounted(() => {
 }
 
 .friends-view__add-btn:active {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--glass-border);
   transform: scale(0.95);
 }
 
@@ -254,19 +254,19 @@ onMounted(() => {
   padding: 0 16px;
   height: 48px;
   border-radius: 24px;
-  background: rgba(0, 0, 0, 0.2); /* Darker background for input */
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--tg-secondary-bg-color);
+  border: 1px solid var(--tg-border-color);
   transition: all 0.2s ease;
 }
 
 .search-bar:focus-within {
-  border-color: rgba(255, 255, 255, 0.2);
-  /* background: rgba(0, 0, 0, 0.3); Removed darkening effect */
+  border-color: var(--tg-button-color);
+  background: var(--tg-bg-color);
 }
 
 
 .search-icon {
-  color: var(--text-secondary); /* or #64748b */
+  color: var(--tg-hint-color);
   font-size: 20px;
   margin-right: 12px;
   opacity: 0.7;
@@ -276,7 +276,7 @@ onMounted(() => {
   flex: 1;
   background: transparent;
   border: none;
-  color: var(--text-primary);
+  color: var(--tg-text-color);
   font-size: 16px;
   font-weight: 400;
   outline: none;
@@ -284,7 +284,7 @@ onMounted(() => {
 }
 
 .search-input::placeholder {
-  color: var(--text-secondary);
+  color: var(--tg-hint-color);
   opacity: 0.6;
 }
 

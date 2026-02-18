@@ -81,8 +81,9 @@ const currentComponent = computed(() => tabComponents[activeTab.value])
 html, body {
   margin: 0;
   padding: 0;
-  /* Use the standardized aurora gradient from design-system.css */
-  background: radial-gradient(circle at 0% 0%, var(--aurora-bg-1) 0%, var(--aurora-bg-2) 50%, var(--aurora-bg-3) 100%);
+  background-color: var(--tg-bg-color);
+  background-image: var(--template-bg-image);
+  background-attachment: fixed;
   color: var(--tg-text-color);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

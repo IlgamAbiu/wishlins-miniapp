@@ -122,7 +122,7 @@ const avatarInitial = computed(() => {
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-festive);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -138,20 +138,20 @@ const avatarInitial = computed(() => {
   margin: 0;
   font-size: 18px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--tg-text-color);
 }
 
 .friend-card__wishes {
   margin: 4px 0 0;
   font-size: 13px;
-  color: var(--text-secondary);
+  color: var(--tg-hint-color);
   opacity: 0.7;
   letter-spacing: 0.5px;
 }
 
 .friend-card__next-event {
   margin-top: 8px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--tg-secondary-bg-color);
   border-radius: 12px;
   padding: 8px 16px;
   width: 100%;
@@ -164,7 +164,7 @@ const avatarInitial = computed(() => {
 
 .friend-card__event-date {
   font-size: 13px;
-  color: var(--text-primary);
+  color: var(--tg-text-color);
   font-weight: 500;
 }
 </style>

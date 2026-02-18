@@ -36,6 +36,7 @@ function handleTabSelect(tabId: string) {
   width: 92%;
   max-width: 480px;
   z-index: 9999;
+  pointer-events: auto; /* Force clickable */
 }
 
 .tab-bar__content {

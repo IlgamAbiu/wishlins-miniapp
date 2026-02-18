@@ -66,6 +66,7 @@ function handleClick() {
   border: none;
   background: transparent;
   cursor: pointer;
+  pointer-events: auto; /* Force clickable */
   -webkit-tap-highlight-color: transparent;
   border-radius: 9999px;
   transition: all 0.2s ease;

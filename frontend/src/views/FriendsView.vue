@@ -171,8 +171,7 @@ onMounted(() => {
 </template>
 
 <style scoped>
-  box-sizing: border-box;
-}
+
 
 .friends-view__header {
   display: flex;

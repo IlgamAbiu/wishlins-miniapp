@@ -84,24 +84,28 @@ async function fetchFriends() {
     
     // Sort logic mimics backend: sort by next birthday
     friends.value = mockFriends.sort((a, b) => {
-        // Simplified sort for mock
-        const dateA = new Date(a.birth_date!)
-        const dateB = new Date(b.birth_date!)
-        
-        // Use a simple comparison of "days from now" logic (duplicated from backend logic roughly)
-        // For quick mock sorting, let's just rely on the order we defined above if we want specific order,
-        // or actually implement the sort.
-        // Let's implement simple sort for fidelity.
-        
-        const getNextBday = (d: Date) => {
+        // Safe check for missing dates
+        if (!a.birth_date && !b.birth_date) return 0
+        if (!a.birth_date) return 1
+        if (!b.birth_date) return -1
+    
+        const getNextBday = (d: string) => {
+            const date = new Date(d)
             const currentYear = new Date().getFullYear()
-            const bday = new Date(d)
+            const bday = new Date(date)
             bday.setFullYear(currentYear)
-            if (bday < new Date()) bday.setFullYear(currentYear + 1)
+            
+            // If birthday has passed this year, next one is next year
+            // Use end of day for comparison to avoid timezone edge cases
+            const today = new Date()
+            today.setHours(0, 0, 0, 0)
+            if (bday < today) {
+                bday.setFullYear(currentYear + 1)
+            }
             return bday
         }
         
-        return getNextBday(dateA).getTime() - getNextBday(dateB).getTime()
+        return getNextBday(a.birth_date!).getTime() - getNextBday(b.birth_date!).getTime()
     })
 
   } catch (e) {

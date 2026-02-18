@@ -60,6 +60,7 @@ const state = reactive<NavigationState>({
  * Switch to a different tab.
  */
 function switchTab(tabId: TabId): void {
+  console.log(`[Navigation] Switching to tab: ${tabId}`) // Debug log
   if (tabId === state.activeTab) return
 
   state.previousTab = state.activeTab

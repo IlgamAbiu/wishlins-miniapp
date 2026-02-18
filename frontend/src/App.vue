@@ -14,7 +14,18 @@ import WishDetailView from '@/components/WishDetailView.vue'
 
 // Lazy load views
 const ProfileView = defineAsyncComponent(() => import('@/views/ProfileView.vue'))
-const FriendsView = defineAsyncComponent(() => import('@/views/FriendsView.vue'))
+// Robust Async Component Loading for FriendsView
+const FriendsView = defineAsyncComponent({
+  loader: () => import('@/views/FriendsView.vue'),
+  onError: (error, retry, fail, attempts) => {
+    console.error('Error loading FriendsView:', error)
+    if (attempts <= 3) {
+      retry()
+    } else {
+      fail()
+    }
+  },
+})
 const SearchView = defineAsyncComponent(() => import('@/views/SearchView.vue'))
 
 const { activeTab } = useNavigation()

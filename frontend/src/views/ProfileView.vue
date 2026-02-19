@@ -767,7 +767,7 @@ function pluralizeWishes(count: number): string {
   background: var(--tg-button-color);
   color: white;
   border: 4px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 8px 24px rgba(79, 70, 229, 0.3); /* Indigo shadow */
+  box-shadow: 0 8px 24px rgba(10, 13, 194, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -777,14 +777,14 @@ function pluralizeWishes(count: number): string {
 }
 
 [data-theme='dark'] .fab-button {
-  background: #4f46e5;
-  border: 4px solid rgba(79, 70, 229, 0.2);
-  box-shadow: 0 0 30px rgba(79, 70, 229, 0.5),
+  background: #0a0dc2;
+  border: 4px solid rgba(10, 13, 194, 0.2);
+  box-shadow: 0 0 30px rgba(10, 13, 194, 0.5),
               0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
 [data-theme='dark'] .fab-button:hover {
-  box-shadow: 0 0 40px rgba(79, 70, 229, 0.7),
+  box-shadow: 0 0 40px rgba(10, 13, 194, 0.7),
               0 8px 24px rgba(0, 0, 0, 0.5);
   transform: scale(1.05);
 }

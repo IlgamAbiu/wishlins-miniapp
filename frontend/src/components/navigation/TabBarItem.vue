@@ -49,7 +49,7 @@ function handleClick() {
     :aria-selected="isActive"
     role="tab"
   >
-    <span class="tab-bar-item__icon">{{ icon }}</span>
+    <span class="material-symbols-outlined tab-bar-item__icon">{{ icon }}</span>
     <span v-if="isActive" class="tab-bar-item__label">{{ tab.label }}</span>
   </button>
 </template>
@@ -74,10 +74,11 @@ function handleClick() {
   min-height: 48px;
 }
 
-/* Active state - Full colored pill */
+/* Active state - White pill with primary text */
 .tab-bar-item--active {
-  background: var(--tg-button-color);
-  box-shadow: 0 4px 12px rgba(10, 13, 194, 0.2);
+  background: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 12px rgba(10, 13, 194, 0.08), inset 0 0 10px rgba(255, 255, 255, 0.8);
   padding: 14px 24px;
 }
 
@@ -88,10 +89,11 @@ function handleClick() {
 }
 
 .tab-bar-item__icon {
-  font-size: 24px;
+  font-size: 22px;
   line-height: 1;
   color: #94a3b8;
   transition: all 0.2s ease;
+  font-variation-settings: 'FILL' 0, 'wght' 400;
 }
 
 [data-theme='dark'] .tab-bar-item__icon {
@@ -99,19 +101,18 @@ function handleClick() {
 }
 
 .tab-bar-item--active .tab-bar-item__icon {
-  color: white;
-  filter: drop-shadow(0 0 12px rgba(255,255,255,0.3));
+  color: var(--tg-button-color);
+  filter: none;
 }
 
 [data-theme='dark'] .tab-bar-item--active .tab-bar-item__icon {
   color: #0A84FF;
-  filter: none;
 }
 
 .tab-bar-item__label {
   font-size: 14px;
   font-weight: 700;
-  color: white;
+  color: var(--tg-button-color);
   white-space: nowrap;
   letter-spacing: 0;
 }

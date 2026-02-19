@@ -29,20 +29,20 @@ export const TAB_CONFIGS: TabConfig[] = [
   {
     id: 'profile',
     label: 'Мои желания',
-    icon: '☆',
-    activeIcon: '★',
+    icon: 'card_giftcard',
+    activeIcon: 'card_giftcard',
   },
   {
     id: 'friends',
     label: 'Друзья',
-    icon: '◇',
-    activeIcon: '◆',
+    icon: 'group',
+    activeIcon: 'group',
   },
   {
     id: 'search',
-    label: 'Поиск',
-    icon: '○',
-    activeIcon: '●',
+    label: 'Идеи',
+    icon: 'lightbulb',
+    activeIcon: 'lightbulb',
   },
 ]
 

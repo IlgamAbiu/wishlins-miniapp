@@ -5,13 +5,11 @@
   --tg-text-color: #1e1e24;
   /* Softer black */
   --tg-hint-color: #6b7280;
-  --tg-link-color: #4338ca;
-  /* Darker Indigo */
-  --tg-button-color: #4f46e5;
-  /* Indigo */
+  --tg-link-color: #0a0dc2;
+  --tg-button-color: #0a0dc2;
   --tg-button-text-color: #FFFFFF;
   --tg-header-bg-color: #FFFFFF;
-  --tg-accent-text-color: #4f46e5;
+  --tg-accent-text-color: #0a0dc2;
   --tg-border-color: #e2e8f0;
   --tg-destructive-text-color: #ef4444;
   --tg-section-bg-color: #FFFFFF;
@@ -19,8 +17,8 @@
   --tg-subtitle-text-color: #9ca3af;
 
   /* Radial Gradient Background Colors */
-  --aurora-bg-1: #e0e7ff;
-  /* Indigo tint */
+  --aurora-bg-1: #e6e9ff;
+  /* Blue tint */
   --aurora-bg-2: #f3e8ff;
   /* Purple tint */
   --aurora-bg-3: #fae8ff;
@@ -32,9 +30,9 @@
   --color-warning: #f59e0b;
 
   /* RGB Color Values (for rgba() usage) */
-  --tg-button-color-rgb: 79,
-    70,
-    229;
+  --tg-button-color-rgb: 10,
+    13,
+    194;
   --color-error-rgb: 239,
     68,
     68;

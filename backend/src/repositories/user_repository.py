@@ -7,7 +7,7 @@ from typing import Optional
 from uuid import UUID
 
 from sqlalchemy import select, update
-from sqlalchemy.orm import selectall
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.domain.entities import User, UserCreate, UserUpdate
@@ -116,7 +116,7 @@ class UserRepository:
         stmt = (
             select(UserModel)
             .where(UserModel.id == user_id)
-            .options(selectall(UserModel.friends))
+            .options(selectinload(UserModel.friends))
         )
         result = await self._session.execute(stmt)
         user = result.scalar_one_or_none()
@@ -172,7 +172,7 @@ class UserRepository:
         stmt = (
             select(UserModel)
             .where(UserModel.id == user_id)
-            .options(selectall(UserModel.friends))
+            .options(selectinload(UserModel.friends))
         )
         result = await self._session.execute(stmt)
         user = result.scalar_one_or_none()

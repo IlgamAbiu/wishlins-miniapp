@@ -373,7 +373,7 @@ async function handleDeleteWish(id: string) {
         
         <div class="header-actions">
             <button @click="handleShare" class="glass-btn icon-btn">
-                <span class="material-symbols-outlined">share</span>
+                <span class="material-symbols-outlined">ios_share</span>
             </button>
             <button v-if="isOwner" @click="handleEdit" class="glass-btn icon-btn">
                 <span class="material-symbols-outlined">edit</span>
@@ -406,14 +406,14 @@ async function handleDeleteWish(id: string) {
     width: 100%;
     height: 100%;
     z-index: 1000;
-    background: var(--tg-bg-color); /* Use variable */
+    background: radial-gradient(circle at 0% 0%, var(--aurora-bg-1) 0%, var(--aurora-bg-2) 50%, var(--aurora-bg-3) 100%);
     color: var(--tg-text-color);
     font-family: 'Plus Jakarta Sans', sans-serif;
     overflow: hidden; /* Main view doesn't scroll, inner container does */
 }
 
 [data-theme='dark'] .wish-detail-view {
-    background: var(--tg-bg-color); /* Use variable */
+    background: radial-gradient(circle at 50% 0%, var(--aurora-bg-1) 0%, var(--aurora-bg-2) 60%, var(--aurora-bg-3) 100%);
     color: var(--tg-text-color);
 }
 

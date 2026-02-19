@@ -30,7 +30,7 @@ const isDefault = computed(() => props.event.is_default)
 
     <!-- Share Button -->
     <button class="action-btn share-btn" @click="$emit('share')">
-      <div class="icon">📤</div>
+      <span class="material-symbols-outlined icon">ios_share</span>
       <span class="label">Поделиться</span>
     </button>
 

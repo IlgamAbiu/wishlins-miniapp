@@ -112,7 +112,7 @@ onMounted(() => {
                     <p class="friends-view__subtitle">Ваш круг общения</p>
                 </div>
                 <button class="friends-view__add-btn" @click="handleAddFriend" aria-label="Добавить друга">
-                    <span class="friends-view__add-icon">+</span>
+                    <span class="material-symbols-outlined friends-view__add-icon">person_add</span>
                 </button>
             </div>
             
@@ -238,9 +238,8 @@ onMounted(() => {
 }
 
 .friends-view__add-icon {
-  font-size: 26px;
+  font-size: 22px;
   line-height: 1;
-  font-weight: 300;
 }
 
 /* === Search Bar === */

@@ -849,4 +849,11 @@ function pluralizeWishes(count: number): string {
     transform: scale(0.98);
 }
 
+[data-theme='light'] .back-header-btn {
+    background: rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    color: #333;
+    box-shadow: none;
+}
+
 </style>

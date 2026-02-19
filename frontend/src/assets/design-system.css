@@ -2,36 +2,56 @@
   /* Colors - Light Theme (Default) */
   --tg-bg-color: #FFFFFF;
   --tg-secondary-bg-color: #F5F5F5;
-  --tg-text-color: #000000;
-  --tg-hint-color: #666666;
+  --tg-text-color: #1e1e24;
+  /* Softer black */
+  --tg-hint-color: #6b7280;
   --tg-link-color: #0a0dc2;
   --tg-button-color: #0a0dc2;
   --tg-button-text-color: #FFFFFF;
   --tg-header-bg-color: #FFFFFF;
   --tg-accent-text-color: #0a0dc2;
-  --tg-border-color: #E0E0E0;
-  --tg-destructive-text-color: #FF3B30;
+  --tg-border-color: #e2e8f0;
+  --tg-destructive-text-color: #ef4444;
   --tg-section-bg-color: #FFFFFF;
-  --tg-section-header-text-color: #666666;
-  --tg-subtitle-text-color: #999999;
+  --tg-section-header-text-color: #6b7280;
+  --tg-subtitle-text-color: #9ca3af;
 
   /* Radial Gradient Background Colors */
   --aurora-bg-1: #e6e9ff;
-  --aurora-bg-2: #f0f2f5;
-  --aurora-bg-3: #eef2ff;
+  /* Blue tint */
+  --aurora-bg-2: #f3e8ff;
+  /* Purple tint */
+  --aurora-bg-3: #fae8ff;
+  /* Pink tint */
 
   /* Status Colors */
-  --color-error: #FF3B30;
-  --color-success: #34C759;
-  --color-warning: #FF9500;
+  --color-error: #ef4444;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
 
   /* RGB Color Values (for rgba() usage) */
-  --tg-button-color-rgb: 0, 136, 204;
-  --color-error-rgb: 255, 59, 48;
-  --color-success-rgb: 52, 199, 89;
+  --tg-button-color-rgb: 10,
+    13,
+    194;
+  --color-error-rgb: 239,
+    68,
+    68;
+  --color-success-rgb: 16,
+    185,
+    129;
 
   /* Typography */
-  --font-family-base: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+  --font-family-base: 'Plus Jakarta Sans',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif,
+    'Apple Color Emoji',
+    'Segoe UI Emoji',
+    'Segoe UI Symbol';
   --font-size-h1: 24px;
   --font-size-h2: 20px;
   --font-size-body: 16px;
@@ -53,17 +73,20 @@
   --border-radius-xl: 32px;
   --border-radius-2xl: 40px;
   --border-radius-3xl: 48px;
-  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.08);
-  --shadow-floating: 0 4px 16px rgba(0, 0, 0, 0.12);
+  --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-floating: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
 
   /* Праздничные градиенты */
-  --gradient-festive: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --gradient-sunset: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  --gradient-candy: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-  --gradient-ocean: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-  --gradient-sky: linear-gradient(180deg, #e0c3fc 0%, #8ec5fc 100%);
-  --gradient-pastel: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
-  --gradient-dream: linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fad0c4 100%);
+  --gradient-festive: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  /* Indigo -> Violet */
+  --gradient-sunset: linear-gradient(135deg, #f472b6 0%, #fbbf24 100%);
+  --gradient-candy: linear-gradient(135deg, #f43f5e 0%, #fcd34d 100%);
+  --gradient-ocean: linear-gradient(135deg, #22d3ee 0%, #818cf8 100%);
+  --gradient-sky: linear-gradient(180deg, #c084fc 0%, #60a5fa 100%);
+  --gradient-pastel: linear-gradient(135deg, #fde68a 0%, #fca5a5 100%);
+  --gradient-dream: linear-gradient(135deg, #a78bfa 0%, #fbcfe8 50%, #f9a8d4 100%);
 
   /* Transitions */
   --transition-fast: 0.15s ease-out;
@@ -71,18 +94,21 @@
   --transition-slow: 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 
   /* Glassmorphism - Thick Refractive Glass (Optimized) */
-  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  /* More transparent */
   /* More opaque */
-  --glass-border: rgba(255, 255, 255, 0.6);
-  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
-  --glass-blur: 10px;
+  --glass-border: rgba(255, 255, 255, 0.5);
+  --glass-shadow: 0 8px 32px 0 rgba(79, 70, 229, 0.1);
+  /* Indigo tinted shadow */
+  --glass-blur: 12px;
   /* Reduced from 30px */
 
   /* Glass variations */
-  --glass-panel-bg: rgba(255, 255, 255, 0.85);
-  --glass-card-bg: rgba(255, 255, 255, 0.7);
-  --glass-btn-bg: rgba(255, 255, 255, 0.6);
-  --glass-card-shadow: inset 0 0 20px rgba(255, 255, 255, 0.5), 0 4px 6px rgba(0, 0, 0, 0.02);
+  --glass-panel-bg: rgba(255, 255, 255, 0.75);
+  --glass-card-bg: rgba(255, 255, 255, 0.6);
+  --glass-btn-bg: rgba(255, 255, 255, 0.5);
+  --glass-card-shadow: inset 0 0 20px rgba(255, 255, 255, 0.5),
+    0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
 /* Dark Theme */
@@ -90,62 +116,68 @@
   /* === DEEP DARK THEME (from new.txt) === */
 
   /* Background Colors */
-  --tg-bg-color: #030308;
-  --tg-secondary-bg-color: #1a1a3a;
-  --tg-text-color: #f8fafc;
+  --tg-bg-color: #0f172a;
+  /* Slate 900 */
+  --tg-secondary-bg-color: #1e293b;
+  /* Slate 800 */
+  --tg-text-color: #f1f5f9;
   --tg-hint-color: #94a3b8;
-  --tg-subtitle-text-color: #94a3b8;
+  --tg-subtitle-text-color: #cbd5e1;
 
   /* Primary Color - Indigo */
-  --tg-button-color: #4f46e5;
+  --tg-button-color: #6366f1;
+  /* Lighter Indigo for Dark Mode */
   --tg-button-text-color: #FFFFFF;
-  --tg-accent-text-color: #4f46e5;
-  --tg-link-color: #4f46e5;
-  --tg-button-color-rgb: 79, 70, 229;
+  --tg-accent-text-color: #818cf8;
+  --tg-link-color: #818cf8;
+  --tg-button-color-rgb: 99, 102, 241;
 
   /* Header & Sections */
-  --tg-header-bg-color: #030308;
-  --tg-section-bg-color: #1a1a3a;
+  --tg-header-bg-color: #0f172a;
+  --tg-section-bg-color: #1e293b;
   --tg-section-header-text-color: #94a3b8;
 
   /* Border */
-  --tg-border-color: rgba(255, 255, 255, 0.08);
+  --tg-border-color: rgba(255, 255, 255, 0.1);
 
   /* Destructive */
-  --tg-destructive-text-color: #FF453A;
+  --tg-destructive-text-color: #f87171;
 
   /* Radial Gradient Background */
-  --aurora-bg-1: #1a1a3a;
-  --aurora-bg-2: #030308;
-  --aurora-bg-3: #030308;
+  --aurora-bg-1: #1e1b4b;
+  /* Indigo 950 */
+  --aurora-bg-2: #0f172a;
+  /* Slate 900 */
+  --aurora-bg-3: #020617;
+  /* Slate 950 */
 
   /* Status Colors */
-  --color-error: #FF453A;
-  --color-success: #10b981;
-  --color-warning: #FF9500;
+  --color-error: #f87171;
+  --color-success: #34d399;
+  --color-warning: #fbbf24;
 
   /* RGB Color Values - Dark Theme */
-  --color-error-rgb: 255, 69, 58;
-  --color-success-rgb: 16, 185, 129;
+  --color-error-rgb: 248, 113, 113;
+  --color-success-rgb: 52, 211, 153;
 
   /* Glass - Dark Mode (Ultra Transparent) */
-  --glass-bg: rgba(20, 20, 30, 0.6);
+  --glass-bg: rgba(30, 41, 59, 0.6);
   /* More opaque */
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
-  --glass-blur: 15px;
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  --glass-blur: 16px;
   /* Reduced from 40px */
 
   /* Glass variations - Dark Mode */
-  --glass-panel-bg: rgba(20, 20, 30, 0.7);
-  --glass-card-bg: rgba(30, 30, 40, 0.6);
-  --glass-btn-bg: rgba(40, 40, 50, 0.5);
-  --glass-card-shadow: inset 0 0 20px rgba(255, 255, 255, 0.02), 0 8px 24px rgba(0, 0, 0, 0.4);
+  --glass-panel-bg: rgba(30, 41, 59, 0.7);
+  --glass-card-bg: rgba(30, 41, 59, 0.6);
+  --glass-btn-bg: rgba(51, 65, 85, 0.5);
+  --glass-card-shadow: inset 0 0 20px rgba(255, 255, 255, 0.05), 0 8px 24px rgba(0, 0, 0, 0.2);
 
   /* === GLASS BORDERS - NEW === */
-  --glass-border-light: rgba(255, 255, 255, 0.08);
-  --glass-border-medium: rgba(255, 255, 255, 0.10);
-  --glass-border-strong: rgba(255, 255, 255, 0.12);
+  --glass-border-light: rgba(255, 255, 255, 0.1);
+  --glass-border-medium: rgba(255, 255, 255, 0.15);
+  --glass-border-strong: rgba(255, 255, 255, 0.2);
 
   /* === GLASS SHADOWS - NEW === */
   --glass-shadow-xs: 0 2px 8px rgba(0, 0, 0, 0.2);
@@ -167,12 +199,12 @@
 /* Dark Theme Body Background */
 [data-theme='dark'] body {
   background: radial-gradient(circle at 50% 0%,
-      #1a1a3a 0%,
-      #030308 60%,
-      #030308 100%);
+      var(--aurora-bg-1) 0%,
+      var(--aurora-bg-2) 60%,
+      var(--aurora-bg-3) 100%);
   background-attachment: fixed;
   min-height: 100vh;
-  color: #f8fafc;
+  color: var(--tg-text-color);
 }
 
 /* Global Reset & Base Styles */
@@ -185,7 +217,7 @@ body {
   margin: 0;
   padding: 0;
   font-family: var(--font-family-base);
-  background: radial-gradient(circle at 0% 0%, #e6e9ff 0%, #f0f2f5 50%, #eef2ff 100%);
+  background: radial-gradient(circle at 0% 0%, var(--aurora-bg-1) 0%, var(--aurora-bg-2) 50%, var(--aurora-bg-3) 100%);
   min-height: 100vh;
   color: var(--tg-text-color);
   font-size: var(--font-size-body);
@@ -417,9 +449,11 @@ select:focus {
 
 /* Active Pill - For carousel pills */
 .active-pill {
-  background: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  box-shadow: 0 4px 12px rgba(10, 13, 194, 0.08), inset 0 0 10px rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid #ffffff;
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.15), inset 0 0 10px rgba(255, 255, 255, 1);
+  color: var(--tg-accent-text-color) !important;
+  /* Force blue text */
 }
 
 [data-theme='dark'] .active-pill {
@@ -427,7 +461,7 @@ select:focus {
   border: 1px solid rgba(79, 70, 229, 0.4);
   box-shadow: 0 0 20px rgba(79, 70, 229, 0.3),
     0 4px 12px rgba(0, 0, 0, 0.4);
-  color: #f8fafc;
+  color: #f8fafc !important;
 }
 
 /* Decorative Blur Circles */
@@ -514,24 +548,20 @@ select:focus {
 
 /* === SKELETON LOADING === */
 .skeleton {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.1) 25%,
-    rgba(255, 255, 255, 0.2) 37%,
-    rgba(255, 255, 255, 0.1) 63%
-  );
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0.1) 25%,
+      rgba(255, 255, 255, 0.2) 37%,
+      rgba(255, 255, 255, 0.1) 63%);
   background-size: 400% 100%;
   animation: shimmer 1.4s ease infinite;
   border-radius: var(--border-radius-md);
 }
 
 [data-theme='light'] .skeleton {
-  background: linear-gradient(
-    90deg,
-    rgba(0, 0, 0, 0.06) 25%,
-    rgba(0, 0, 0, 0.12) 37%,
-    rgba(0, 0, 0, 0.06) 63%
-  );
+  background: linear-gradient(90deg,
+      rgba(0, 0, 0, 0.06) 25%,
+      rgba(0, 0, 0, 0.12) 37%,
+      rgba(0, 0, 0, 0.06) 63%);
   background-size: 400% 100%;
 }
 
@@ -539,6 +569,7 @@ select:focus {
   0% {
     background-position: 100% 50%;
   }
+
   100% {
     background-position: 0 50%;
   }

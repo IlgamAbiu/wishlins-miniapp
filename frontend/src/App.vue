@@ -81,7 +81,9 @@ const currentComponent = computed(() => tabComponents[activeTab.value])
 html, body {
   margin: 0;
   padding: 0;
-  background: radial-gradient(circle at 0% 0%, var(--aurora-bg-1) 0%, var(--aurora-bg-2) 50%, var(--aurora-bg-3) 100%);
+  background-color: var(--tg-bg-color);
+  background-image: var(--template-bg-image);
+  background-attachment: fixed;
   color: var(--tg-text-color);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -91,7 +93,8 @@ html, body {
 
 [data-theme='dark'] html,
 [data-theme='dark'] body {
-  background: radial-gradient(circle at 50% 0%, #1C1C1E 0%, #0A0A0C 100%);
+  /* Use the dark theme aurora gradient variables */
+  background: radial-gradient(circle at 50% 0%, var(--aurora-bg-1) 0%, var(--aurora-bg-2) 60%, var(--aurora-bg-3) 100%);
 }
 
 html, body, #app {

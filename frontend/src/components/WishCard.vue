@@ -140,7 +140,7 @@ const backgroundStyle = computed(() => {
 
 .card-price {
   font-weight: 700;
-  color: #8b5cf6; /* Purple color from design */
+  color: var(--tg-accent-text-color); /* Matches design blue */
 }
 
 

@@ -162,7 +162,7 @@ function getDaysUntilEvent(eventDate: string | null): string | null {
 }
 
 .event-pill--active {
-  color: #111118;
+  color: var(--tg-accent-text-color);
   font-weight: 600;
 }
 

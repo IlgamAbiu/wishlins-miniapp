@@ -161,6 +161,13 @@ watch([() => user.value, () => navigationStore.state.viewedUserId, () => props.u
    initData()
 }, { immediate: true })
 
+// Re-fetch own data when returning to "Мои желания" tab (KeepAlive keeps stale state)
+watch(() => navigationStore.state.activeTab, (newTab) => {
+  if (newTab === 'profile' && !isStackMode.value) {
+    initData()
+  }
+})
+
 // Watch for event selection to fetch wishes
 let fetchTimeout: ReturnType<typeof setTimeout>
 watch(selectedEventId, (newId) => {
@@ -554,7 +561,7 @@ function pluralizeWishes(count: number): string {
 .avatar-placeholder {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #FF9F0A, #FF375F);
+  background: var(--gradient-festive); /* Use themed gradient */
   color: white;
   display: flex;
   align-items: center;
@@ -611,12 +618,32 @@ function pluralizeWishes(count: number): string {
   color: #94a3b8;
 }
 
+/* Back button specific style */
+.back-header-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b; /* Slate 500 */
+  background: rgba(255, 255, 255, 0.4);
+  margin-right: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.5); /* Explicit border match */
+}
+
+[data-theme='dark'] .back-header-btn {
+  color: #cbd5e1;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
 .edit-header-btn {
   margin-left: auto;
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  border: none; /* Reset if glass-btn has border that conflicts, though glass-btn usually has one */
+  border: 1px solid rgba(255, 255, 255, 0.5); /* Match template border */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -627,6 +654,7 @@ function pluralizeWishes(count: number): string {
 [data-theme='dark'] .edit-header-btn {
   color: #cbd5e1; /* slate-300 */
   background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* === CAROUSEL WRAPPER === */
@@ -749,14 +777,14 @@ function pluralizeWishes(count: number): string {
 }
 
 [data-theme='dark'] .fab-button {
-  background: #4f46e5;
-  border: 4px solid rgba(79, 70, 229, 0.2);
-  box-shadow: 0 0 30px rgba(79, 70, 229, 0.5),
+  background: #0a0dc2;
+  border: 4px solid rgba(10, 13, 194, 0.2);
+  box-shadow: 0 0 30px rgba(10, 13, 194, 0.5),
               0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
 [data-theme='dark'] .fab-button:hover {
-  box-shadow: 0 0 40px rgba(79, 70, 229, 0.7),
+  box-shadow: 0 0 40px rgba(10, 13, 194, 0.7),
               0 8px 24px rgba(0, 0, 0, 0.5);
   transform: scale(1.05);
 }
@@ -819,6 +847,13 @@ function pluralizeWishes(count: number): string {
 .back-header-btn:active {
     background: rgba(255, 255, 255, 0.15);
     transform: scale(0.98);
+}
+
+[data-theme='light'] .back-header-btn {
+    background: rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    color: #333;
+    box-shadow: none;
 }
 
 </style>

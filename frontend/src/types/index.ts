@@ -66,6 +66,7 @@ export interface Wish {
   price: number | null
   currency: string | null
   is_booked: boolean
+  booked_by_me: boolean
   priority: WishPriority
   store: string | null
   created_at: string

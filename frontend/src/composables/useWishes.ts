@@ -39,13 +39,16 @@ export function useWishes() {
         selectedWish.value = null
     }
 
-    async function fetchWishes(wishlistId: string): Promise<void> {
+    async function fetchWishes(wishlistId: string, viewerTelegramId?: number): Promise<void> {
         loading.value = true
         error.value = null
         currentWishlistId.value = wishlistId
 
         try {
-            const response = await fetch(`${API_BASE_URL}/wishes?wishlist_id=${wishlistId}`)
+            const url = viewerTelegramId
+                ? `${API_BASE_URL}/wishes?wishlist_id=${wishlistId}&viewer_telegram_id=${viewerTelegramId}`
+                : `${API_BASE_URL}/wishes?wishlist_id=${wishlistId}`
+            const response = await fetch(url)
 
             if (!response.ok) {
                 throw new Error(`Failed to fetch wishes: ${response.statusText}`)
@@ -239,6 +242,42 @@ export function useWishes() {
         }
     }
 
+    async function bookWish(wishId: string, telegramId: number): Promise<Wish | null> {
+        try {
+            const response = await fetch(`${API_BASE_URL}/wishes/${wishId}/book?telegram_id=${telegramId}`, {
+                method: 'POST',
+            })
+            if (!response.ok) throw new Error('Failed to book wish')
+            const updated: Wish = await response.json()
+            emitWishEvent('update', updated)
+            const index = wishes.value.findIndex(w => w.id === wishId)
+            if (index !== -1) wishes.value[index] = updated
+            if (selectedWish.value?.id === wishId) selectedWish.value = updated
+            return updated
+        } catch (err) {
+            error.value = err instanceof Error ? err.message : 'Failed to book wish'
+            return null
+        }
+    }
+
+    async function unbookWish(wishId: string, telegramId: number): Promise<Wish | null> {
+        try {
+            const response = await fetch(`${API_BASE_URL}/wishes/${wishId}/book?telegram_id=${telegramId}`, {
+                method: 'DELETE',
+            })
+            if (!response.ok) throw new Error('Failed to unbook wish')
+            const updated: Wish = await response.json()
+            emitWishEvent('update', updated)
+            const index = wishes.value.findIndex(w => w.id === wishId)
+            if (index !== -1) wishes.value[index] = updated
+            if (selectedWish.value?.id === wishId) selectedWish.value = updated
+            return updated
+        } catch (err) {
+            error.value = err instanceof Error ? err.message : 'Failed to unbook wish'
+            return null
+        }
+    }
+
     return {
         wishes,
         selectedWish,
@@ -250,6 +289,8 @@ export function useWishes() {
         updateWish,
         moveWishesToWishlist,
         fulfillWish,
+        bookWish,
+        unbookWish,
         openWish,
         closeWish,
         onWishUpdate // Export this

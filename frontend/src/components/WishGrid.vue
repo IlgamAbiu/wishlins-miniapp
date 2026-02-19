@@ -10,6 +10,7 @@ defineProps<{
   wishes: Wish[]
   loading: boolean
   error: string | null
+  isOwner?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -49,6 +50,8 @@ const emit = defineEmits<{
         :key="wish.id"
         :wish="wish"
         :layout="wish.priority === 'really_want' ? 'full' : 'half'"
+        :is-owner="isOwner ?? false"
+        :is-booked-by-me="wish.booked_by_me"
         class="grid-item"
         :class="{ 'span-full': wish.priority === 'really_want' }"
         @click="$emit('click', wish)"

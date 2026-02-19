@@ -41,6 +41,7 @@ class WishService:
             price=data.price,
             currency=data.currency,
             is_booked=False,
+            booked_by_user_id=None,
             priority=data.priority,
             created_at=now,
             updated_at=now,
@@ -143,6 +144,34 @@ class WishService:
         # Move wish
         wish.wishlist_id = fulfilled_wishlist.id
         wish.is_booked = False  # Reset booking status as it is now fulfilled
+        wish.booked_by_user_id = None
+        wish.updated_at = datetime.now(timezone.utc)
+
+        return await self._wish_repository.update(wish)
+
+    async def book_wish(self, wish_id: UUID, booker_id: UUID) -> Wish:
+        """Book a wish by a non-owner user."""
+        wish = await self._wish_repository.get_by_id(wish_id)
+        if not wish:
+            raise ValueError(f"Wish with id {wish_id} not found")
+
+        wish.is_booked = True
+        wish.booked_by_user_id = booker_id
+        wish.updated_at = datetime.now(timezone.utc)
+
+        return await self._wish_repository.update(wish)
+
+    async def unbook_wish(self, wish_id: UUID, requester_id: UUID) -> Wish:
+        """Cancel a booking. Only the user who booked it can cancel."""
+        wish = await self._wish_repository.get_by_id(wish_id)
+        if not wish:
+            raise ValueError(f"Wish with id {wish_id} not found")
+
+        if wish.booked_by_user_id != requester_id:
+            raise ValueError("You did not book this wish")
+
+        wish.is_booked = False
+        wish.booked_by_user_id = None
         wish.updated_at = datetime.now(timezone.utc)
 
         return await self._wish_repository.update(wish)

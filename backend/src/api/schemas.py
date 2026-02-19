@@ -263,6 +263,7 @@ class WishResponse(WishBase):
     id: UUID
     wishlist_id: UUID
     is_booked: bool
+    booked_by_me: bool = False
     created_at: datetime
     updated_at: datetime
 

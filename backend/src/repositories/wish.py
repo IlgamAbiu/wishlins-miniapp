@@ -31,6 +31,7 @@ class WishRepository:
             price=wish.price,
             currency=wish.currency,
             is_booked=wish.is_booked,
+            booked_by_user_id=wish.booked_by_user_id,
             priority=wish.priority,
             created_at=wish.created_at,
             updated_at=wish.updated_at,
@@ -82,6 +83,7 @@ class WishRepository:
         model.price = wish.price
         model.currency = wish.currency
         model.is_booked = wish.is_booked
+        model.booked_by_user_id = wish.booked_by_user_id
         model.priority = wish.priority
         model.updated_at = wish.updated_at
 
@@ -114,6 +116,7 @@ class WishRepository:
             price=model.price,
             currency=model.currency,
             is_booked=model.is_booked,
+            booked_by_user_id=model.booked_by_user_id,
             priority=model.priority,
             created_at=model.created_at,
             updated_at=model.updated_at,

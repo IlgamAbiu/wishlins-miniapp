@@ -5,6 +5,8 @@ import { computed } from 'vue'
 const props = defineProps<{
   wish: Wish
   layout: 'full' | 'half'
+  isOwner: boolean
+  isBookedByMe: boolean
 }>()
 
 const emit = defineEmits<{
@@ -41,12 +43,18 @@ const backgroundStyle = computed(() => {
   if (props.wish.image_url) return {}
   return { background: getGradient(props.wish.title) }
 })
+
+const bookingState = computed<'owner' | 'free' | 'booked-other' | 'booked-me'>(() => {
+  if (props.isOwner) return 'owner'
+  if (!props.wish.is_booked) return 'free'
+  return props.isBookedByMe ? 'booked-me' : 'booked-other'
+})
 </script>
 
 <template>
-  <div 
-    class="wish-card glass-card-new" 
-    :class="[`layout-${layout}`]"
+  <div
+    class="wish-card glass-card-new"
+    :class="[`layout-${layout}`, `state-${bookingState}`]"
     @click="$emit('click', wish)"
   >
     <div class="card-image-wrapper">
@@ -61,7 +69,20 @@ const backgroundStyle = computed(() => {
       <div v-else class="image-gradient" :style="backgroundStyle">
         <span class="gradient-icon">✨</span>
       </div>
-      
+
+      <!-- Занято кем-то другим -->
+      <div v-if="bookingState === 'booked-other'" class="booked-overlay">
+        <div class="booked-badge">
+          <span class="booked-icon">🔒</span>
+          <span class="booked-label">Занято</span>
+        </div>
+      </div>
+
+      <!-- Я уже дарю -->
+      <div v-if="bookingState === 'booked-me'" class="gifter-badge">
+        <span class="gifter-icon">🎁</span>
+        <span class="gifter-label">Я дарю</span>
+      </div>
     </div>
 
     <div class="card-content">
@@ -210,6 +231,111 @@ const backgroundStyle = computed(() => {
 }
 
 
+/* === STATE: BOOKED BY SOMEONE ELSE === */
+.state-booked-other {
+  opacity: 0.75;
+}
+
+.booked-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: rgba(30, 30, 50, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.booked-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.booked-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.booked-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.85);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+[data-theme='light'] .booked-overlay {
+  background: rgba(200, 200, 220, 0.45);
+}
+
+[data-theme='light'] .booked-badge {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+[data-theme='light'] .booked-label {
+  color: rgba(30, 30, 50, 0.85);
+}
+
+
+/* === STATE: BOOKED BY ME (GIFTER) === */
+.state-booked-me {
+  box-shadow:
+    0 0 0 2px rgba(16, 185, 129, 0.7),
+    0 0 16px 4px rgba(16, 185, 129, 0.3),
+    var(--glass-card-shadow);
+  border-color: rgba(16, 185, 129, 0.6) !important;
+}
+
+.gifter-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 9999px;
+  background: rgba(16, 185, 129, 0.2);
+  border: 1px solid rgba(16, 185, 129, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.gifter-icon {
+  font-size: 12px;
+  line-height: 1;
+}
+
+.gifter-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(16, 185, 129, 1);
+  letter-spacing: 0.04em;
+}
+
+[data-theme='light'] .gifter-badge {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+[data-theme='light'] .state-booked-me {
+  box-shadow:
+    0 0 0 2px rgba(16, 185, 129, 0.6),
+    0 0 12px 3px rgba(16, 185, 129, 0.15),
+    var(--glass-card-shadow);
+}
 
 
 

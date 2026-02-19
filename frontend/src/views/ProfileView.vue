@@ -94,7 +94,7 @@ onMounted(() => {
 
         // Actually, easiest way is just to re-fetch wishes for current selected event if any
         if (selectedEventId.value) {
-             fetchWishes(selectedEventId.value)
+             fetchWishes(selectedEventId.value, user.value?.id)
         }
     })
 })
@@ -185,7 +185,7 @@ watch(selectedEventId, (newId) => {
     // Debounce fetch to avoid lag during rapid scanning
     if (fetchTimeout) clearTimeout(fetchTimeout)
     fetchTimeout = setTimeout(() => {
-      fetchWishes(newId)
+      fetchWishes(newId, user.value?.id)
     }, 300)
   }
 })
@@ -483,6 +483,7 @@ async function handleSubscribe() {
            :wishes="wishes"
            :loading="wishesLoading"
            :error="wishesError"
+           :is-owner="isOwner"
            @add="showAddWishModal = true"
            @click="onWishClick"
          />

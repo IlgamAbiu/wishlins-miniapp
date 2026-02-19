@@ -5,6 +5,7 @@ Handles all HTTP requests to the backend service.
 
 import logging
 from dataclasses import dataclass
+from datetime import date
 from typing import Optional
 
 import aiohttp
@@ -126,6 +127,38 @@ class BackendAPIClient:
                     is_new_user=data["is_new_user"],
                 )
 
+        except aiohttp.ClientError as e:
+            logger.error(f"Backend API connection error: {e}")
+            raise BackendAPIError(f"Connection error: {e}")
+
+    async def update_user_profile(
+        self,
+        telegram_id: int,
+        birth_date: date,
+    ) -> None:
+        """
+        Update user profile with birth_date.
+
+        Args:
+            telegram_id: Telegram user ID
+            birth_date: User's date of birth
+        """
+        session = await self._get_session()
+        url = f"{self._base_url}/api/v1/users/telegram/{telegram_id}/profile"
+
+        payload = {"birth_date": birth_date.isoformat()}
+
+        try:
+            async with session.patch(url, json=payload) as response:
+                if response.status != 200:
+                    text = await response.text()
+                    logger.error(
+                        f"Backend API error updating profile: {response.status} - {text}"
+                    )
+                    raise BackendAPIError(
+                        f"Profile update failed: {text}",
+                        status_code=response.status,
+                    )
         except aiohttp.ClientError as e:
             logger.error(f"Backend API connection error: {e}")
             raise BackendAPIError(f"Connection error: {e}")

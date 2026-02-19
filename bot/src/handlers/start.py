@@ -1,16 +1,19 @@
 """
 Start command handler.
-Handles /start command and user registration flow.
+Handles /start command and user registration flow with optional birth date collection.
 """
 
 import logging
+from datetime import datetime
 
 from aiogram import Router
-from aiogram.filters import Command, CommandStart
+from aiogram.filters import CommandStart
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message
 
 from src.api import BackendAPIClient
-from src.keyboards import get_main_keyboard
+from src.keyboards import get_main_keyboard, get_remove_keyboard, get_skip_keyboard
 
 logger = logging.getLogger(__name__)
 router = Router(name="start")
@@ -27,15 +30,19 @@ WELCOME_CTA_MESSAGE = """
 """.strip()
 
 
+class RegistrationStates(StatesGroup):
+    waiting_for_birth_date = State()
+
+
 @router.message(CommandStart())
-async def handle_start(message: Message, api_client: BackendAPIClient) -> None:
+async def handle_start(message: Message, state: FSMContext, api_client: BackendAPIClient) -> None:
     """
     Handle /start command.
 
     Flow:
     1. Extract user data from message
     2. Register/update user in backend
-    3. Send welcome message with Mini App button
+    3. Ask for birth date (optional)
     """
     user = message.from_user
     if not user:
@@ -75,13 +82,51 @@ async def handle_start(message: Message, api_client: BackendAPIClient) -> None:
     except Exception as e:
         logger.error(f"Failed to register user {telegram_id}: {e}")
         # Continue anyway - show welcome message even if registration fails
-        # User can be registered on next interaction
 
-    # Send welcome info message (without buttons)
-    await message.answer(text=WELCOME_INFO_MESSAGE)
+    # Save telegram_id for the next step and set FSM state
+    await state.set_data({"telegram_id": telegram_id})
+    await state.set_state(RegistrationStates.waiting_for_birth_date)
 
-    # Send CTA message with Mini App button
     await message.answer(
-        text=WELCOME_CTA_MESSAGE,
-        reply_markup=get_main_keyboard(),
+        "🎂 Когда твой день рождения?\n\n"
+        "Введи дату в формате ДД.ММ.ГГГГ\n"
+        "Например: 15.03.1995\n\n"
+        "Или нажми «Пропустить», если не хочешь указывать.",
+        reply_markup=get_skip_keyboard(),
     )
+
+
+@router.message(RegistrationStates.waiting_for_birth_date)
+async def handle_birth_date(message: Message, state: FSMContext, api_client: BackendAPIClient) -> None:
+    """
+    Handle birth date input after /start.
+    Accepts DD.MM.YYYY format or 'Пропустить'.
+    """
+    data = await state.get_data()
+    telegram_id = data.get("telegram_id")
+
+    text = (message.text or "").strip()
+
+    if text != "Пропустить":
+        try:
+            birth_date = datetime.strptime(text, "%d.%m.%Y").date()
+        except ValueError:
+            await message.answer(
+                "Не могу распознать дату 😔\n\n"
+                "Пожалуйста, введи в формате ДД.ММ.ГГГГ, например: 15.03.1995\n"
+                "Или нажми «Пропустить»."
+            )
+            return  # Stay in the same state, wait for correct input
+
+        if telegram_id:
+            try:
+                await api_client.update_user_profile(telegram_id=telegram_id, birth_date=birth_date)
+                logger.info(f"Birth date saved for user {telegram_id}: {birth_date}")
+            except Exception as e:
+                logger.error(f"Failed to save birth date for user {telegram_id}: {e}")
+
+    await state.clear()
+
+    # Send welcome messages with Mini App button
+    await message.answer(text=WELCOME_INFO_MESSAGE, reply_markup=get_remove_keyboard())
+    await message.answer(text=WELCOME_CTA_MESSAGE, reply_markup=get_main_keyboard())

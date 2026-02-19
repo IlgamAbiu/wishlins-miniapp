@@ -95,7 +95,7 @@ watch(searchQuery, () => {
 
 function handleAddFriend() {
     const message = encodeURIComponent('Присоединяйся ко мне в Wishlins и смотри мой вишлист! 🎁')
-    const url = encodeURIComponent('https://t.me/WishlinsBot/app')
+    const url = encodeURIComponent('https://t.me/my_123_wishlist_bot')
     webapp.value?.openTelegramLink(`https://t.me/share/url?url=${url}&text=${message}`)
 }
 

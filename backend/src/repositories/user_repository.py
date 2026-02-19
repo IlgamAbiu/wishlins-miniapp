@@ -131,7 +131,11 @@ class UserRepository:
         if user_id == friend_id:
             return False
             
-        stmt = select(UserModel).where(UserModel.id == user_id)
+        stmt = (
+            select(UserModel)
+            .where(UserModel.id == user_id)
+            .options(selectinload(UserModel.friends))
+        )
         result = await self._session.execute(stmt)
         user = result.scalar_one_or_none()
         
@@ -150,7 +154,11 @@ class UserRepository:
 
     async def remove_friend(self, user_id: UUID, friend_id: UUID) -> bool:
         """Unsubscribe from a user."""
-        stmt = select(UserModel).where(UserModel.id == user_id)
+        stmt = (
+            select(UserModel)
+            .where(UserModel.id == user_id)
+            .options(selectinload(UserModel.friends))
+        )
         result = await self._session.execute(stmt)
         user = result.scalar_one_or_none()
         

@@ -618,12 +618,32 @@ function pluralizeWishes(count: number): string {
   color: #94a3b8;
 }
 
+/* Back button specific style */
+.back-header-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b; /* Slate 500 */
+  background: rgba(255, 255, 255, 0.4);
+  margin-right: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.5); /* Explicit border match */
+}
+
+[data-theme='dark'] .back-header-btn {
+  color: #cbd5e1;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
 .edit-header-btn {
   margin-left: auto;
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  border: none; /* Reset if glass-btn has border that conflicts, though glass-btn usually has one */
+  border: 1px solid rgba(255, 255, 255, 0.5); /* Match template border */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -634,6 +654,7 @@ function pluralizeWishes(count: number): string {
 [data-theme='dark'] .edit-header-btn {
   color: #cbd5e1; /* slate-300 */
   background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* === CAROUSEL WRAPPER === */

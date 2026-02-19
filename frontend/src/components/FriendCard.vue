@@ -13,8 +13,16 @@ interface Props {
 
 const props = defineProps<Props>()
 
-// Mock wish count for now since it's not in the User entity yet
-const wishCount = computed(() => Math.floor(Math.random() * 20) + 1)
+const wishCount = computed(() => props.friend.wish_count ?? 0)
+
+function pluralizeWishes(count: number): string {
+  const cases = [2, 0, 1, 1, 1, 2]
+  const titles = ['желание', 'желания', 'желаний']
+  const index = (count % 100 > 4 && count % 100 < 20)
+    ? 2
+    : cases[Math.min(count % 10, 5)]
+  return `${count} ${titles[index]}`
+}
 
 const birthdayText = computed(() => {
   if (!props.friend.birth_date) return 'День рождения не указан'
@@ -72,7 +80,7 @@ const avatarInitial = computed(() => {
     
     <div class="friend-card__info">
       <h3 class="friend-card__name">{{ displayName }}</h3>
-      <p class="friend-card__wishes">{{ wishCount }} ЖЕЛАНИЙ</p>
+      <p class="friend-card__wishes">{{ pluralizeWishes(wishCount) }}</p>
       
       <div class="friend-card__next-event">
         <!-- Label removed as requested -->

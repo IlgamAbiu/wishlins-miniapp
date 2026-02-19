@@ -5,11 +5,12 @@ Wish repository implementation.
 from typing import List, Optional
 from uuid import UUID
 
-from sqlalchemy import select, delete
+from sqlalchemy import select, delete, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.domain.entities.wish import Wish
 from src.infrastructure.models.wish import WishModel
+from src.infrastructure.models.wishlist import WishlistModel
 
 
 class WishRepository:
@@ -64,6 +65,16 @@ class WishRepository:
         result = await self._session.execute(stmt)
         models = result.scalars().all()
         return [self._to_entity(model) for model in models]
+
+    async def count_by_user_id(self, user_id: UUID) -> int:
+        """Count all wishes belonging to a user across all their wishlists."""
+        stmt = (
+            select(func.count(WishModel.id))
+            .join(WishlistModel, WishModel.wishlist_id == WishlistModel.id)
+            .where(WishlistModel.user_id == user_id)
+        )
+        result = await self._session.execute(stmt)
+        return result.scalar_one() or 0
 
     async def update(self, wish: Wish) -> Wish:
         """Update an existing wish."""

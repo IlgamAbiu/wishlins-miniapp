@@ -47,6 +47,7 @@ class UserResponse(BaseModel):
     profile_text: Optional[str] = Field(None, description="User's profile text/status")
     birth_date: Optional[date] = Field(None, description="User's birth date")
     is_subscribed: bool = Field(False, description="Whether current user is subscribed to this user")
+    wish_count: int = Field(0, description="Total number of wishes across all wishlists")
     created_at: datetime = Field(..., description="Account creation timestamp")
     updated_at: datetime = Field(..., description="Last update timestamp")
 

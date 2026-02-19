@@ -6,6 +6,10 @@ import { ref } from 'vue'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
 
+// Global counter — incremented whenever the subscription list changes
+// FriendsView watches this to trigger a re-fetch of the friends list
+export const subscribeVersion = ref(0)
+
 export function useUser() {
   const loading = ref(false)
   const error = ref<string | null>(null)
@@ -86,6 +90,7 @@ export function useUser() {
         headers: { 'Content-Type': 'application/json' },
       })
       if (!response.ok) throw new Error('Failed to subscribe')
+      subscribeVersion.value++
       return true
     } catch (err) {
       console.error(err)
@@ -103,6 +108,7 @@ export function useUser() {
         headers: { 'Content-Type': 'application/json' },
       })
       if (!response.ok) throw new Error('Failed to unsubscribe')
+      subscribeVersion.value++
       return true
     } catch (err) {
       console.error(err)

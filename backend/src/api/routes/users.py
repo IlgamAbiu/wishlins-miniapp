@@ -3,7 +3,10 @@ User API routes.
 API layer handles only request/response orchestration.
 """
 
-from fastapi import APIRouter, HTTPException, status
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.dependencies import UserServiceDep
 from src.api.schemas import (
@@ -14,6 +17,8 @@ from src.api.schemas import (
     UserUpdateRequest,
 )
 from src.domain.entities import UserCreate, UserUpdate
+from src.infrastructure.database import get_session
+from src.repositories import WishRepository
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -124,6 +129,7 @@ async def get_user_by_telegram_id(
 async def get_friends(
     telegram_id: int,
     user_service: UserServiceDep,
+    session: Annotated[AsyncSession, Depends(get_session)],
 ) -> list[UserResponse]:
     """Get friends list."""
     current_user = await user_service.get_user_by_telegram_id(telegram_id)
@@ -134,23 +140,28 @@ async def get_friends(
         )
 
     friends = await user_service.get_friends(current_user.id)
-    
-    return [
-        UserResponse(
-            id=friend.id,
-            telegram_id=friend.telegram_id,
-            username=friend.username,
-            first_name=friend.first_name,
-            last_name=friend.last_name,
-            avatar_url=friend.avatar_url,
-            profile_text=friend.profile_text,
-            birth_date=friend.birth_date,
-            is_subscribed=True,  # They are in friends list, so subscribed
-            created_at=friend.created_at,
-            updated_at=friend.updated_at,
+    wish_repo = WishRepository(session)
+
+    result = []
+    for friend in friends:
+        wish_count = await wish_repo.count_by_user_id(friend.id)
+        result.append(
+            UserResponse(
+                id=friend.id,
+                telegram_id=friend.telegram_id,
+                username=friend.username,
+                first_name=friend.first_name,
+                last_name=friend.last_name,
+                avatar_url=friend.avatar_url,
+                profile_text=friend.profile_text,
+                birth_date=friend.birth_date,
+                is_subscribed=True,
+                wish_count=wish_count,
+                created_at=friend.created_at,
+                updated_at=friend.updated_at,
+            )
         )
-        for friend in friends
-    ]
+    return result
 
 
 @router.post(

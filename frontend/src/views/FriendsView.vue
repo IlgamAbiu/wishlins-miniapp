@@ -11,6 +11,7 @@ import type { User } from '@/types'
 import { userService } from '@/services/user.service'
 import { navigationStore } from '@/stores/navigation.store'
 import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
+import { subscribeVersion } from '@/composables/useUser'
 
 // Async helper for ProfileView (circular dep potential if static import, but AsyncComponent handles it well)
 const ProfileView = defineAsyncComponent(() => import('@/views/ProfileView.vue'))
@@ -126,6 +127,11 @@ function handleBackgroundClick(event: Event) {
 }
 
 onMounted(() => {
+  fetchFriends()
+})
+
+// Re-fetch friends list whenever a subscription changes (subscribe/unsubscribe from ProfileView)
+watch(subscribeVersion, () => {
   fetchFriends()
 })
 </script>

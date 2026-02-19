@@ -111,6 +111,7 @@ export interface User {
   profile_text: string | null
   birth_date: string | null
   is_subscribed?: boolean
+  wish_count?: number
   created_at: string
   updated_at: string
 }

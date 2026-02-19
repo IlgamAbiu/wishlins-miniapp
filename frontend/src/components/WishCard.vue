@@ -307,10 +307,11 @@ const bookingState = computed<'owner' | 'free' | 'booked-other' | 'booked-me'>((
   gap: 5px;
   padding: 5px 10px;
   border-radius: 9999px;
-  background: rgba(16, 185, 129, 0.2);
-  border: 1px solid rgba(16, 185, 129, 0.5);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(10, 10, 20, 0.65);
+  border: 1px solid rgba(16, 185, 129, 0.6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(16, 185, 129, 0.2);
 }
 
 .gifter-icon {
@@ -323,11 +324,13 @@ const bookingState = computed<'owner' | 'free' | 'booked-other' | 'booked-me'>((
   font-weight: 700;
   color: rgba(16, 185, 129, 1);
   letter-spacing: 0.04em;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
 [data-theme='light'] .gifter-badge {
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid rgba(16, 185, 129, 0.4);
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(16, 185, 129, 0.5);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(16, 185, 129, 0.15);
 }
 
 [data-theme='light'] .state-booked-me {

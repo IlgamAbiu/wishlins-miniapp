@@ -152,15 +152,8 @@ export function useTelegramWebApp() {
       if (theme.hint_color) {
         document.documentElement.style.setProperty('--tg-hint-color', theme.hint_color)
       }
-      if (theme.link_color) {
-        document.documentElement.style.setProperty('--tg-link-color', theme.link_color)
-      }
-      if (theme.button_color) {
-        document.documentElement.style.setProperty('--tg-button-color', theme.button_color)
-      }
-      if (theme.button_text_color) {
-        document.documentElement.style.setProperty('--tg-button-text-color', theme.button_text_color)
-      }
+      // Note: button_color, button_text_color, and link_color are intentionally
+      // not applied from Telegram theme — app uses its own brand color palette.
       if (theme.secondary_bg_color) {
         document.documentElement.style.setProperty('--tg-secondary-bg-color', theme.secondary_bg_color)
       }

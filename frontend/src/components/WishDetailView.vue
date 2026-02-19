@@ -989,9 +989,10 @@ async function handleDeleteWish(id: string) {
 }
 .icon-btn .material-symbols-outlined { color: rgba(255, 255, 255, 0.9); }
 [data-theme='light'] .icon-btn .material-symbols-outlined { color: #333; }
-[data-theme='light'] .glass-btn { 
-    background: rgba(0,0,0,0.05); 
-    border: 1px solid rgba(0,0,0,0.1); 
+[data-theme='light'] .back-btn .icon { color: #333; }
+[data-theme='light'] .glass-btn {
+    background: rgba(0,0,0,0.05);
+    border: 1px solid rgba(0,0,0,0.1);
     color: #333;
 }
 

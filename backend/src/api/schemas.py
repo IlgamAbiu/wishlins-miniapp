@@ -46,6 +46,7 @@ class UserResponse(BaseModel):
     avatar_url: Optional[str] = Field(None, description="User's avatar URL")
     profile_text: Optional[str] = Field(None, description="User's profile text/status")
     birth_date: Optional[date] = Field(None, description="User's birth date")
+    is_subscribed: bool = Field(False, description="Whether current user is subscribed to this user")
     created_at: datetime = Field(..., description="Account creation timestamp")
     updated_at: datetime = Field(..., description="Last update timestamp")
 
@@ -60,6 +61,7 @@ class UserResponse(BaseModel):
                 "last_name": "Doe",
                 "avatar_url": None,
                 "birth_date": "1990-01-01",
+                "is_subscribed": True,
                 "created_at": "2024-01-15T10:30:00Z",
                 "updated_at": "2024-01-15T10:30:00Z",
             }

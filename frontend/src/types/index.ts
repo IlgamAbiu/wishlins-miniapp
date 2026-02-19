@@ -109,6 +109,7 @@ export interface User {
   avatar_url: string | null
   profile_text: string | null
   birth_date: string | null
+  is_subscribed?: boolean
   created_at: string
   updated_at: string
 }

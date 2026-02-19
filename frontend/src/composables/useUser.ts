@@ -44,12 +44,16 @@ export function useUser() {
   /**
    * Get user by telegram ID
    */
-  async function getUserByTelegramId(telegramId: number): Promise<any | null> {
+  async function getUserByTelegramId(telegramId: number, currentUserId?: number): Promise<any | null> {
     loading.value = true
     error.value = null
 
     try {
-      const response = await fetch(`${API_BASE_URL}/users/telegram/${telegramId}`, {
+      const url = currentUserId
+        ? `${API_BASE_URL}/users/telegram/${telegramId}?current_user_id=${currentUserId}`
+        : `${API_BASE_URL}/users/telegram/${telegramId}`
+
+      const response = await fetch(url, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -74,10 +78,46 @@ export function useUser() {
     }
   }
 
+  async function subscribe(currentUserId: number, targetId: number): Promise<boolean> {
+    loading.value = true
+    try {
+      const response = await fetch(`${API_BASE_URL}/users/${targetId}/subscribe?current_user_id=${currentUserId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      })
+      if (!response.ok) throw new Error('Failed to subscribe')
+      return true
+    } catch (err) {
+      console.error(err)
+      return false
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function unsubscribe(currentUserId: number, targetId: number): Promise<boolean> {
+    loading.value = true
+    try {
+      const response = await fetch(`${API_BASE_URL}/users/${targetId}/subscribe?current_user_id=${currentUserId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+      })
+      if (!response.ok) throw new Error('Failed to unsubscribe')
+      return true
+    } catch (err) {
+      console.error(err)
+      return false
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     loading,
     error,
     updateProfileText,
     getUserByTelegramId,
+    subscribe,
+    unsubscribe
   }
 }

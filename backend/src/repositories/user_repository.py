@@ -7,6 +7,7 @@ from typing import Optional
 from uuid import UUID
 
 from sqlalchemy import select, update
+from sqlalchemy.orm import selectall
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.domain.entities import User, UserCreate, UserUpdate
@@ -108,12 +109,94 @@ class UserRepository:
         model = result.scalar_one_or_none()
         return self._to_entity(model) if model else None
 
-    async def get_all(self, exclude_user_id: Optional[UUID] = None) -> list[User]:
-        """Get all users."""
+    async def get_friends(self, user_id: UUID) -> list[User]:
+        """
+        Get subscribed friends list.
+        """
+        stmt = (
+            select(UserModel)
+            .where(UserModel.id == user_id)
+            .options(selectall(UserModel.friends))
+        )
+        result = await self._session.execute(stmt)
+        user = result.scalar_one_or_none()
+        
+        if not user:
+            return []
+            
+        return [self._to_entity(friend) for friend in user.friends]
+
+    async def add_friend(self, user_id: UUID, friend_id: UUID) -> bool:
+        """Subscribe to a user."""
+        if user_id == friend_id:
+            return False
+            
+        stmt = select(UserModel).where(UserModel.id == user_id)
+        result = await self._session.execute(stmt)
+        user = result.scalar_one_or_none()
+        
+        friend_stmt = select(UserModel).where(UserModel.id == friend_id)
+        friend_result = await self._session.execute(friend_stmt)
+        friend = friend_result.scalar_one_or_none()
+        
+        if not user or not friend:
+            return False
+            
+        if friend not in user.friends:
+            user.friends.append(friend)
+            await self._session.flush()
+            return True
+        return False
+
+    async def remove_friend(self, user_id: UUID, friend_id: UUID) -> bool:
+        """Unsubscribe from a user."""
+        stmt = select(UserModel).where(UserModel.id == user_id)
+        result = await self._session.execute(stmt)
+        user = result.scalar_one_or_none()
+        
+        friend_stmt = select(UserModel).where(UserModel.id == friend_id)
+        friend_result = await self._session.execute(friend_stmt)
+        friend = friend_result.scalar_one_or_none()
+        
+        if not user or not friend:
+            return False
+            
+        if friend in user.friends:
+            user.friends.remove(friend)
+            await self._session.flush()
+            return True
+        return False
+
+    async def is_friend(self, user_id: UUID, friend_id: UUID) -> bool:
+        """Check if user is subscribed to friend."""
+        stmt = (
+            select(UserModel)
+            .where(UserModel.id == user_id)
+            .options(selectall(UserModel.friends))
+        )
+        result = await self._session.execute(stmt)
+        user = result.scalar_one_or_none()
+        
+        if not user:
+            return False
+            
+        return any(f.id == friend_id for f in user.friends)
+
+    async def search_users(self, query: str, exclude_user_id: Optional[UUID] = None) -> list[User]:
+        """Search users by username or name."""
         stmt = select(UserModel)
+        
         if exclude_user_id:
             stmt = stmt.where(UserModel.id != exclude_user_id)
             
+        # Case insensitive search
+        search_filter = (
+            UserModel.username.ilike(f"%{query}%") |
+            UserModel.first_name.ilike(f"%{query}%") |
+            UserModel.last_name.ilike(f"%{query}%")
+        )
+        stmt = stmt.where(search_filter)
+        
         result = await self._session.execute(stmt)
         models = result.scalars().all()
         return [self._to_entity(model) for model in models]

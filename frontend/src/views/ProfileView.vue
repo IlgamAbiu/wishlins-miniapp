@@ -135,6 +135,8 @@ async function initData() {
       // Load user profile data including profile_text
       // Pass current user ID to check subscription status
       const currentUserTelegramId = user.value?.id
+      console.log('initData: checking subscription for', userId, 'by', currentUserTelegramId)
+      
       const userData = await getUserByTelegramId(userId, currentUserTelegramId)
       
       if (userData) {
@@ -143,6 +145,7 @@ async function initData() {
           profileText.value = userData.profile_text
         }
         // Set subscription status
+        console.log('initData: is_subscribed from backend:', userData.is_subscribed)
         isSubscribed.value = !!userData.is_subscribed
       }
 
@@ -412,7 +415,6 @@ async function handleSubscribe() {
             <span v-if="isSubscriptionLoading" class="material-symbols-outlined spin">progress_activity</span>
             <template v-else>
                 <span class="material-symbols-outlined text-[20px]">{{ isSubscribed ? 'check' : 'person_add' }}</span>
-                <span class="subscribe-text">{{ isSubscribed ? 'Вы подписаны' : 'Подписаться' }}</span>
             </template>
           </button>
 
@@ -705,8 +707,9 @@ async function handleSubscribe() {
 /* Subscribe Button (Liquid Glass) */
 .subscribe-btn {
   margin-left: auto;
+  width: 44px; /* Fixed width for circle */
   height: 44px;
-  border-radius: 22px; /* Pill shape */
+  border-radius: 50%; /* Circle shape */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -718,14 +721,8 @@ async function handleSubscribe() {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(10, 13, 194, 0.15);
-  padding: 0 20px; /* Increased padding */
-  gap: 8px; /* Space between icon and text */
-}
-
-.subscribe-text {
-    font-weight: 600;
-    font-size: 15px;
-    white-space: nowrap;
+  /* padding removed */
+  /* gap removed */
 }
 
 .subscribe-btn:active {

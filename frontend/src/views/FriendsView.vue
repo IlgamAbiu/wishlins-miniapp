@@ -258,6 +258,16 @@ onMounted(() => {
   transition: all 0.2s ease;
 }
 
+[data-theme='dark'] .search-bar {
+  background: rgba(30, 41, 59, 0.5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+[data-theme='dark'] .search-bar:focus-within {
+  background: rgba(30, 41, 59, 0.7);
+}
+
 .search-bar:focus-within {
   border-color: var(--tg-button-color);
   background: var(--tg-bg-color);

@@ -160,6 +160,10 @@ const avatarInitial = computed(() => {
   gap: 2px;
 }
 
+[data-theme='dark'] .friend-card__next-event {
+  background: rgba(51, 65, 85, 0.6);
+}
+
 /* Removed friend-card__event-label styles */
 
 .friend-card__event-date {

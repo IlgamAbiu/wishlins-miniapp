@@ -167,7 +167,7 @@ function getDaysUntilEvent(eventDate: string | null): string | null {
 }
 
 [data-theme='dark'] .event-pill--active {
-  color: var(--tg-button-color);
+  color: #f8fafc;
   font-weight: 600;
 }
 
@@ -188,7 +188,7 @@ function getDaysUntilEvent(eventDate: string | null): string | null {
 }
 
 [data-theme='dark'] .pill-date-overlay {
-  color: var(--tg-button-color);
+  color: #4f46e5;
 }
 
 /* === ADD BUTTON === */
@@ -207,7 +207,7 @@ function getDaysUntilEvent(eventDate: string | null): string | null {
 }
 
 [data-theme='dark'] .event-add-btn {
-  color: var(--tg-button-color);
+  color: #94a3b8;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
 }
 

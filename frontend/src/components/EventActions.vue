@@ -23,28 +23,25 @@ const isDefault = computed(() => props.event.is_default)
 <template>
   <div class="event-actions">
     <!-- Edit Button (Always visible) -->
-    <button class="action-btn" @click="$emit('edit')" :disabled="isDefault">
-      <div class="icon-wrap">
-        <span class="material-symbols-outlined">edit</span>
-      </div>
-    </button>
-
-    <!-- Delete Button (Only if not default) -->
-    <button
-      v-if="!isDefault && canDelete"
-      class="action-btn"
-      @click="$emit('delete')"
-    >
-      <div class="icon-wrap">
-        <span class="material-symbols-outlined">delete</span>
-      </div>
+    <button class="action-btn edit-btn" @click="$emit('edit')" :disabled="isDefault">
+      <div class="icon">✏️</div>
+      <span class="label">Изменить</span>
     </button>
 
     <!-- Share Button -->
-    <button class="action-btn" @click="$emit('share')">
-      <div class="icon-wrap">
-        <span class="material-symbols-outlined">ios_share</span>
-      </div>
+    <button class="action-btn share-btn" @click="$emit('share')">
+      <div class="icon">📤</div>
+      <span class="label">Поделиться</span>
+    </button>
+
+    <!-- Delete Button (Only if not default) -->
+    <button 
+      v-if="!isDefault && canDelete" 
+      class="action-btn delete-btn" 
+      @click="$emit('delete')"
+    >
+      <div class="icon">🗑️</div>
+      <span class="label">Удалить</span>
     </button>
   </div>
 </template>
@@ -52,14 +49,20 @@ const isDefault = computed(() => props.event.is_default)
 <style scoped>
 .event-actions {
   display: flex;
-  gap: 10px;
+  justify-content: center;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+  padding: 0 var(--spacing-lg);
 }
 
 .action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0;
   transition: opacity var(--transition-normal);
 }
 
@@ -72,26 +75,45 @@ const isDefault = computed(() => props.event.is_default)
   cursor: not-allowed;
 }
 
-.icon-wrap {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: var(--glass-btn-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+.icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  /* Glass Icon Background */
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  font-size: 20px;
+  transition: all var(--transition-normal);
 }
 
-.icon-wrap .material-symbols-outlined {
-  font-size: 18px;
-  color: var(--tg-text-color);
+.edit-btn .icon {
+  color: var(--tg-button-color);
 }
 
-.action-btn:active .icon-wrap {
-  transform: scale(0.95);
+.share-btn .icon {
+  color: var(--color-success);
+}
+
+.delete-btn .icon {
+  color: var(--color-error);
+}
+
+.action-btn:active .icon {
+  transform: scale(0.9);
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.label {
+  font-size: var(--font-size-caption);
+  color: var(--tg-hint-color); /* Hint color might need adjustment on Aurora */
+  font-weight: 500;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5); /* Improve readability */
 }
 </style>

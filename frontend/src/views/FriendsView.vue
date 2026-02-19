@@ -195,26 +195,16 @@ onMounted(() => {
 }
 
 .friends-view__title {
-  font-size: 34px;
+  font-size: 34px; /* Design seems larger */
   font-weight: 700;
   margin: 0;
+  color: var(--tg-text-color);
   line-height: 1.1;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-[data-theme='dark'] .friends-view__title {
-  background: linear-gradient(135deg, #a8b5ff 0%, #c4a4ff 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 .friends-view__subtitle {
   font-size: 15px;
-  color: var(--tg-hint-color);
+  color: var(--tg-subtitle-text-color);
   margin: 0;
   font-weight: 400;
 }

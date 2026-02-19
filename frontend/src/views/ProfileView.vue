@@ -719,9 +719,9 @@ function pluralizeWishes(count: number): string {
 }
 
 .action-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -730,7 +730,7 @@ function pluralizeWishes(count: number): string {
 }
 
 [data-theme='dark'] .action-btn {
-  color: var(--tg-text-color);
+  color: rgba(248, 250, 252, 0.7);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
 }
 

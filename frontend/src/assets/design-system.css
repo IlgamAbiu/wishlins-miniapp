@@ -116,18 +116,21 @@
   /* === DEEP DARK THEME (from new.txt) === */
 
   /* Background Colors */
-  --tg-bg-color: #101022;
-  --tg-secondary-bg-color: #1a1a35;
+  --tg-bg-color: #0f172a;
+  /* Slate 900 */
+  --tg-secondary-bg-color: #1e293b;
+  /* Slate 800 */
   --tg-text-color: #f1f5f9;
   --tg-hint-color: #94a3b8;
   --tg-subtitle-text-color: #cbd5e1;
 
-  /* Primary Color */
-  --tg-button-color: #0a0dc2;
+  /* Primary Color - Indigo */
+  --tg-button-color: #6366f1;
+  /* Lighter Indigo for Dark Mode */
   --tg-button-text-color: #FFFFFF;
-  --tg-accent-text-color: #4f6bff;
-  --tg-link-color: #4f6bff;
-  --tg-button-color-rgb: 10, 13, 194;
+  --tg-accent-text-color: #818cf8;
+  --tg-link-color: #818cf8;
+  --tg-button-color-rgb: 99, 102, 241;
 
   /* Header & Sections */
   --tg-header-bg-color: #0f172a;
@@ -141,9 +144,12 @@
   --tg-destructive-text-color: #f87171;
 
   /* Radial Gradient Background */
-  --aurora-bg-1: #12124a;
-  --aurora-bg-2: #101022;
-  --aurora-bg-3: #0a0a1a;
+  --aurora-bg-1: #1e1b4b;
+  /* Indigo 950 */
+  --aurora-bg-2: #0f172a;
+  /* Slate 900 */
+  --aurora-bg-3: #020617;
+  /* Slate 950 */
 
   /* Status Colors */
   --color-error: #f87171;

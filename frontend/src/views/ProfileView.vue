@@ -115,6 +115,11 @@ function handleGoBack() {
     navigationStore.closeFriendProfile()
 }
 
+function closeApp() {
+    if (window.Telegram?.WebApp) {
+        window.Telegram.WebApp.close()
+    }
+}
 
 
 // Event limit constant
@@ -374,16 +379,28 @@ async function handleSubscribe() {
     <div v-else class="content">
       <!-- Header with glass-panel -->
       <header class="header-section">
-        <!-- Back Button for Stack Mode (Guest View) -->
-        <div v-if="isStackMode" class="back-button-container" @click="handleGoBack">
-            <button class="glass-btn back-header-btn">
+        <!-- Top Action Button (Back or Close) -->
+        <div class="top-action-container">
+            <button 
+              v-if="isStackMode" 
+              class="glass-btn action-header-btn" 
+              @click="handleGoBack"
+              aria-label="Назад"
+            >
                 <span class="material-symbols-outlined text-[20px]">arrow_back</span>
+            </button>
+            <button 
+              v-else 
+              class="glass-btn action-header-btn" 
+              @click="closeApp"
+              aria-label="Закрыть"
+            >
+                <span class="material-symbols-outlined text-[20px]">close</span>
             </button>
         </div>
 
         <div 
           class="glass-panel header-panel" 
-          :class="{ 'header-with-back-btn': isStackMode }"
           @click="isOwner && handleEditProfile()"
         >
           <div class="avatar-wrapper">
@@ -570,14 +587,11 @@ async function handleSubscribe() {
   gap: 16px;
   cursor: pointer;
   transition: all 0.2s ease;
+  margin-top: 60px; /* Offset to prevent overlap with top action button */
 }
 
 .header-panel:active {
   transform: scale(0.98);
-}
-
-.header-with-back-btn {
-  margin-top: 60px; /* Increased from 40px to prevent overlap with 48px button + offset */
 }
 
 
@@ -666,8 +680,15 @@ async function handleSubscribe() {
   color: #94a3b8;
 }
 
-/* Back button specific style */
-.back-header-btn {
+/* Top action button (Back / Close) specific style */
+.top-action-container {
+    position: absolute;
+    left: 20px;
+    top: calc(20px + var(--safe-area-top));
+    z-index: 20;
+}
+
+.action-header-btn {
   width: 44px;
   height: 44px;
   border-radius: 50%;
@@ -676,14 +697,27 @@ async function handleSubscribe() {
   justify-content: center;
   color: #64748b; /* Slate 500 */
   background: rgba(255, 255, 255, 0.4);
-  margin-right: 12px;
   border: 1px solid rgba(255, 255, 255, 0.5); /* Explicit border match */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* Subtle shadow for floating look */
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-[data-theme='dark'] .back-header-btn {
+.action-header-btn:active {
+  transform: scale(0.95);
+  background: rgba(255, 255, 255, 0.5);
+}
+
+[data-theme='dark'] .action-header-btn {
   color: #cbd5e1;
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme='dark'] .action-header-btn:active {
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .edit-header-btn {
@@ -922,42 +956,5 @@ async function handleSubscribe() {
   opacity: 0;
 }
 
-.back-button-container {
-    position: absolute;
-    left: 20px;
-    top: calc(20px + var(--safe-area-top));
-    z-index: 20;
-}
-
-.back-header-btn {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.9);
-    
-    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.back-header-btn:active {
-    background: rgba(255, 255, 255, 0.15);
-    transform: scale(0.98);
-}
-
-[data-theme='light'] .back-header-btn {
-    background: rgba(0, 0, 0, 0.05);
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    color: #333;
-    box-shadow: none;
-}
 
 </style>

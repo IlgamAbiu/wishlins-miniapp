@@ -56,6 +56,13 @@ interface TelegramWebApp {
     onClick(callback: () => void): void
     offClick(callback: () => void): void
   }
+  CloseButton: {
+    isVisible: boolean
+    show(): void
+    hide(): void
+    onClick(callback: () => void): void
+    offClick(callback: () => void): void
+  }
   MainButton: {
     text: string
     color: string
@@ -142,6 +149,11 @@ export function useTelegramWebApp() {
 
       // Disable vertical swipe-to-close gesture (Bot API 7.7+)
       webapp.value.disableVerticalSwipes()
+
+      // Hide native close button to use custom UI (Bot API 7.9+)
+      if (webapp.value.CloseButton) {
+        webapp.value.CloseButton.hide()
+      }
 
       // Set theme attribute on html element based on Telegram's colorScheme
       const colorScheme = webapp.value.colorScheme

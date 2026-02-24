@@ -2,10 +2,18 @@
 /**
  * SearchView - Search tab placeholder.
  */
+function closeApp() {
+    if (window.Telegram?.WebApp) {
+        window.Telegram.WebApp.close()
+    }
+}
 </script>
 
 <template>
   <div class="search-view">
+    <button class="close-btn action-btn" @click="closeApp" aria-label="Закрыть">
+      <span class="material-symbols-outlined action-icon">close</span>
+    </button>
     <div class="placeholder">
       <div class="placeholder__icon-wrapper">
         <div class="placeholder__icon">🔍</div>
@@ -25,6 +33,40 @@
   justify-content: center;
   padding: calc(var(--spacing-lg) + var(--safe-area-top)) var(--spacing-lg) var(--spacing-lg);
   position: relative;
+}
+
+.close-btn {
+  position: absolute;
+  top: calc(20px + var(--safe-area-top));
+  right: 20px;
+  z-index: 10;
+}
+
+.action-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-btn-bg);
+  color: var(--tg-text-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.action-btn:active {
+  background: var(--glass-border);
+  transform: scale(0.95);
+}
+
+.action-icon {
+  font-size: 22px;
+  line-height: 1;
 }
 
 .placeholder {

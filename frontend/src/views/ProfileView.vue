@@ -557,7 +557,7 @@ async function handleSubscribe() {
 
 /* === HEADER SECTION === */
 .header-section {
-  padding: 20px 20px 0;
+  padding: calc(20px + var(--safe-area-top)) 20px 0;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -925,7 +925,7 @@ async function handleSubscribe() {
 .back-button-container {
     position: absolute;
     left: 20px;
-    top: 20px;
+    top: calc(20px + var(--safe-area-top));
     z-index: 20;
 }
 

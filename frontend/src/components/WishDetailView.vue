@@ -880,7 +880,7 @@ async function handleDeleteWish(id: string) {
     display: flex;
     align-items: flex-end; /* Buttons sit at bottom */
     gap: 16px;
-    padding: 0 24px 32px 24px; /* Side padding and bottom clearance */
+    padding: 0 24px calc(32px + var(--safe-area-bottom)) 24px; /* Side padding and bottom clearance with safe area */
     box-sizing: border-box;
     
     /* Pass through clicks */

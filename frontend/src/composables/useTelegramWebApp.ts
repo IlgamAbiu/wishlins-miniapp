@@ -80,6 +80,8 @@ interface TelegramWebApp {
   }
   ready(): void
   expand(): void
+  requestFullscreen(): void
+  exitFullscreen(): void
   close(): void
   sendData(data: string): void
   openLink(url: string, options?: { try_instant_view?: boolean }): void
@@ -97,6 +99,8 @@ interface TelegramWebApp {
   showConfirm(message: string, callback?: (confirmed: boolean) => void): void
   showScanQrPopup(params: { text?: string }, callback?: (data: string) => boolean | void): void
   closeScanQrPopup(): void
+  disableVerticalSwipes(): void
+  enableVerticalSwipes(): void
 }
 
 export function useTelegramWebApp() {
@@ -132,8 +136,12 @@ export function useTelegramWebApp() {
       // Tell Telegram that the app is ready
       webapp.value.ready()
 
-      // Expand the Mini App to full height
+      // Expand and request full screen (Bot API 8.0+)
       webapp.value.expand()
+      webapp.value.requestFullscreen()
+
+      // Disable vertical swipe-to-close gesture (Bot API 7.7+)
+      webapp.value.disableVerticalSwipes()
 
       // Set theme attribute on html element based on Telegram's colorScheme
       const colorScheme = webapp.value.colorScheme

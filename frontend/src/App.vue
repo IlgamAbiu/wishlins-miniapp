@@ -76,6 +76,12 @@ const currentComponent = computed(() => tabComponents[activeTab.value])
 :root {
   /* Tab bar height */
   --tab-bar-height: 56px;
+
+  /* Safe area insets for fullscreen Telegram Mini App */
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-left: env(safe-area-inset-left, 0px);
+  --safe-area-right: env(safe-area-inset-right, 0px);
 }
 
 html, body {

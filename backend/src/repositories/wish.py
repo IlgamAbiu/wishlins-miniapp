@@ -5,11 +5,12 @@ Wish repository implementation.
 from typing import List, Optional
 from uuid import UUID
 
-from sqlalchemy import select, delete
+from sqlalchemy import select, delete, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.domain.entities.wish import Wish
 from src.infrastructure.models.wish import WishModel
+from src.infrastructure.models.wishlist import WishlistModel
 
 
 class WishRepository:
@@ -31,6 +32,7 @@ class WishRepository:
             price=wish.price,
             currency=wish.currency,
             is_booked=wish.is_booked,
+            booked_by_user_id=wish.booked_by_user_id,
             priority=wish.priority,
             created_at=wish.created_at,
             updated_at=wish.updated_at,
@@ -64,6 +66,16 @@ class WishRepository:
         models = result.scalars().all()
         return [self._to_entity(model) for model in models]
 
+    async def count_by_user_id(self, user_id: UUID) -> int:
+        """Count all wishes belonging to a user across all their wishlists."""
+        stmt = (
+            select(func.count(WishModel.id))
+            .join(WishlistModel, WishModel.wishlist_id == WishlistModel.id)
+            .where(WishlistModel.user_id == user_id)
+        )
+        result = await self._session.execute(stmt)
+        return result.scalar_one() or 0
+
     async def update(self, wish: Wish) -> Wish:
         """Update an existing wish."""
         stmt = select(WishModel).where(WishModel.id == wish.id)
@@ -82,6 +94,7 @@ class WishRepository:
         model.price = wish.price
         model.currency = wish.currency
         model.is_booked = wish.is_booked
+        model.booked_by_user_id = wish.booked_by_user_id
         model.priority = wish.priority
         model.updated_at = wish.updated_at
 
@@ -114,6 +127,7 @@ class WishRepository:
             price=model.price,
             currency=model.currency,
             is_booked=model.is_booked,
+            booked_by_user_id=model.booked_by_user_id,
             priority=model.priority,
             created_at=model.created_at,
             updated_at=model.updated_at,

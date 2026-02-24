@@ -37,10 +37,11 @@ class UserService:
 
     async def get_friends(self, user_id: UUID) -> list[User]:
         """
-        Get friends list.
-        Currently returns all other users sorted by next birthday.
+        Get subscribed friends list.
+        Currently returns friends sorted by next birthday.
         """
-        users = await self._repository.get_all(exclude_user_id=user_id)
+        # Get only subscribed friends
+        users = await self._repository.get_friends(user_id)
         
         # Sort by upcoming birthday
         from datetime import datetime, date
@@ -67,6 +68,22 @@ class UserService:
             return (next_bday - today).days
 
         return sorted(users, key=lambda u: days_until_birthday(u.birth_date))
+
+    async def subscribe(self, user_id: UUID, target_id: UUID) -> bool:
+        """Subscribe to a user."""
+        return await self._repository.add_friend(user_id, target_id)
+
+    async def unsubscribe(self, user_id: UUID, target_id: UUID) -> bool:
+        """Unsubscribe from a user."""
+        return await self._repository.remove_friend(user_id, target_id)
+
+    async def is_subscribed(self, user_id: UUID, target_id: UUID) -> bool:
+        """Check subscription status."""
+        return await self._repository.is_friend(user_id, target_id)
+
+    async def search_users(self, query: str, current_user_id: Optional[UUID] = None) -> list[User]:
+        """Search users (excluding current user)."""
+        return await self._repository.search_users(query, exclude_user_id=current_user_id)
 
     async def register_or_update_user(self, data: UserCreate) -> tuple[User, bool]:
         """

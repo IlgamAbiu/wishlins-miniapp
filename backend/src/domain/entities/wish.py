@@ -29,6 +29,7 @@ class Wish:
     price: Optional[float]
     currency: Optional[str]
     is_booked: bool
+    booked_by_user_id: Optional[UUID]
     priority: WishPriority
     created_at: datetime
     updated_at: datetime
@@ -46,6 +47,7 @@ class Wish:
             "price": self.price,
             "currency": self.currency,
             "is_booked": self.is_booked,
+            "booked_by_user_id": str(self.booked_by_user_id) if self.booked_by_user_id else None,
             "priority": self.priority.value,
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
@@ -87,3 +89,4 @@ class WishUpdate:
     currency: Optional[str] = None
     is_booked: Optional[bool] = None
     priority: Optional[WishPriority] = None
+    booked_by_user_id: Optional[UUID] = None

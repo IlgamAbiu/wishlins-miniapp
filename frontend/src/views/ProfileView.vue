@@ -23,7 +23,7 @@ const props = defineProps<{
 const { isInTelegram, user, userDisplayName } = useTelegramWebApp()
 const { wishlists, fetchWishlists, createWishlist, updateWishlist, deleteWishlist } = useWishlists()
 const { wishes, loading: wishesLoading, error: wishesError, fetchWishes, createWish, moveWishesToWishlist, openWish, onWishUpdate } = useWishes()
-const { updateProfileText, getUserByTelegramId } = useUser()
+const { updateProfileText, getUserByTelegramId, subscribe, unsubscribe } = useUser()
 
 const selectedEventId = ref<string | null>(null)
 // ... modal state refs ...
@@ -35,6 +35,8 @@ const showEventLimitModal = ref(false)
 const editingEvent = ref<any>(null)
 const eventToDelete = ref<any>(null)
 const profileText = ref('Saving for a dream ✨')
+const isSubscribed = ref(false)
+const isSubscriptionLoading = ref(false)
 
 // Guest Mode Logic
 const targetUserId = computed(() => {
@@ -92,7 +94,7 @@ onMounted(() => {
 
         // Actually, easiest way is just to re-fetch wishes for current selected event if any
         if (selectedEventId.value) {
-             fetchWishes(selectedEventId.value)
+             fetchWishes(selectedEventId.value, user.value?.id)
         }
     })
 })
@@ -131,12 +133,20 @@ async function initData() {
     isLoading.value = true
     try {
       // Load user profile data including profile_text
-      const userData = await getUserByTelegramId(userId)
+      // Pass current user ID to check subscription status
+      const currentUserTelegramId = user.value?.id
+      console.log('initData: checking subscription for', userId, 'by', currentUserTelegramId)
+      
+      const userData = await getUserByTelegramId(userId, currentUserTelegramId)
+      
       if (userData) {
         currentProfileUser.value = userData
         if (userData.profile_text) {
           profileText.value = userData.profile_text
         }
+        // Set subscription status
+        console.log('initData: is_subscribed from backend:', userData.is_subscribed)
+        isSubscribed.value = !!userData.is_subscribed
       }
 
       await fetchWishlists(userId)
@@ -175,7 +185,7 @@ watch(selectedEventId, (newId) => {
     // Debounce fetch to avoid lag during rapid scanning
     if (fetchTimeout) clearTimeout(fetchTimeout)
     fetchTimeout = setTimeout(() => {
-      fetchWishes(newId)
+      fetchWishes(newId, user.value?.id)
     }, 300)
   }
 })
@@ -329,6 +339,29 @@ function pluralizeWishes(count: number): string {
     : cases[Math.min(count % 10, 5)]
   return `${count} ${titles[index]}`
 }
+
+async function handleSubscribe() {
+    if (!user.value || !targetUserId.value || isSubscriptionLoading.value) return
+    
+    isSubscriptionLoading.value = true
+    try {
+        if (isSubscribed.value) {
+            // Unsubscribe
+            const success = await unsubscribe(user.value.id, targetUserId.value)
+            if (success) isSubscribed.value = false
+        } else {
+            // Subscribe
+            const success = await subscribe(user.value.id, targetUserId.value)
+            if (success) isSubscribed.value = true
+        }
+        // Trigger haptic feedback
+        if (window.Telegram?.WebApp?.HapticFeedback) {
+            window.Telegram.WebApp.HapticFeedback.impactOccurred('medium')
+        }
+    } finally {
+        isSubscriptionLoading.value = false
+    }
+}
 </script>
 
 <template>
@@ -371,6 +404,20 @@ function pluralizeWishes(count: number): string {
               <p class="user-subtitle">{{ profileText }}</p>
             </template>
           </div>
+          
+           <!-- Subscribe Button (Liquid Glass) -->
+          <button 
+            v-if="!isOwner && !isLoading" 
+            class="subscribe-btn"
+            :class="{ 'subscribed': isSubscribed, 'loading': isSubscriptionLoading }"
+            @click.stop="handleSubscribe"
+          >
+            <span v-if="isSubscriptionLoading" class="material-symbols-outlined spin">progress_activity</span>
+            <template v-else>
+                <span class="material-symbols-outlined text-[20px]">{{ isSubscribed ? 'check' : 'person_add' }}</span>
+            </template>
+          </button>
+
           <button v-if="isOwner" class="glass-btn edit-header-btn">
             <span class="material-symbols-outlined text-[20px]">edit</span>
           </button>
@@ -436,6 +483,7 @@ function pluralizeWishes(count: number): string {
            :wishes="wishes"
            :loading="wishesLoading"
            :error="wishesError"
+           :is-owner="isOwner"
            @add="showAddWishModal = true"
            @click="onWishClick"
          />
@@ -655,6 +703,62 @@ function pluralizeWishes(count: number): string {
   color: #cbd5e1; /* slate-300 */
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Subscribe Button (Liquid Glass) */
+.subscribe-btn {
+  margin-left: auto;
+  width: 44px; /* Fixed width for circle */
+  height: 44px;
+  border-radius: 50%; /* Circle shape */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 13, 194, 0.1); /* Primary tint */
+  border: 1px solid rgba(10, 13, 194, 0.2);
+  color: var(--tg-button-color);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(10, 13, 194, 0.15);
+  /* padding removed */
+  /* gap removed */
+}
+
+.subscribe-btn:active {
+  transform: scale(0.96);
+  background: rgba(10, 13, 194, 0.2);
+}
+
+.subscribe-btn.subscribed {
+  background: rgba(34, 197, 94, 0.15); /* Green tint */
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #22c55e;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15);
+}
+
+[data-theme='dark'] .subscribe-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+[data-theme='dark'] .subscribe-btn.subscribed {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: rgba(16, 185, 129, 0.4);
+    color: #34d399;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
+
+.spin {
+    animation: spin 1s linear infinite;
+    font-size: 20px;
+}
+
+@keyframes spin {
+    100% { transform: rotate(360deg); }
 }
 
 /* === CAROUSEL WRAPPER === */

@@ -11,33 +11,34 @@ import type { User } from '@/types'
 import { userService } from '@/services/user.service'
 import { navigationStore } from '@/stores/navigation.store'
 import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
+import { subscribeVersion } from '@/composables/useUser'
 
 // Async helper for ProfileView (circular dep potential if static import, but AsyncComponent handles it well)
 const ProfileView = defineAsyncComponent(() => import('@/views/ProfileView.vue'))
 
 const { webapp, user, backButton } = useTelegramWebApp()
 const friends = ref<User[]>([])
+const searchResults = ref<User[]>([])
 const isLoading = ref(true)
+const isSearching = ref(false)
 const error = ref<string | null>(null)
 const searchQuery = ref('') // Search state
 
 const selectedFriendId = computed(() => navigationStore.state.selectedFriendId)
 
-// Filtered friends list
-const filteredFriends = computed(() => {
-    if (!searchQuery.value) return friends.value
-    
-    const query = searchQuery.value.toLowerCase()
-    return friends.value.filter(friend => {
-        const firstName = friend.first_name?.toLowerCase() || ''
-        const lastName = friend.last_name?.toLowerCase() || ''
-        const username = friend.username?.toLowerCase() || ''
-        
-        return firstName.includes(query) || 
-               lastName.includes(query) || 
-               username.includes(query)
-    })
+// Displayed users: either search results or friends list
+const displayedUsers = computed(() => {
+    if (searchQuery.value && searchResults.value.length > 0) {
+        return searchResults.value
+    }
+    // If search query is present but no results, return empty (handled by template)
+    if (searchQuery.value && searchResults.value.length === 0) {
+        return []
+    }
+    return friends.value
 })
+
+const isSearchMode = computed(() => searchQuery.value.length > 0)
 
 async function fetchFriends() {
   if (!user.value) {
@@ -58,9 +59,43 @@ async function fetchFriends() {
   }
 }
 
+let searchTimeout: ReturnType<typeof setTimeout>
+
+async function handleSearch() {
+    if (!searchQuery.value) {
+        searchResults.value = []
+        return
+    }
+    
+    if (!user.value) return 
+
+    isSearching.value = true
+    try {
+       const results = await userService.searchUsers(searchQuery.value, user.value.id)
+       // Filter out self
+       searchResults.value = results.filter(u => u.telegram_id !== user.value?.id)
+    } catch (e) {
+        console.error('Search error:', e)
+    } finally {
+        isSearching.value = false
+    }
+}
+
+// Debounced search watcher
+watch(searchQuery, () => {
+    if (searchTimeout) clearTimeout(searchTimeout)
+    if (!searchQuery.value) {
+        searchResults.value = []
+        return
+    }
+    searchTimeout = setTimeout(() => {
+        handleSearch()
+    }, 500)
+})
+
 function handleAddFriend() {
     const message = encodeURIComponent('Присоединяйся ко мне в Wishlins и смотри мой вишлист! 🎁')
-    const url = encodeURIComponent('https://t.me/WishlinsBot/app')
+    const url = encodeURIComponent('https://t.me/my_123_wishlist_bot')
     webapp.value?.openTelegramLink(`https://t.me/share/url?url=${url}&text=${message}`)
 }
 
@@ -92,6 +127,11 @@ function handleBackgroundClick(event: Event) {
 }
 
 onMounted(() => {
+  fetchFriends()
+})
+
+// Re-fetch friends list whenever a subscription changes (subscribe/unsubscribe from ProfileView)
+watch(subscribeVersion, () => {
   fetchFriends()
 })
 </script>
@@ -144,21 +184,26 @@ onMounted(() => {
             <button class="primary-button" @click="fetchFriends">Попробовать снова</button>
             </div>
             
-            <!-- Empty State: No friends at all -->
-            <div v-else-if="friends.length === 0" class="friends-view__empty">
+            <!-- Default Empty State: No friends at all and not searching -->
+            <div v-else-if="friends.length === 0 && !isSearchMode" class="friends-view__empty">
             <div class="placeholder">
                 <div class="placeholder__icon-wrapper">
                 <div class="placeholder__icon">🎁</div>
                 <div class="placeholder__sparkle">🌟</div>
                 </div>
-                <h2 class="placeholder__title">Пока нет друзей</h2>
-                <p class="placeholder__text">Пригласите друзей, чтобы делиться вишлистами!</p>
+                <!-- <h2 class="placeholder__title">Пока нет друзей</h2> -->
+                <p class="placeholder__text">Ищите друзей через поиск или пригласите их в приложение!</p>
                 <button class="primary-button" @click="handleAddFriend">Пригласить друзей</button>
             </div>
             </div>
             
+            <!-- Search Loading -->
+            <div v-else-if="isSearching" class="friends-view__loading">
+                 <span class="material-symbols-outlined spin">progress_activity</span>
+            </div>
+
             <!-- Search Result: Not Found -->
-            <div v-else-if="filteredFriends.length === 0" class="friends-view__empty search-empty">
+            <div v-else-if="isSearchMode && displayedUsers.length === 0" class="friends-view__empty search-empty">
                 <div class="placeholder">
                     <p class="placeholder__text">Такого пользователя нет в Wishlist</p>
                     <button class="primary-button" @click="handleAddFriend">Пригласить?</button>
@@ -166,9 +211,8 @@ onMounted(() => {
             </div>
             
             <div v-else class="friends-view__grid">
-            <!-- Subtitle removed from here -->
             <FriendCard 
-                v-for="friend in filteredFriends" 
+                v-for="friend in displayedUsers" 
                 :key="friend.id" 
                 :friend="friend"
                 @click="openFriendProfile(friend.telegram_id)"
@@ -416,5 +460,15 @@ onMounted(() => {
   align-items: center;
   gap: 0; /* Gap handled by margins in skeleton elements */
   height: 240px; /* Approx height */
+}
+
+.spin {
+    animation: spin 1s linear infinite;
+    font-size: 32px;
+    color: var(--tg-button-color);
+}
+
+@keyframes spin {
+    100% { transform: rotate(360deg); }
 }
 </style>

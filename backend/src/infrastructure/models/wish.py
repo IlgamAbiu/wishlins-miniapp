@@ -63,6 +63,12 @@ class WishModel(Base):
         default=False,
         nullable=False,
     )
+    booked_by_user_id: Mapped[UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
     priority: Mapped[WishPriority] = mapped_column(
         SQLAlchemyEnum(WishPriority, native_enum=False),
         nullable=False,

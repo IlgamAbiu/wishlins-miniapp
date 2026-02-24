@@ -7,7 +7,7 @@ import { useUser } from '@/composables/useUser'
 import type { Wish } from '@/types'
 import AddWishModal from '@/components/AddWishModal.vue'
 
-const { selectedWish, closeWish, updateWish, deleteWish, fulfillWish } = useWishes()
+const { selectedWish, closeWish, updateWish, deleteWish, fulfillWish, bookWish, unbookWish } = useWishes()
 const { wishlists, fetchWishlists } = useWishlists()
 const { user } = useTelegramWebApp()
 const { getUserByTelegramId } = useUser()
@@ -76,6 +76,8 @@ const isFulfilled = computed(() => {
     const wishlist = wishlists.value.find(w => w.id === safeWish.value.wishlist_id)
     return wishlist?.title === 'Сбывшиеся мечты'
 })
+
+const isBookedByMe = computed(() => safeWish.value?.booked_by_me ?? false)
 
 const isClosing = ref(false)
 
@@ -205,10 +207,21 @@ async function handleRestore() {
     }
 }
 
-function handleBook() {
-    // TODO: Implement booking logic
-    console.log('Book wish', safeWish.value.id)
-    alert('Функция бронирования скоро будет доступна')
+async function handleBook() {
+    if (!user.value || !safeWish.value) return
+
+    if (safeWish.value.is_booked && !isBookedByMe.value) {
+        // Already booked by someone else — button should be disabled, no-op here
+        return
+    }
+
+    if (isBookedByMe.value) {
+        const confirmed = confirm('Отменить бронирование?')
+        if (!confirmed) return
+        await unbookWish(safeWish.value.id, user.value.id)
+    } else {
+        await bookWish(safeWish.value.id, user.value.id)
+    }
 }
 async function handleUpdateWish(data: any) {
     if (!user.value || !safeWish.value) return 
@@ -352,7 +365,23 @@ async function handleDeleteWish(id: string) {
             <span class="material-symbols-outlined btn-icon">archive</span>
         </button>
 
-        <!-- Non-owner: Book button -->
+        <!-- Non-owner: booked by someone else -->
+        <button
+            v-else-if="safeWish.is_booked && !isBookedByMe"
+            class="book-btn book-btn--taken"
+            disabled>
+            <span class="btn-text">🔒 Занято</span>
+        </button>
+
+        <!-- Non-owner: I already booked it -->
+        <button
+            v-else-if="isBookedByMe"
+            @click="handleBook"
+            class="book-btn book-btn--mine">
+            <span class="btn-text">🎁 Я уже дарю</span>
+        </button>
+
+        <!-- Non-owner: available to book -->
         <button
             v-else
             @click="handleBook"
@@ -1037,5 +1066,23 @@ async function handleDeleteWish(id: string) {
 @keyframes skeleton-loading {
     0% { background-position: 200% 0; }
     100% { background-position: -200% 0; }
+}
+
+.book-btn--taken {
+    opacity: 0.55;
+    cursor: not-allowed;
+    border-color: rgba(239, 68, 68, 0.3);
+    color: rgba(239, 68, 68, 0.8);
+}
+
+.book-btn--mine {
+    border-color: rgba(16, 185, 129, 0.5);
+    color: rgba(16, 185, 129, 1);
+    background: rgba(16, 185, 129, 0.08);
+}
+
+.book-btn--mine:active {
+    background: rgba(16, 185, 129, 0.15);
+    transform: scale(0.98);
 }
 </style>

@@ -63,6 +63,13 @@ interface TelegramWebApp {
     onClick(callback: () => void): void
     offClick(callback: () => void): void
   }
+  SettingsButton: {
+    isVisible: boolean
+    show(): void
+    hide(): void
+    onClick(callback: () => void): void
+    offClick(callback: () => void): void
+  }
   MainButton: {
     text: string
     color: string
@@ -90,6 +97,8 @@ interface TelegramWebApp {
   requestFullscreen(): void
   exitFullscreen(): void
   close(): void
+  setHeaderColor(color: string): void
+  setBackgroundColor(color: string): void
   sendData(data: string): void
   openLink(url: string, options?: { try_instant_view?: boolean }): void
   openTelegramLink(url: string): void
@@ -143,9 +152,8 @@ export function useTelegramWebApp() {
       // Tell Telegram that the app is ready
       webapp.value.ready()
 
-      // Expand and request full screen (Bot API 8.0+)
+      // Expand (Bot API)
       webapp.value.expand()
-      webapp.value.requestFullscreen()
 
       // Disable vertical swipe-to-close gesture (Bot API 7.7+)
       webapp.value.disableVerticalSwipes()
@@ -161,10 +169,18 @@ export function useTelegramWebApp() {
         document.documentElement.setAttribute('data-theme', colorScheme)
       }
 
-      // Apply Telegram theme colors to CSS variables
+      // Apply Telegram theme colors to CSS variables and Native Headers
       const theme = webapp.value.themeParams
       if (theme.bg_color) {
         document.documentElement.style.setProperty('--tg-bg-color', theme.bg_color)
+
+        // Dissolve system header into background
+        try {
+          webapp.value.setHeaderColor(theme.bg_color)
+          webapp.value.setBackgroundColor(theme.bg_color)
+        } catch (e) {
+          console.warn('Telegram SDK: setHeaderColor/setBackgroundColor not supported or failed', e)
+        }
       }
       if (theme.text_color) {
         document.documentElement.style.setProperty('--tg-text-color', theme.text_color)
@@ -206,6 +222,17 @@ export function useTelegramWebApp() {
     }
   })
 
+  // Helper for SettingsButton
+  const settingsButton = computed(() => {
+    return webapp.value?.SettingsButton || {
+      isVisible: false,
+      show: () => { },
+      hide: () => { },
+      onClick: () => { },
+      offClick: () => { },
+    }
+  })
+
   // Helper for MainButton
   const mainButton = computed(() => {
     return webapp.value?.MainButton || {
@@ -236,6 +263,7 @@ export function useTelegramWebApp() {
     userDisplayName,
     webapp,
     backButton,
+    settingsButton,
     mainButton,
   }
 }

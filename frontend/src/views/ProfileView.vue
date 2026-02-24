@@ -20,7 +20,7 @@ const props = defineProps<{
     userId?: number // Optional prop for direct user ID (Stack Navigation)
 }>()
 
-const { isInTelegram, user, userDisplayName } = useTelegramWebApp()
+const { isInTelegram, user, userDisplayName, webapp, backButton, settingsButton } = useTelegramWebApp()
 const { wishlists, fetchWishlists, createWishlist, updateWishlist, deleteWishlist } = useWishlists()
 const { wishes, loading: wishesLoading, error: wishesError, fetchWishes, createWish, moveWishesToWishlist, openWish, onWishUpdate } = useWishes()
 const { updateProfileText, getUserByTelegramId, subscribe, unsubscribe } = useUser()
@@ -99,6 +99,27 @@ onMounted(() => {
     })
 })
 
+function setupTelegramButtons() {
+    if (!webapp.value) return
+    
+    // Clear both buttons handlers and hide
+    backButton.value.hide()
+    backButton.value.offClick(handleGoBack)
+    
+    settingsButton.value.hide()
+    settingsButton.value.offClick(handleEditProfile)
+    
+    if (isStackMode.value) {
+        backButton.value.show()
+        backButton.value.onClick(handleGoBack)
+    } else if (isOwner.value) {
+        settingsButton.value.show()
+        settingsButton.value.onClick(handleEditProfile)
+    }
+}
+
+watch([isStackMode, isOwner, webapp], setupTelegramButtons, { immediate: true })
+
 onUnmounted(() => {
     // Clean up wish update listener
     if (wishUpdateUnsubscribe) {
@@ -108,6 +129,13 @@ onUnmounted(() => {
     // Clean up fetch timeout
     if (fetchTimeout) {
         clearTimeout(fetchTimeout)
+    }
+    
+    if (webapp.value) {
+        backButton.value.hide()
+        backButton.value.offClick(handleGoBack)
+        settingsButton.value.hide()
+        settingsButton.value.offClick(handleEditProfile)
     }
 })
 
@@ -379,26 +407,6 @@ async function handleSubscribe() {
     <div v-else class="content">
       <!-- Header with glass-panel -->
       <header class="header-section">
-        <!-- Top Action Button (Back or Close) -->
-        <div class="top-action-container">
-            <button 
-              v-if="isStackMode" 
-              class="glass-btn action-header-btn" 
-              @click="handleGoBack"
-              aria-label="Назад"
-            >
-                <span class="material-symbols-outlined text-[20px]">arrow_back</span>
-            </button>
-            <button 
-              v-else 
-              class="glass-btn action-header-btn" 
-              @click="closeApp"
-              aria-label="Закрыть"
-            >
-                <span class="material-symbols-outlined text-[20px]">close</span>
-            </button>
-        </div>
-
         <div 
           class="glass-panel header-panel" 
           @click="isOwner && handleEditProfile()"
@@ -587,7 +595,6 @@ async function handleSubscribe() {
   gap: 16px;
   cursor: pointer;
   transition: all 0.2s ease;
-  margin-top: 60px; /* Offset to prevent overlap with top action button */
 }
 
 .header-panel:active {
@@ -678,65 +685,6 @@ async function handleSubscribe() {
 
 [data-theme='dark'] .user-subtitle {
   color: #94a3b8;
-}
-
-/* Top action button (Back / Close) specific style */
-.top-action-container {
-    position: absolute;
-    left: 20px;
-    top: calc(20px + var(--safe-area-top));
-    z-index: 20;
-}
-
-.action-header-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #64748b; /* Slate 500 */
-  background: rgba(255, 255, 255, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.5); /* Explicit border match */
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* Subtle shadow for floating look */
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.action-header-btn:active {
-  transform: scale(0.95);
-  background: rgba(255, 255, 255, 0.5);
-}
-
-[data-theme='dark'] .action-header-btn {
-  color: #cbd5e1;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-[data-theme='dark'] .action-header-btn:active {
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.edit-header-btn {
-  margin-left: auto;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.5); /* Match template border */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #64748b;
-  background: rgba(255, 255, 255, 0.4); /* Consistent with light theme template */
-}
-
-[data-theme='dark'] .edit-header-btn {
-  color: #cbd5e1; /* slate-300 */
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Subscribe Button (Liquid Glass) */

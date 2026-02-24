@@ -107,12 +107,6 @@ function handleBackButton() {
     navigationStore.closeFriendProfile()
 }
 
-function closeApp() {
-    if (window.Telegram?.WebApp) {
-        window.Telegram.WebApp.close()
-    }
-}
-
 
 // Watch selectedFriendId to toggle Back Button
 watch(selectedFriendId, (newId) => {
@@ -158,14 +152,9 @@ watch(subscribeVersion, () => {
                     <h1 class="friends-view__title">Друзья</h1>
                     <p class="friends-view__subtitle">Ваш круг общения</p>
                 </div>
-                <div class="header-actions">
-                    <button class="action-btn" @click="handleAddFriend" aria-label="Добавить друга">
-                        <span class="material-symbols-outlined action-icon">person_add</span>
-                    </button>
-                    <button class="action-btn" @click="closeApp" aria-label="Закрыть">
-                        <span class="material-symbols-outlined action-icon">close</span>
-                    </button>
-                </div>
+                <button class="friends-view__add-btn" @click="handleAddFriend" aria-label="Добавить друга">
+                    <span class="material-symbols-outlined friends-view__add-icon">person_add</span>
+                </button>
             </div>
             
             <!-- Search Bar -->
@@ -283,12 +272,7 @@ watch(subscribeVersion, () => {
   margin-bottom: 16px;
 }
 
-.header-actions {
-  display: flex;
-  gap: 12px;
-}
-
-.action-btn {
+.friends-view__add-btn {
   width: 44px;
   height: 44px;
   border-radius: 50%;
@@ -305,12 +289,12 @@ watch(subscribeVersion, () => {
   -webkit-backdrop-filter: blur(10px);
 }
 
-.action-btn:active {
+.friends-view__add-btn:active {
   background: var(--glass-border);
   transform: scale(0.95);
 }
 
-.action-icon {
+.friends-view__add-icon {
   font-size: 22px;
   line-height: 1;
 }

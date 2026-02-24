@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, nextTick } from 'vue'
+import { computed, ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { useWishes } from '@/composables/useWishes'
 import { useWishlists } from '@/composables/useWishlists'
 import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
@@ -9,14 +9,14 @@ import AddWishModal from '@/components/AddWishModal.vue'
 
 const { selectedWish, closeWish, updateWish, deleteWish, fulfillWish, bookWish, unbookWish } = useWishes()
 const { wishlists, fetchWishlists } = useWishlists()
-const { user } = useTelegramWebApp()
+const { user, webapp, backButton } = useTelegramWebApp()
 const { getUserByTelegramId } = useUser()
 
 const showEditModal = ref(false)
 const internalUserId = ref<string | null>(null)
 const loadingOwnership = ref(true)
 
-// Fetch internal user ID for ownership check
+// Fetch internal user ID for ownership check and handle Telegram UI
 onMounted(async () => {
     if (user.value) {
         const internalUser = await getUserByTelegramId(user.value.id)
@@ -25,6 +25,20 @@ onMounted(async () => {
             await fetchWishlists(user.value.id)
         }
         loadingOwnership.value = false
+    }
+
+    if (webapp.value) {
+        webapp.value.requestFullscreen()
+        backButton.value.show()
+        backButton.value.onClick(handleBack)
+    }
+})
+
+onUnmounted(() => {
+    if (webapp.value) {
+        webapp.value.exitFullscreen()
+        backButton.value.hide()
+        backButton.value.offClick(handleBack)
     }
 })
 
@@ -392,14 +406,6 @@ async function handleDeleteWish(id: string) {
 
     <!-- Fixed Header (Top of everything) -->
     <header class="header">
-        <button
-            type="button"
-            @click.stop="handleBack"
-            :disabled="isClosing"
-            class="glass-btn back-btn">
-            <span class="material-symbols-outlined icon">arrow_back</span>
-        </button>
-        
         <div class="header-actions">
             <button @click="handleShare" class="glass-btn icon-btn">
                 <span class="material-symbols-outlined">ios_share</span>

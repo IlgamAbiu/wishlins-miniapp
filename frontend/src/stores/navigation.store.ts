@@ -28,7 +28,7 @@ import type { TabId, TabConfig, NavigationState } from '@/types'
 export const TAB_CONFIGS: TabConfig[] = [
   {
     id: 'profile',
-    label: 'Мои желания',
+    label: 'Мои желания тест',
     icon: 'card_giftcard',
     activeIcon: 'card_giftcard',
   },

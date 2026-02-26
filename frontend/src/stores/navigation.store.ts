@@ -106,11 +106,15 @@ function openUserProfile(telegramId: number): void {
  * Open a friend's profile within the Friends tab (Stack Navigation).
  */
 function openFriendProfile(telegramId: number): void {
+  // Push state to browser history to enable native swipe-to-back
+  window.history.pushState({ type: 'friend', id: telegramId }, '')
   state.selectedFriendId = telegramId
 }
 
 /**
  * Close friend profile and return to list (Stack Navigation).
+ * Note: When triggered by popstate this handles local clean up, 
+ * when triggered by a button we actually use history.back()
  */
 function closeFriendProfile(): void {
   state.selectedFriendId = null
@@ -122,7 +126,7 @@ function closeFriendProfile(): void {
 function goBack(): boolean {
   // 1. Priority: Close nested friend profile if open
   if (state.selectedFriendId !== null) {
-    state.selectedFriendId = null
+    window.history.back() // The popstate listener will handle store cleanup
     return true
   }
 

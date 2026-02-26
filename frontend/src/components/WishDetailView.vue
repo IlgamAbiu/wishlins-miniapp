@@ -9,7 +9,7 @@ import AddWishModal from '@/components/AddWishModal.vue'
 
 const { selectedWish, closeWish, updateWish, deleteWish, fulfillWish, bookWish, unbookWish } = useWishes()
 const { wishlists, fetchWishlists } = useWishlists()
-const { user, webapp, backButton } = useTelegramWebApp()
+const { user, webapp } = useTelegramWebApp()
 const { getUserByTelegramId } = useUser()
 
 const showEditModal = ref(false)
@@ -29,16 +29,12 @@ onMounted(async () => {
 
     if (webapp.value) {
         webapp.value.requestFullscreen()
-        backButton.value.show()
-        backButton.value.onClick(handleBack)
     }
 })
 
 onUnmounted(() => {
     if (webapp.value) {
         webapp.value.exitFullscreen()
-        backButton.value.hide()
-        backButton.value.offClick(handleBack)
     }
 })
 
@@ -95,16 +91,18 @@ const isBookedByMe = computed(() => safeWish.value?.booked_by_me ?? false)
 
 const isClosing = ref(false)
 
-function handleBack() {
+function handleBack(event?: Event) {
   // Prevent multiple rapid clicks
   if (isClosing.value) {
     console.log('Already closing, ignoring click')
     return
   }
 
-  console.log('Back button clicked, closing wish')
+  console.log('Back button clicked, popping history')
   isClosing.value = true
-  closeWish()
+  
+  // Actually go back in history. The popstate listener will call closeWish()
+  window.history.back()
 
   // Reset after transition completes
   setTimeout(() => {
@@ -491,12 +489,13 @@ async function handleDeleteWish(id: string) {
     left: 0;
     width: 100%;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end; /* Push icons to the right, away from native BackButton on the left */
     align-items: center;
     padding: 20px;
     padding-top: calc(20px + env(safe-area-inset-top, 0px));
+    padding-right: 60px; /* Safe space for the native 3-dots Telegram menu on the right */
     z-index: 70; /* Above everything, including gloss (60) */
-    pointer-events: auto; /* Enable pointer events for header */
+    pointer-events: none; /* Let clicks pass through empty spaces */
 }
 .header button {
     pointer-events: auto;

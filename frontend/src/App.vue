@@ -10,6 +10,10 @@ import { useWishes } from '@/composables/useWishes'
 import { TabBar } from '@/components/navigation'
 import BlockedScreen from '@/components/BlockedScreen.vue'
 import WishDetailView from '@/components/WishDetailView.vue'
+import { useNativeNavigation } from '@/composables/useNativeNavigation'
+
+// Initialize native history-based navigation
+useNativeNavigation()
 
 // Lazy load views
 const ProfileView = defineAsyncComponent(() => import('@/views/ProfileView.vue'))

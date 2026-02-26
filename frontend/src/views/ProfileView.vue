@@ -99,27 +99,6 @@ onMounted(() => {
     })
 })
 
-function setupTelegramButtons() {
-    if (!webapp.value) return
-    
-    // Clear both buttons handlers and hide
-    backButton.value.hide()
-    backButton.value.offClick(handleGoBack)
-    
-    settingsButton.value.hide()
-    settingsButton.value.offClick(handleEditProfile)
-    
-    if (isStackMode.value) {
-        backButton.value.show()
-        backButton.value.onClick(handleGoBack)
-    } else if (isOwner.value) {
-        settingsButton.value.show()
-        settingsButton.value.onClick(handleEditProfile)
-    }
-}
-
-watch([isStackMode, isOwner, webapp], setupTelegramButtons, { immediate: true })
-
 onUnmounted(() => {
     // Clean up wish update listener
     if (wishUpdateUnsubscribe) {
@@ -132,15 +111,19 @@ onUnmounted(() => {
     }
     
     if (webapp.value) {
-        backButton.value.hide()
-        backButton.value.offClick(handleGoBack)
-        settingsButton.value.hide()
         settingsButton.value.offClick(handleEditProfile)
     }
 })
 
+// Specifically register the callback for Settings Button here, though visibility is guided centrally.
+watch([isOwner, webapp], ([owner, app]) => {
+  if (app && owner) {
+    settingsButton.value.onClick(handleEditProfile)
+  }
+}, { immediate: true })
+
 function handleGoBack() {
-    navigationStore.closeFriendProfile()
+    window.history.back()
 }
 
 function closeApp() {

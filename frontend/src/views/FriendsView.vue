@@ -16,7 +16,7 @@ import { subscribeVersion } from '@/composables/useUser'
 // Async helper for ProfileView (circular dep potential if static import, but AsyncComponent handles it well)
 const ProfileView = defineAsyncComponent(() => import('@/views/ProfileView.vue'))
 
-const { webapp, user, backButton } = useTelegramWebApp()
+const { webapp, user } = useTelegramWebApp()
 const friends = ref<User[]>([])
 const searchResults = ref<User[]>([])
 const isLoading = ref(true)
@@ -103,21 +103,7 @@ function openFriendProfile(friendId: number) {
     navigationStore.openFriendProfile(friendId)
 }
 
-function handleBackButton() {
-    navigationStore.closeFriendProfile()
-}
-
-
-// Watch selectedFriendId to toggle Back Button
-watch(selectedFriendId, (newId) => {
-    if (newId) {
-        backButton.value.show()
-        backButton.value.onClick(handleBackButton)
-    } else {
-        backButton.value.hide()
-        backButton.value.offClick(handleBackButton)
-    }
-})
+// Removed localized back button logic. Handled by generic useNativeNavigation
 
 // Dismiss keyboard on background click
 function handleBackgroundClick(event: Event) {

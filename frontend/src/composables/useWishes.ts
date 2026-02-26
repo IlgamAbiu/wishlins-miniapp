@@ -32,9 +32,12 @@ export function useWishes() {
     const currentWishlistId = ref<string | null>(null)
 
     function openWish(wish: Wish) {
+        window.history.pushState({ type: 'wish', id: wish.id }, '')
         selectedWish.value = wish
     }
 
+    // This gets called by PopState when swiping back, OR by the BackButton 
+    // Usually closing manually should invoke `history.back()` so the state remains consistent
     function closeWish() {
         selectedWish.value = null
     }

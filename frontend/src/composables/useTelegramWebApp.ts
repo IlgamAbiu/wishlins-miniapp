@@ -117,6 +117,8 @@ interface TelegramWebApp {
   closeScanQrPopup(): void
   disableVerticalSwipes(): void
   enableVerticalSwipes(): void
+  onEvent(eventType: string, eventHandler: Function): void
+  offEvent(eventType: string, eventHandler: Function): void
 }
 
 export function useTelegramWebApp() {
@@ -222,6 +224,17 @@ export function useTelegramWebApp() {
     }
   })
 
+  // Helper for CloseButton
+  const closeButton = computed(() => {
+    return webapp.value?.CloseButton || {
+      isVisible: false,
+      show: () => { },
+      hide: () => { },
+      onClick: () => { },
+      offClick: () => { },
+    }
+  })
+
   // Helper for SettingsButton
   const settingsButton = computed(() => {
     return webapp.value?.SettingsButton || {
@@ -263,6 +276,7 @@ export function useTelegramWebApp() {
     userDisplayName,
     webapp,
     backButton,
+    closeButton,
     settingsButton,
     mainButton,
   }

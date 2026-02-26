@@ -4,7 +4,7 @@ import { useWishes } from '@/composables/useWishes'
 import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
 
 export function useNativeNavigation() {
-    const { webapp, backButton, settingsButton } = useTelegramWebApp()
+    const { webapp, backButton, settingsButton, closeButton } = useTelegramWebApp()
     const { selectedWish } = useWishes()
 
     function handlePopState(event: PopStateEvent) {
@@ -33,6 +33,11 @@ export function useNativeNavigation() {
         backButton.value.hide()
         backButton.value.offClick(handleNativeBackClick)
         settingsButton.value.hide()
+
+        if (closeButton.value) {
+            closeButton.value.hide()
+        }
+
         // Note: Settings onClick is usually handled in ProfileView directly, 
         //   we just hide/show it based on conditions here.
 
@@ -45,6 +50,8 @@ export function useNativeNavigation() {
             // We are deeply nested, show BackButton
             backButton.value.show()
             backButton.value.onClick(handleNativeBackClick)
+            // Forcefully hide CloseButton again just in case Telegram auto-shows it
+            if (closeButton.value) closeButton.value.hide()
         } else if (isViewingOwnProfile) {
             // We are at root of own profile, show Settings Button
             // We only SHOW the button here. The actual `onClick` listener is registered in `ProfileView.vue`
@@ -53,12 +60,18 @@ export function useNativeNavigation() {
     }
 
     function handleNativeBackClick() {
+        console.log('[useNativeNavigation] Native Back Button Clicked')
         // Trigger generic browser back, popstate will handle the UI updates
         window.history.back()
     }
 
     onMounted(() => {
         window.addEventListener('popstate', handlePopState)
+
+        // Also listen to raw Telegram event as a fallback if SDK wrapper fails
+        if (window.Telegram?.WebApp) {
+            window.Telegram.WebApp.onEvent('back_button_pressed', handleNativeBackClick)
+        }
 
         // Watch for state changes that dictate button visibility
         watch(
@@ -75,5 +88,8 @@ export function useNativeNavigation() {
 
     onUnmounted(() => {
         window.removeEventListener('popstate', handlePopState)
+        if (window.Telegram?.WebApp) {
+            window.Telegram.WebApp.offEvent('back_button_pressed', handleNativeBackClick)
+        }
     })
 }

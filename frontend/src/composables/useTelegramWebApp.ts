@@ -158,7 +158,7 @@ export function useTelegramWebApp() {
       webapp.value.expand()
 
       // Disable vertical swipe-to-close gesture (Bot API 7.7+)
-      webapp.value.disableVerticalSwipes()
+      // webapp.value.disableVerticalSwipes()
 
       // Hide native close button to use custom UI (Bot API 7.9+)
       if (webapp.value.CloseButton) {

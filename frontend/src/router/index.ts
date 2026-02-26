@@ -92,28 +92,36 @@ router.beforeEach((to, from, next) => {
     // Try to initialize Telegram back button event if not done yet
     initTelegramBackButton()
 
-    // Determine transition direction based on route depth or path hierarchy
-    // We'll use a simple heuristic: if 'to' is nested deeper than 'from', it's push (slide-left)
-    // If 'to' is shallower, it's pop (slide-right)
-    // For tab switching (depth 1 to depth 1), we can use fade or no animation
+    // Manage BackButton visibility as early as possible
+    if (window.Telegram?.WebApp) {
+        const tg = window.Telegram.WebApp
+        if (to.meta.isNested) {
+            tg.BackButton.show()
+        } else {
+            tg.BackButton.hide()
+        }
+    }
 
+    // Determine transition direction
     const toDepth = to.path.split('/').filter(Boolean).length
     const fromDepth = from.path.split('/').filter(Boolean).length
 
-    if (toDepth > fromDepth) {
+    // Tab indices for comparison
+    const toTabIndex = to.meta.tabIndex as number
+    const fromTabIndex = from.meta.tabIndex as number
+
+    if (toTabIndex !== undefined && fromTabIndex !== undefined && toDepth === 1 && fromDepth === 1) {
+        // Switching between main tabs
+        to.meta.transitionName = 'fade'
+    } else if (toDepth > fromDepth) {
+        // Going deeper
         to.meta.transitionName = 'slide-left'
     } else if (toDepth < fromDepth) {
+        // Going back
         to.meta.transitionName = 'slide-right'
     } else {
-        // Tab switching or same level
-        const toTabIndex = to.meta.tabIndex as number
-        const fromTabIndex = from.meta.tabIndex as number
-
-        if (toTabIndex !== undefined && fromTabIndex !== undefined) {
-            to.meta.transitionName = 'fade' // Or you could do slide based on tab index comparison
-        } else {
-            to.meta.transitionName = 'fade'
-        }
+        // Same level, different path
+        to.meta.transitionName = 'fade'
     }
 
     next()
@@ -122,17 +130,8 @@ router.beforeEach((to, from, next) => {
 router.afterEach((to) => {
     if (window.Telegram?.WebApp) {
         const tg = window.Telegram.WebApp
-
-        // Force hide close button to prevent Telegram from replacing the Back button automatically
+        // Force hide close button
         if (tg.CloseButton) tg.CloseButton.hide()
-
-        if (to.meta.isNested) {
-            // We are in a nested route, show Back button
-            tg.BackButton.show()
-        } else {
-            // We are at a root tab level, hide Back button
-            tg.BackButton.hide()
-        }
     }
 })
 

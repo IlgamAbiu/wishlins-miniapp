@@ -64,7 +64,7 @@ const emit = defineEmits<{
 <style scoped>
 /* Scoped styles - Design System Refactor */
 .wish-grid {
-  padding: 0 var(--spacing-lg) 100px; /* Enhanced bottom padding */
+  padding: 0 var(--side-padding) 100px; /* Enhanced bottom padding */
 }
 
 /* Loading */

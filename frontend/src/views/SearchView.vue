@@ -23,7 +23,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: calc(var(--spacing-lg) + var(--safe-area-top)) var(--spacing-lg) var(--spacing-lg);
+  padding: calc(var(--safe-area-top) + var(--side-padding)) var(--side-padding) var(--side-padding);
   position: relative;
 }
 

@@ -207,7 +207,7 @@ watch(subscribeVersion, () => {
 .friends-view__header {
   display: flex;
   flex-direction: column;
-  padding: calc(24px + var(--safe-area-top)) 16px 16px; /* top accounts for fullscreen status bar */
+  padding: calc(var(--safe-area-top) + var(--side-padding)) var(--side-padding) 16px;
   margin-bottom: 16px;
 }
 
@@ -342,7 +342,7 @@ watch(subscribeVersion, () => {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
-  padding: 0 16px; /* Added padding to prevent edge touching */
+  padding: 0 var(--side-padding); /* Added padding to prevent edge touching */
 }
 
 

@@ -490,9 +490,9 @@ async function handleDeleteWish(id: string) {
     display: flex;
     justify-content: flex-end; /* Push icons to the right, away from native BackButton on the left */
     align-items: center;
-    padding: 20px;
-    padding-top: calc(24px + var(--safe-area-top));
-    padding-right: 60px; /* Safe space for the native 3-dots Telegram menu on the right */
+    padding: var(--side-padding);
+    padding-top: calc(var(--safe-area-top) + var(--side-padding));
+    padding-right: calc(var(--side-padding) + 40px); /* Safe space for the native 3-dots Telegram menu (approx 40px) */
     z-index: 70; /* Above everything, including gloss (60) */
     pointer-events: none; /* Let clicks pass through empty spaces */
 }
@@ -556,7 +556,7 @@ async function handleDeleteWish(id: string) {
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    padding-top: 100px; /* Space for header */
+    padding-top: calc(var(--safe-area-top) + var(--side-padding) + 64px); /* Space for header icons and breathing room */
 }
 
 .image-container-wrapper {

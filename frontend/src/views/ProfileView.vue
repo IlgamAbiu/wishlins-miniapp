@@ -150,13 +150,14 @@ const isLoading = ref(true)
 async function initData() {
   const userId = targetUserId.value
   if (userId) {
-    isLoading.value = true
+    // Optimization: only show loading if we don't have user data yet
+    if (!currentProfileUser.value || currentProfileUser.value.telegram_id !== userId) {
+      isLoading.value = true
+    }
+    
     try {
       // Load user profile data including profile_text
-      // Pass current user ID to check subscription status
       const currentUserTelegramId = user.value?.id
-      console.log('initData: checking subscription for', userId, 'by', currentUserTelegramId)
-      
       const userData = await getUserByTelegramId(userId, currentUserTelegramId)
       
       if (userData) {
@@ -191,15 +192,8 @@ watch([() => user.value, targetUserId], () => {
    initData()
 }, { immediate: true })
 
-// Re-fetch own data when returning to "Мои желания" tab
-watch(
-  () => route.path,
-  (newPath) => {
-    if (newPath === '/profile') {
-      initData()
-    }
-  }
-)
+// Initial fetch handled by watch immediate above
+
 
 // Watch for event selection to fetch wishes
 let fetchTimeout: ReturnType<typeof setTimeout>
@@ -576,7 +570,7 @@ async function handleSubscribe() {
 
 /* === HEADER SECTION === */
 .header-section {
-  padding: calc(24px + var(--safe-area-top)) 20px 0;
+  padding: calc(var(--safe-area-top) + var(--side-padding)) var(--side-padding) 0;
   display: flex;
   flex-direction: column;
   gap: 20px;

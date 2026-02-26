@@ -36,7 +36,9 @@ const showTabBar = computed(() => route.meta.requireTabBar !== false)
     <main class="app__content">
       <router-view v-slot="{ Component, route }">
         <Transition :name="(route.meta.transitionName as string) || 'fade'">
-             <component :is="Component" :key="route.path" />
+          <KeepAlive :max="5">
+            <component :is="Component" :key="route.path" />
+          </KeepAlive>
         </Transition>
       </router-view>
     </main>
@@ -54,10 +56,14 @@ const showTabBar = computed(() => route.meta.requireTabBar !== false)
   --tab-bar-height: 56px;
 
   /* Safe area insets for fullscreen Telegram Mini App */
-  --safe-area-top: env(safe-area-inset-top, 24px);
+  --safe-area-top: env(safe-area-inset-top, 0px);
   --safe-area-bottom: env(safe-area-inset-bottom, 0px);
   --safe-area-left: env(safe-area-inset-left, 0px);
   --safe-area-right: env(safe-area-inset-right, 0px);
+
+  /* Standard Native Spacing */
+  --side-padding: 20px;
+  --top-margin: 24px;
 }
 
 html, body {
@@ -120,6 +126,7 @@ a {
   height: 100%;
   overflow: hidden;
   position: relative;
+  touch-action: pan-y; /* Allow vertical pan, let native horizontal gestures be handled by system */
 }
 
 .app__content {

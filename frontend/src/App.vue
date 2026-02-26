@@ -7,10 +7,8 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
 import { TabBar } from '@/components/navigation'
+import ToastContainer from '@/components/ui/ToastContainer.vue'
 import BlockedScreen from '@/components/BlockedScreen.vue'
-
-// Optional: Keep this if we have some global init logic besides router
-// import { useNativeNavigation } from '@/composables/useNativeNavigation'
 
 const route = useRoute()
 const { isReady, isInTelegram } = useTelegramWebApp()
@@ -44,6 +42,7 @@ const showTabBar = computed(() => route.meta.requireTabBar !== false)
     </main>
 
     <TabBar v-show="showTabBar" />
+    <ToastContainer />
   </div>
 </template>
 
@@ -56,7 +55,7 @@ const showTabBar = computed(() => route.meta.requireTabBar !== false)
   --tab-bar-height: 56px;
 
   /* Safe area insets for fullscreen Telegram Mini App */
-  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-top: max(44px, env(safe-area-inset-top, 0px));
   --safe-area-bottom: env(safe-area-inset-bottom, 0px);
   --safe-area-left: env(safe-area-inset-left, 0px);
   --safe-area-right: env(safe-area-inset-right, 0px);
@@ -126,7 +125,7 @@ a {
   height: 100%;
   overflow: hidden;
   position: relative;
-  touch-action: pan-y; /* Allow vertical pan, let native horizontal gestures be handled by system */
+  touch-action: manipulation; /* Allow native horizontal gestures like swipe back */
 }
 
 .app__content {

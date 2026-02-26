@@ -16,6 +16,7 @@ defineProps<{
 const emit = defineEmits<{
   (e: 'add'): void
   (e: 'click', wish: Wish): void
+  (e: 'preload', wish: Wish): void
 }>()
 </script>
 
@@ -55,6 +56,7 @@ const emit = defineEmits<{
         class="grid-item"
         :class="{ 'span-full': wish.priority === 'really_want' }"
         @click="$emit('click', wish)"
+        @preload="$emit('preload', $event)"
       />
     </div>
     

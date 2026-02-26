@@ -58,6 +58,7 @@ export interface Wishlist {
 export interface Wish {
   id: string
   wishlist_id: string
+  telegram_id: number // Added
   title: string
   subtitle: string | null
   description: string | null
@@ -66,6 +67,7 @@ export interface Wish {
   price: number | null
   currency: string | null
   is_booked: boolean
+  is_fulfilled: boolean // Added
   booked_by_me: boolean
   priority: WishPriority
   store: string | null

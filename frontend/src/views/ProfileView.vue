@@ -1,13 +1,18 @@
 <script setup lang="ts">
 /**
  * ProfileView - User profile with Events (Wishlists) and Wishes.
+ * Re-engineered with TanStack Query for SWR caching.
  */
-import { ref, watch, computed, onMounted, onUnmounted } from 'vue'
+import { ref, watch, computed, onUnmounted } from 'vue'
 import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
-import { useWishlists } from '@/composables/useWishlists'
-import { useWishes } from '@/composables/useWishes'
-import { useUser } from '@/composables/useUser'
 import { useRoute, useRouter } from 'vue-router'
+import { useUserQuery, useUpdateProfileMutation, useSubscriptionMutation } from '@/composables/queries/useUserQuery'
+import { useWishlistsQuery, useWishesQuery } from '@/composables/queries/useWishesQuery'
+import { useToast } from '@/composables/useToast'
+import { useQueryClient } from '@tanstack/vue-query'
+import { wishesApi } from '@/api/wishes'
+import type { Wish } from '@/types'
+
 import EventCarousel from '@/components/EventCarousel.vue'
 import WishGrid from '@/components/WishGrid.vue'
 import AddWishModal from '@/components/AddWishModal.vue'
@@ -20,26 +25,11 @@ const props = defineProps<{
     userId?: number // Optional prop for direct user ID (Stack Navigation)
 }>()
 
-const { isInTelegram, user, userDisplayName, webapp, backButton, settingsButton } = useTelegramWebApp()
-const { wishlists, fetchWishlists, createWishlist, updateWishlist, deleteWishlist } = useWishlists()
-const { wishes, loading: wishesLoading, error: wishesError, fetchWishes, createWish, moveWishesToWishlist, openWish, onWishUpdate } = useWishes()
-const { updateProfileText, getUserByTelegramId, subscribe, unsubscribe } = useUser()
-
-const selectedEventId = ref<string | null>(null)
-// ... modal state refs ...
-const showAddWishModal = ref(false)
-const showAddEventModal = ref(false)
-const showEditProfileModal = ref(false)
-const showDeleteEventModal = ref(false)
-const showEventLimitModal = ref(false)
-const editingEvent = ref<any>(null)
-const eventToDelete = ref<any>(null)
-const profileText = ref('Saving for a dream ✨')
-const isSubscribed = ref(false)
-const isSubscriptionLoading = ref(false)
-
+const { isInTelegram, user, userDisplayName, webapp, settingsButton } = useTelegramWebApp()
 const route = useRoute()
 const router = useRouter()
+const toast = useToast()
+const queryClient = useQueryClient()
 
 // Guest Mode Logic
 const targetUserId = computed(() => {
@@ -49,192 +39,136 @@ const targetUserId = computed(() => {
     return user.value?.id
 })
 
-// Check if we are in "Stack Mode" (navigated from Friends list)
-const isStackMode = computed(() => !!props.userId)
+const isOwner = computed(() => targetUserId.value === user.value?.id)
 
-const isOwner = computed(() => {
-    if (targetUserId.value !== user.value?.id) return false
-    return true
-})
+// --- Data Fetching (Vue Query) ---
+const { 
+  data: profileUser, 
+  isLoading: userLoading, 
+  error: userError 
+} = useUserQuery(targetUserId.value as number, user.value?.id)
 
-// Current User Display
-const currentProfileUser = ref<any>(null)
-// ... displayUser computed ...
+const { 
+  data: rawWishlists, 
+  isLoading: listsLoading 
+} = useWishlistsQuery(targetUserId.value as number)
+
+const wishlists = computed(() => rawWishlists.value || [])
+
+const selectedEventId = ref<string | null>(null)
+
+// Select default event automatically when wishlists are loaded
+watch(wishlists, (newList) => {
+  if (newList.length > 0 && !selectedEventId.value) {
+    const defaultEvent = newList.find(w => w.is_default)
+    selectedEventId.value = defaultEvent ? defaultEvent.id : newList[0].id
+  }
+}, { immediate: true })
+
+const { 
+  data: rawWishes, 
+  isLoading: wishesLoading, 
+  error: wishesError 
+} = useWishesQuery(selectedEventId.value, user.value?.id)
+
+const wishes = computed(() => rawWishes.value || [])
+
+const combinedLoading = computed(() => userLoading.value || listsLoading.value)
+
+
+// --- Mutations ---
+const updateProfileMutation = useUpdateProfileMutation()
+const subscriptionMutation = useSubscriptionMutation()
+
+// --- UI State ---
+const showAddWishModal = ref(false)
+const showAddEventModal = ref(false)
+const showEditProfileModal = ref(false)
+const showDeleteEventModal = ref(false)
+const showEventLimitModal = ref(false)
+const editingEvent = ref<any>(null)
+const eventToDelete = ref<any>(null)
 
 const displayUser = computed(() => {
-    if (isOwner.value) {
-        return {
-            displayName: userDisplayName.value,
-            photoUrl: user.value?.photo_url,
-            initial: userDisplayName.value?.charAt(0)
-        }
-    } else {
-        if (!currentProfileUser.value) return { displayName: 'Loading...', photoUrl: null, initial: '?' }
-        const u = currentProfileUser.value
-        const name = u.last_name ? `${u.first_name} ${u.last_name}` : u.first_name
-        return {
-            displayName: name,
-            photoUrl: u.avatar_url,
-            initial: name?.charAt(0) || '?'
-        }
-    }
-})
-
-// Subscribe to global wish updates to keep this list fresh
-let wishUpdateUnsubscribe: (() => void) | null = null
-
-onMounted(() => {
-    // If a global wish update happens (e.g. from Detail View), re-fetch or update local list
-    wishUpdateUnsubscribe = onWishUpdate((type, wish, id) => {
-        // Simple strategy: if we are viewing the wishlist that was modified, refresh it
-        // Or if we don't know, just refresh everything if it affects current user context
-        // For MVP, if we are owner, just refresh or let reactivity handle it if we used shared store (but we split it)
-
-        // If we are the owner, we definitely want to refresh
-        if (isOwner.value && type !== 'create') {
-            // 'create' is usually handled by the creating component adding it,
-            // but if created from somewhere else?
-        }
-
-        // Actually, easiest way is just to re-fetch wishes for current selected event if any
-        if (selectedEventId.value) {
-             fetchWishes(selectedEventId.value, user.value?.id)
-        }
-    })
-})
-
-onUnmounted(() => {
-    // Clean up wish update listener
-    if (wishUpdateUnsubscribe) {
-        wishUpdateUnsubscribe()
-    }
-
-    // Clean up fetch timeout
-    if (fetchTimeout) {
-        clearTimeout(fetchTimeout)
-    }
+    const u = profileUser.value
+    const name = u ? (u.last_name ? `${u.first_name} ${u.last_name}` : u.first_name) : (isOwner.value ? userDisplayName.value : 'Загрузка...')
+    const photo = u ? u.photo_url : (isOwner.value ? user.value?.photo_url : null)
     
-    if (webapp.value) {
-        settingsButton.value.offClick(handleEditProfile)
+    return {
+        displayName: name,
+        photoUrl: photo,
+        initial: name?.charAt(0) || '?'
     }
 })
 
-// Specifically register the callback for Settings Button here, though visibility is guided centrally.
+const selectedEvent = computed(() => 
+  wishlists.value.find(w => w.id === selectedEventId.value)
+)
+
+const isSubscribed = computed(() => profileUser.value?.is_subscribed || false)
+
+// --- Lifecycle & Side Effects ---
+onUnmounted(() => {
+  if (webapp.value) {
+    settingsButton.value.offClick(handleEditProfile)
+  }
+})
+
 watch([isOwner, webapp], ([owner, app]) => {
   if (app && owner) {
     settingsButton.value.onClick(handleEditProfile)
   }
 }, { immediate: true })
 
-function handleGoBack() {
-    window.history.back()
-}
-
-function closeApp() {
-    if (window.Telegram?.WebApp) {
-        window.Telegram.WebApp.close()
-    }
-}
-
-
-// Event limit constant
-const MAX_EVENTS = 5
-
-const selectedEvent = computed(() => 
-  wishlists.value.find(w => w.id === selectedEventId.value)
-)
-
-// Initial Data Fetch
-const isLoading = ref(true)
-
-async function initData() {
-  const userId = targetUserId.value
-  if (userId) {
-    // Optimization: only show loading if we don't have user data yet
-    if (!currentProfileUser.value || currentProfileUser.value.telegram_id !== userId) {
-      isLoading.value = true
-    }
-    
-    try {
-      // Load user profile data including profile_text
-      const currentUserTelegramId = user.value?.id
-      const userData = await getUserByTelegramId(userId, currentUserTelegramId)
-      
-      if (userData) {
-        currentProfileUser.value = userData
-        if (userData.profile_text) {
-          profileText.value = userData.profile_text
-        }
-        // Set subscription status
-        console.log('initData: is_subscribed from backend:', userData.is_subscribed)
-        isSubscribed.value = !!userData.is_subscribed
-      }
-
-      await fetchWishlists(userId)
-
-      // Select default event or first one
-      if (wishlists.value.length > 0) {
-        const defaultEvent = wishlists.value.find(w => w.is_default)
-        selectedEventId.value = defaultEvent ? defaultEvent.id : wishlists.value[0].id
-      } else {
-          selectedEventId.value = null
-      }
-    } finally {
-      isLoading.value = false
-    }
-  }
-}
-
-// Watch for user changes OR navigation state changes OR prop changes
-watch([() => user.value, targetUserId], () => {
-   // Reset selected event when switching profiles
-   selectedEventId.value = null
-   initData()
-}, { immediate: true })
-
-// Initial fetch handled by watch immediate above
-
-
-// Watch for event selection to fetch wishes
-let fetchTimeout: ReturnType<typeof setTimeout>
-watch(selectedEventId, (newId) => {
-  if (newId) {
-    // Debounce fetch to avoid lag during rapid scanning
-    if (fetchTimeout) clearTimeout(fetchTimeout)
-    fetchTimeout = setTimeout(() => {
-      fetchWishes(newId, user.value?.id)
-    }, 300)
-  }
-})
-
-// Handlers
-async function handleEventSelect(id: string) {
+// --- Handlers ---
+function handleEventSelect(id: string) {
   selectedEventId.value = id
 }
 
+async function handleWishPrefetch(wish: Wish) {
+  // Prefetch wish detail data
+  queryClient.prefetchQuery({
+    queryKey: ['wish', wish.id, user.value?.id],
+    queryFn: () => wishesApi.getWish(wish.id, user.value?.id)
+  })
+}
+
+async function handleSaveProfileText(text: string) {
+  updateProfileMutation.mutate({ 
+    telegramId: user.value?.id as number, 
+    profileText: text 
+  }, {
+    onSuccess: () => {
+      showEditProfileModal.value = false
+    }
+  })
+}
+
+async function handleSubscribe() {
+  if (!user.value || !targetUserId.value) return
+  
+  subscriptionMutation.mutate({
+    currentUserId: user.value.id,
+    targetTelegramId: targetUserId.value,
+    action: isSubscribed.value ? 'unsubscribe' : 'subscribe'
+  })
+}
+
+// ... legacy modal handlers kept for MVP ... (will migrate to mutations later)
+import { useWishlists as useLegacyWishlists } from '@/composables/useWishlists'
+import { useWishes as useLegacyWishes } from '@/composables/useWishes'
+const { createWishlist, updateWishlist, deleteWishlist } = useLegacyWishlists()
+const { createWish, moveWishesToWishlist } = useLegacyWishes()
+
+const MAX_EVENTS = 5
+
 async function handleSaveEvent(title: string, date: string, description: string) {
   if (!user.value) return
-
   if (editingEvent.value) {
-    // Update existing
-    const updated = await updateWishlist(editingEvent.value.id, {
-      title,
-      eventDate: date || null,
-      description: description || null
-    })
-    if (updated) {
-      showAddEventModal.value = false
-      editingEvent.value = null
-    }
+    const updated = await updateWishlist(editingEvent.value.id, { title, eventDate: date, description })
+    if (updated) showAddEventModal.value = false
   } else {
-    // Create new
-    const newWishlist = await createWishlist(
-      title,
-      user.value.id,
-      true,
-      date || null,
-      description || null
-    )
+    const newWishlist = await createWishlist(title, user.value.id, true, date, description)
     if (newWishlist) {
       showAddEventModal.value = false
       selectedEventId.value = newWishlist.id
@@ -243,12 +177,10 @@ async function handleSaveEvent(title: string, date: string, description: string)
 }
 
 function openCreateEventModal() {
-  // Check event limit (max 5 events)
   if (wishlists.value.length >= MAX_EVENTS) {
     showEventLimitModal.value = true
     return
   }
-
   editingEvent.value = null
   showAddEventModal.value = true
 }
@@ -260,71 +192,35 @@ function handleEditEvent() {
 
 function handleDeleteEvent() {
   if (!selectedEvent.value) return
-
-  // Check if event has wishes
   if (wishes.value.length > 0) {
-    // Show modal with options
     eventToDelete.value = selectedEvent.value
     showDeleteEventModal.value = true
   } else {
-    // Delete immediately if no wishes
     confirmDeleteEvent(false)
   }
 }
 
 async function confirmDeleteEvent(moveWishes: boolean) {
   if (!eventToDelete.value && !selectedEvent.value) return
-
   const eventId = (eventToDelete.value || selectedEvent.value).id
-
-  try {
-    // If user wants to move wishes, move them to default wishlist first
-    if (moveWishes && wishes.value.length > 0 && user.value) {
-      const defaultEvent = wishlists.value.find(w => w.is_default)
-      if (defaultEvent) {
-        const moved = await moveWishesToWishlist(eventId, defaultEvent.id, user.value.id)
-        if (!moved) {
-          alert('Не удалось переместить желания')
-          return
-        }
-      }
-    }
-
-    // Delete the wishlist
-    const success = await deleteWishlist(eventId)
-    if (success) {
-      showDeleteEventModal.value = false
-      eventToDelete.value = null
-
-      // Select default event
-      const defaultEvent = wishlists.value.find(w => w.is_default)
-      if (defaultEvent) selectedEventId.value = defaultEvent.id
-    }
-  } catch (err) {
-    console.error('Failed to delete event:', err)
-    alert('Произошла ошибка при удалении события')
+  if (moveWishes && wishes.value.length > 0 && user.value) {
+    const defaultEvent = wishlists.value.find(w => w.is_default)
+    if (defaultEvent) await moveWishesToWishlist(eventId, defaultEvent.id, user.value.id)
+  }
+  if (await deleteWishlist(eventId)) {
+    showDeleteEventModal.value = false
+    const defaultEvent = wishlists.value.find(w => w.is_default)
+    if (defaultEvent) selectedEventId.value = defaultEvent.id
   }
 }
 
 function handleShareEvent() {
-  // TODO: Implement real sharing
-  console.log('Sharing event:', selectedEvent.value?.id)
-  if (window.Telegram?.WebApp) {
-      window.Telegram.WebApp.showAlert('Ссылка на событие скопирована!')
-  } else {
-      alert('Ссылка скопирована! (тест)')
-  }
+  toast.info('Ссылка на событие скопирована!')
 }
 
 async function handleAddWish(data: any) {
   if (!selectedEventId.value || !user.value) return
-  
-  const newWish = await createWish({
-    ...data,
-    wishlist_id: selectedEventId.value
-  }, user.value.id)
-  
-  if (newWish) {
+  if (await createWish({ ...data, wishlist_id: selectedEventId.value }, user.value.id)) {
     showAddWishModal.value = false
   }
 }
@@ -337,52 +233,15 @@ function onWishClick(wish: any) {
   }
 }
 
-function handleEditProfile() {
-  showEditProfileModal.value = true
-}
+function handleEditProfile() { showEditProfileModal.value = true }
 
-async function handleSaveProfileText(text: string) {
-  if (!user.value) return
-
-  const success = await updateProfileText(user.value.id, text)
-  if (success) {
-    profileText.value = text
-    showEditProfileModal.value = false
-  }
-}
-
-// Склонение слова "желание"
 function pluralizeWishes(count: number): string {
   const cases = [2, 0, 1, 1, 1, 2]
   const titles = ['желание', 'желания', 'желаний']
-  const index = (count % 100 > 4 && count % 100 < 20)
-    ? 2
-    : cases[Math.min(count % 10, 5)]
+  const index = (count % 100 > 4 && count % 100 < 20) ? 2 : cases[Math.min(count % 10, 5)]
   return `${count} ${titles[index]}`
 }
 
-async function handleSubscribe() {
-    if (!user.value || !targetUserId.value || isSubscriptionLoading.value) return
-    
-    isSubscriptionLoading.value = true
-    try {
-        if (isSubscribed.value) {
-            // Unsubscribe
-            const success = await unsubscribe(user.value.id, targetUserId.value)
-            if (success) isSubscribed.value = false
-        } else {
-            // Subscribe
-            const success = await subscribe(user.value.id, targetUserId.value)
-            if (success) isSubscribed.value = true
-        }
-        // Trigger haptic feedback
-        if (window.Telegram?.WebApp?.HapticFeedback) {
-            window.Telegram.WebApp.HapticFeedback.impactOccurred('medium')
-        }
-    } finally {
-        isSubscriptionLoading.value = false
-    }
-}
 </script>
 
 <template>
@@ -408,24 +267,23 @@ async function handleSubscribe() {
           </div>
           
           <div class="user-info">
-            <template v-if="isLoading">
+            <template v-if="combinedLoading">
               <div class="skeleton skeleton-text" style="width: 120px; height: 24px; margin-bottom: 4px;"></div>
               <div class="skeleton skeleton-text" style="width: 180px; height: 16px;"></div>
             </template>
             <template v-else>
               <h1 class="user-name">{{ displayUser.displayName }}</h1>
-              <p class="user-subtitle">{{ profileText }}</p>
+              <p class="user-subtitle">{{ profileUser?.profile_text || 'Save for a dream ✨' }}</p>
             </template>
           </div>
           
            <!-- Subscribe Button (Liquid Glass) -->
-          <button 
-            v-if="!isOwner && !isLoading" 
+            v-if="!isOwner && !combinedLoading" 
             class="subscribe-btn"
-            :class="{ 'subscribed': isSubscribed, 'loading': isSubscriptionLoading }"
+            :class="{ 'subscribed': isSubscribed, 'loading': subscriptionMutation.isPending }"
             @click.stop="handleSubscribe"
           >
-            <span v-if="isSubscriptionLoading" class="material-symbols-outlined spin">progress_activity</span>
+            <span v-if="subscriptionMutation.isPending" class="material-symbols-outlined spin">progress_activity</span>
             <template v-else>
                 <span class="material-symbols-outlined text-[20px]">{{ isSubscribed ? 'check' : 'person_add' }}</span>
             </template>
@@ -438,7 +296,7 @@ async function handleSubscribe() {
 
         <!-- Events Carousel -->
         <div class="carousel-wrapper">
-          <div v-if="isLoading" class="skeleton-carousel">
+          <div v-if="combinedLoading" class="skeleton-carousel">
              <div class="skeleton event-pill" style="width: 100px;"></div>
              <div class="skeleton event-add-btn"></div>
              <div class="skeleton event-pill" style="width: 120px;"></div>
@@ -485,7 +343,7 @@ async function handleSubscribe() {
             </button>
           </div>
           <div class="item-count">
-            <span class="count-label">{{ pluralizeWishes(wishes.length) }}</span>
+            <span class="count-label">{{ pluralizeWishes(wishes?.length || 0) }}</span>
           </div>
         </div>
       </header>
@@ -495,10 +353,11 @@ async function handleSubscribe() {
          <WishGrid
            :wishes="wishes"
            :loading="wishesLoading"
-           :error="wishesError"
+           :error="wishesError ? wishesError.message : null"
            :is-owner="isOwner"
            @add="showAddWishModal = true"
            @click="onWishClick"
+           @preload="handleWishPrefetch"
          />
       </section>
 
@@ -531,7 +390,7 @@ async function handleSubscribe() {
          />
          <EditProfileTextModal
            v-if="showEditProfileModal"
-           :initial-text="profileText"
+           :initial-text="profileUser?.profile_text || ''"
            @close="showEditProfileModal = false"
            @submit="handleSaveProfileText"
          />

@@ -11,7 +11,19 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'click', wish: Wish): void
+  (e: 'preload', wish: Wish): void
 }>()
+
+import { useImagePreload } from '@/composables/useImagePreload'
+const { preloadImage } = useImagePreload()
+
+function handleInteraction() {
+  if (props.wish.image_url) {
+    preloadImage(props.wish.image_url)
+    emit('preload', props.wish)
+  }
+}
+
 
 function formatPrice(price: number | null, currency: string | null) {
   if (!price) return ''
@@ -56,6 +68,8 @@ const bookingState = computed<'owner' | 'free' | 'booked-other' | 'booked-me'>((
     class="wish-card glass-card-new"
     :class="[`layout-${layout}`, `state-${bookingState}`]"
     @click="$emit('click', wish)"
+    @touchstart="handleInteraction"
+    @mousedown="handleInteraction"
   >
     <div class="card-image-wrapper">
       <img

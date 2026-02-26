@@ -12,8 +12,10 @@ import './assets/animations.css'        // Liquid animations
 import './assets/utilities.css'         // Utility classes
 
 import router from './router'
+import { VueQueryPlugin } from '@tanstack/vue-query'
 
 // Create and mount the app
 const app = createApp(App)
 app.use(router)
+app.use(VueQueryPlugin)
 app.mount('#app')

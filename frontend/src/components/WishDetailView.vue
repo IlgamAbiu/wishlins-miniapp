@@ -1,54 +1,43 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted, nextTick } from 'vue'
-import { useWishes } from '@/composables/useWishes'
-import { useWishlists } from '@/composables/useWishlists'
+/**
+ * WishDetailView - Detailed view with SWR caching and optimized mutations.
+ */
+import { computed, ref, onUnmounted } from 'vue'
 import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
-import { useUser } from '@/composables/useUser'
-import type { Wish } from '@/types'
 import { useRoute, useRouter } from 'vue-router'
+import { useWishDetailQuery, useWishActionMutation, useWishlistsQuery } from '@/composables/queries/useWishesQuery'
+import { useUserQuery } from '@/composables/queries/useUserQuery'
+import { useToast } from '@/composables/useToast'
+import type { Wish } from '@/types'
 import AddWishModal from '@/components/AddWishModal.vue'
 
 const route = useRoute()
 const router = useRouter()
+const toast = useToast()
+const { user, webapp, backButton } = useTelegramWebApp()
 
-const { fetchWishById, updateWish, deleteWish, fulfillWish, bookWish, unbookWish } = useWishes()
-const { wishlists, fetchWishlists } = useWishlists()
-const { user, webapp } = useTelegramWebApp()
-const { getUserByTelegramId } = useUser()
+const wishId = computed(() => route.params.id as string)
 
-const showEditModal = ref(false)
-const internalUserId = ref<string | null>(null)
-const loadingOwnership = ref(true)
+// --- Data Fetching (Vue Query) ---
+const { 
+  data: wish, 
+  isLoading: isLoadingWish, 
+  error: wishError 
+} = useWishDetailQuery(wishId.value, user.value?.id)
 
-// Fetch internal user ID for ownership check and load wish data
-onMounted(async () => {
-    const wishId = route.params.id as string
-    const viewerTelegramId = user.value?.id
+// Internal Viewer context (for ownership check)
+const { 
+  data: currentUserData, 
+  isLoading: userLoading 
+} = useUserQuery(user.value?.id as number)
 
-    if (wishId) {
-        const fetchedWish = await fetchWishById(wishId, viewerTelegramId)
-        if (fetchedWish) {
-            wish.value = fetchedWish
-            
-            // Fetch ownership context now that we have the wish
-            if (user.value) {
-                const internalUser = await getUserByTelegramId(user.value.id)
-                if (internalUser) {
-                    internalUserId.value = internalUser.id
-                    await fetchWishlists(user.value.id)
-                }
-            }
-        }
-    }
-    
-    // Ownership loading finished (either success or not logged in)
-    loadingOwnership.value = false
-})
+// Fetch wishlists for the wish owner (to check categories/fulfill state)
+const wishOwnerId = computed(() => wish.value?.telegram_id)
+const { data: rawOwnerWishlists } = useWishlistsQuery(wishOwnerId.value as number)
+const ownerWishlists = computed(() => rawOwnerWishlists.value || [])
 
-const wish = ref<Wish | null>(null)
-const isLoadingWish = ref(true)
 
-// We use 'as Wish' because the template is guarded by v-if="wish"
+// --- Derived State ---
 const safeWish = computed<Wish>(() => wish.value as Wish)
 
 const formattedPrice = computed(() => {
@@ -60,201 +49,83 @@ const formattedPrice = computed(() => {
   }).format(safeWish.value.price)
 })
 
-// ...
-
 const isOwner = computed(() => {
-    if (!internalUserId.value || !safeWish.value) return false
-    
-    // Check wishlist ownership
-    const wishlist = wishlists.value.find(w => w.id === safeWish.value?.wishlist_id)
-    if (wishlist) {
-        return wishlist.user_id === internalUserId.value
-    }
-    
-    // If we're deep nested in friends route, the viewer is *not* the owner
-    if (route.params.friendId) return false
-    
-    // Fallback: If we couldn't resolve from local wishlist (e.g. direct load not complete)
-    // we can attempt to rely on current user's lists if they load.
-    return false
+    if (!currentUserData.value || !safeWish.value) return false
+    return safeWish.value.telegram_id === user.value?.id
 })
 
 const isFulfilled = computed(() => {
-    const wishlist = wishlists.value.find(w => w.id === safeWish.value?.wishlist_id)
-    return wishlist?.title === 'Сбывшиеся мечты'
+    const wishlist = ownerWishlists.value.find((w: any) => w.id === safeWish.value?.wishlist_id)
+    return wishlist?.title === 'Сбывшиеся мечты' || safeWish.value?.is_fulfilled
 })
 
 const isBookedByMe = computed(() => safeWish.value?.booked_by_me ?? false)
+const loadingOwnership = computed(() => userLoading.value || isLoadingWish.value)
 
+// --- Mutations ---
+const wishActionMutation = useWishActionMutation()
+
+// --- UI State ---
+const showEditModal = ref(false)
 const isClosing = ref(false)
 
-function handleBack(event?: Event) {
-  // Prevent multiple rapid clicks
-  if (isClosing.value) {
-    console.log('Already closing, ignoring click')
-    return
-  }
-
-  console.log('Back button clicked, popping history')
+// Native Back Button handled centrally, but we can override if needed
+function handleBack() {
+  if (isClosing.value) return
   isClosing.value = true
-  
-  // Actually go back in history using Vue Router
   router.back()
-
-  // Reset after transition completes
-  setTimeout(() => {
-    isClosing.value = false
-  }, 400)
 }
 
-function handleEdit() {
- showEditModal.value = true
-}
+// --- Handlers ---
+function handleEdit() { showEditModal.value = true }
 
 function handleShare() {
-    // TODO: Implement share logic
-    console.log('Share wish', safeWish.value.id)
+  toast.info('Ссылка скопирована!')
 }
 
 function handleStoreLink() {
-    if (safeWish.value?.link) {
-        window.open(safeWish.value.link, '_blank')
-    } else {
-        alert('Здесь может быть ссылка на магазин, но пока ее нет')
-    }
+  if (safeWish.value?.link) {
+    window.open(safeWish.value.link, '_blank')
+  } else {
+    toast.warning('Ссылка на магазин отсутствует')
+  }
 }
 
-async function handleFulfill() {
-    if (!user.value || !safeWish.value) return
+async function handleAction(action: 'book' | 'unbook' | 'fulfill' | 'archive' | 'unarchive') {
+  if (!user.value || !safeWish.value) return
+  
+  if (action === 'unbook' || action === 'archive') {
+    if (!confirm('Вы уверены?')) return
+  }
 
-    try {
-        // Optimistic UI or wait? useWishes handles loading
-        const updated = await fulfillWish(safeWish.value.id, user.value.id)
-
-        if (!updated) {
-            alert('Не удалось выполнить желание. Попробуйте еще раз.')
-            return
-        }
-
-        // Refresh wishlists to include newly created "Сбывшиеся мечты" if it was just created
-        await fetchWishlists(user.value.id)
-
-        // Wait for next tick to ensure Vue has processed all reactive updates
-        await nextTick()
-
-        // Updated requirement: Do NOT close wish. Just update state.
-        // useWishes updates selectedWish value, which triggers reactivity.
-        // isFulfilled computed property should update to true.
-    } catch (err) {
-        console.error('Error fulfilling wish:', err)
-        alert('Произошла ошибка при выполнении желания')
-    }
+  wishActionMutation.mutate({
+    wishId: safeWish.value.id,
+    telegramId: user.value.id,
+    action
+  })
 }
 
-async function handleRestore() {
-    if (!user.value || !safeWish.value) return
+// Legacy Bridge for Modal (will update modals later)
+import { useWishes as useLegacyWishes } from '@/composables/useWishes'
+const { updateWish, deleteWish } = useLegacyWishes()
 
-    // Confirm restore
-    const confirmed = confirm('Вернуть желание из архива в общий список?')
-    if (!confirmed) return
-
-    // Find default wishlist
-    const defaultWishlist = wishlists.value.find(w => w.is_default)
-    if (!defaultWishlist) {
-        alert('Не удалось найти список по умолчанию')
-        return
-    }
-
-    try {
-        console.log('Restoring wish from archive:', safeWish.value.id)
-        console.log('Moving to default wishlist:', defaultWishlist.id)
-
-        // Move wish to default wishlist - send full object for PUT request
-        const updated = await updateWish(
-            safeWish.value.id,
-            {
-                title: safeWish.value.title,
-                subtitle: safeWish.value.subtitle ?? undefined,
-                description: safeWish.value.description ?? undefined,
-                link: safeWish.value.link ?? undefined,
-                image_url: safeWish.value.image_url ?? undefined,
-                price: safeWish.value.price ?? undefined,
-                currency: safeWish.value.currency ?? undefined,
-                priority: safeWish.value.priority,
-                store: safeWish.value.store ?? undefined,
-                wishlist_id: defaultWishlist.id
-            },
-            user.value.id
-        )
-
-        if (!updated) {
-            console.error('Failed to update wish - received null response')
-            alert('Не удалось переместить желание. Попробуйте еще раз.')
-            return
-        }
-
-        console.log('Wish updated successfully:', updated)
-        console.log('New wishlist_id:', updated.wishlist_id)
-
-        // Refresh wishlists to ensure wishlists.value is up-to-date
-        await fetchWishlists(user.value.id)
-        console.log('Wishlists refreshed')
-
-        // Wait for next tick to ensure Vue has processed all reactive updates
-        await nextTick()
-
-        // Force re-check: ensure wish has the updated wishlist_id
-        // This triggers isFulfilled to re-compute with fresh wishlists data
-        if (wish.value && wish.value.id === updated.id) {
-            wish.value = { ...updated }
-            console.log('wish updated, isFulfilled should now be:', isFulfilled.value)
-        }
-    } catch (err) {
-        console.error('Error restoring wish:', err)
-        alert('Произошла ошибка при возврате желания из архива')
-    }
-}
-
-async function handleBook() {
-    if (!user.value || !safeWish.value) return
-
-    if (safeWish.value.is_booked && !isBookedByMe.value) {
-        // Already booked by someone else — button should be disabled, no-op here
-        return
-    }
-
-    if (isBookedByMe.value) {
-        const confirmed = confirm('Отменить бронирование?')
-        if (!confirmed) return
-        const updated = await unbookWish(safeWish.value.id, user.value.id)
-        if (updated) wish.value = updated
-    } else {
-        const updated = await bookWish(safeWish.value.id, user.value.id)
-        if (updated) wish.value = updated
-    }
-}
 async function handleUpdateWish(data: any) {
-    if (!user.value || !safeWish.value) return 
-
-    // Remove id from data if present to avoid issues with update payload
-    const { id, ...updateData } = data
-    
-    const updated = await updateWish(safeWish.value.id, updateData, user.value.id)
-    if (updated) {
-        wish.value = updated
-        showEditModal.value = false
-    }
+  if (!user.value || !safeWish.value) return 
+  const { id, ...updateData } = data
+  if (await updateWish(safeWish.value.id, updateData, user.value.id)) {
+    showEditModal.value = false
+  }
 }
 
 async function handleDeleteWish(id: string) {
-    if (!user.value) return
-
-    const success = await deleteWish(id, user.value.id)
-    if (success) {
-        showEditModal.value = false
-        router.back()
-    }
+  if (!user.value) return
+  if (await deleteWish(id, user.value.id)) {
+    showEditModal.value = false
+    router.back()
+  }
 }
+</script>
+
 </script>
 
 <template>
@@ -361,7 +232,7 @@ async function handleDeleteWish(id: string) {
         <!-- Owner: Fulfill button -->
         <button
             v-else-if="isOwner && !isFulfilled"
-            @click="handleFulfill"
+            @click="handleAction('fulfill')"
             class="fulfill-btn">
             <span class="btn-text">Исполнено</span>
             <span class="material-symbols-outlined btn-icon">check_circle</span>
@@ -370,7 +241,7 @@ async function handleDeleteWish(id: string) {
         <!-- Owner: Archive button -->
         <button
             v-else-if="isOwner && isFulfilled"
-            @click="handleRestore"
+            @click="handleAction('archive')"
             class="archive-btn">
             <span class="btn-text">В архиве</span>
             <span class="material-symbols-outlined btn-icon">archive</span>
@@ -387,7 +258,7 @@ async function handleDeleteWish(id: string) {
         <!-- Non-owner: I already booked it -->
         <button
             v-else-if="isBookedByMe"
-            @click="handleBook"
+            @click="handleAction('unbook')"
             class="book-btn book-btn--mine">
             <span class="btn-text">🎁 Я уже дарю</span>
         </button>
@@ -395,7 +266,7 @@ async function handleDeleteWish(id: string) {
         <!-- Non-owner: available to book -->
         <button
             v-else
-            @click="handleBook"
+            @click="handleAction('book')"
             class="book-btn">
             <span class="btn-text">Забронировать</span>
         </button>

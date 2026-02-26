@@ -126,8 +126,6 @@ async function handleDeleteWish(id: string) {
 }
 </script>
 
-</script>
-
 <template>
   <div v-if="wish" class="wish-detail-view">
     <!-- Ambient Background Effects (Fixed) -->

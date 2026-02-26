@@ -278,6 +278,7 @@ function pluralizeWishes(count: number): string {
           </div>
           
            <!-- Subscribe Button (Liquid Glass) -->
+           <button
             v-if="!isOwner && !combinedLoading" 
             class="subscribe-btn"
             :class="{ 'subscribed': isSubscribed, 'loading': subscriptionMutation.isPending }"

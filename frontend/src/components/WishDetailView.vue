@@ -6,6 +6,7 @@ import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
 import { useUser } from '@/composables/useUser'
 import type { Wish } from '@/types'
 import AddWishModal from '@/components/AddWishModal.vue'
+import { navigationStore } from '@/stores/navigation.store'
 
 const { selectedWish, closeWish, updateWish, deleteWish, fulfillWish, bookWish, unbookWish } = useWishes()
 const { wishlists, fetchWishlists } = useWishlists()
@@ -26,18 +27,7 @@ onMounted(async () => {
         }
         loadingOwnership.value = false
     }
-
-    if (webapp.value) {
-        webapp.value.requestFullscreen()
-    }
 })
-
-onUnmounted(() => {
-    if (webapp.value) {
-        webapp.value.exitFullscreen()
-    }
-})
-
 const wish = computed(() => selectedWish.value)
 
 const safeWish = computed<Wish>(() => wish.value as Wish)
@@ -50,8 +40,6 @@ const formattedPrice = computed(() => {
     maximumFractionDigits: 0
   }).format(safeWish.value.price)
 })
-
-import { navigationStore } from '@/stores/navigation.store'
 
 // ...
 

@@ -2,10 +2,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { wishesApi } from '@/api/wishes'
 import { useToast } from '@/composables/useToast'
 
-export function useWishlistsQuery(telegramId: number) {
+export function useWishlistsQuery(telegramId: number | undefined) {
     return useQuery({
         queryKey: ['wishlists', telegramId],
-        queryFn: () => wishesApi.getWishlists(telegramId),
+        queryFn: () => wishesApi.getWishlists(telegramId as number),
+        enabled: !!telegramId,
         staleTime: 1000 * 60 * 5,
     })
 }
@@ -19,10 +20,11 @@ export function useWishesQuery(wishlistId: string | null, currentUserId?: number
     })
 }
 
-export function useWishDetailQuery(wishId: string, currentUserId?: number) {
+export function useWishDetailQuery(wishId: string | undefined, currentUserId?: number) {
     return useQuery({
         queryKey: ['wish', wishId, { currentUserId }],
-        queryFn: () => wishesApi.getWish(wishId, currentUserId),
+        queryFn: () => wishesApi.getWish(wishId as string, currentUserId),
+        enabled: !!wishId,
         staleTime: 1000 * 60 * 5,
     })
 }

@@ -3,10 +3,11 @@ import { userApi } from '@/api/user'
 import { useToast } from '@/composables/useToast'
 import { subscribeVersion } from '@/composables/useUser'
 
-export function useUserQuery(telegramId: number, currentUserId?: number) {
+export function useUserQuery(telegramId: number | undefined, currentUserId?: number) {
     return useQuery({
         queryKey: ['user', telegramId, { currentUserId }],
-        queryFn: () => userApi.getByTelegramId(telegramId, currentUserId),
+        queryFn: () => userApi.getByTelegramId(telegramId as number, currentUserId),
+        enabled: !!telegramId,
         staleTime: 1000 * 60 * 5, // 5 minutes
         retry: (failureCount, error: any) => {
             if (error.message === 'NOT_FOUND') return false

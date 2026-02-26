@@ -55,13 +55,13 @@ const showTabBar = computed(() => route.meta.requireTabBar !== false)
   --tab-bar-height: 56px;
 
   /* Safe area insets for fullscreen Telegram Mini App */
-  --safe-area-top: max(44px, env(safe-area-inset-top, 0px));
+  --safe-area-top: calc(max(44px, env(safe-area-inset-top, 0px)) + 16px);
   --safe-area-bottom: env(safe-area-inset-bottom, 0px);
   --safe-area-left: env(safe-area-inset-left, 0px);
   --safe-area-right: env(safe-area-inset-right, 0px);
 
   /* Standard Native Spacing */
-  --side-padding: 20px;
+  --side-padding: 16px;
   --top-margin: 24px;
 }
 

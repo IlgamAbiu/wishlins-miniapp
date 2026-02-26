@@ -11,38 +11,32 @@ const routes: RouteRecordRaw[] = [
         path: '/profile',
         name: 'Profile',
         component: () => import('@/views/ProfileView.vue'),
-        meta: { tabIndex: 0, requireTabBar: true },
-        children: [
-            {
-                path: 'wishes/:id',
-                name: 'MyWishDetail',
-                component: () => import('@/components/WishDetailView.vue'),
-                meta: { requireTabBar: false, isNested: true }
-            }
-        ]
+        meta: { tabIndex: 0, requireTabBar: true }
+    },
+    {
+        path: '/profile/wishes/:id',
+        name: 'MyWishDetail',
+        component: () => import('@/components/WishDetailView.vue'),
+        meta: { requireTabBar: false, isNested: true }
     },
     {
         path: '/friends',
         name: 'Friends',
         component: () => import('@/views/FriendsView.vue'),
-        meta: { tabIndex: 1, requireTabBar: true },
-        children: [
-            {
-                path: ':friendId',
-                name: 'FriendProfile',
-                component: () => import('@/views/ProfileView.vue'),
-                meta: { requireTabBar: false, isNested: true },
-                props: true,
-                children: [
-                    {
-                        path: 'wishes/:id',
-                        name: 'FriendWishDetail',
-                        component: () => import('@/components/WishDetailView.vue'),
-                        meta: { requireTabBar: false, isNested: true }
-                    }
-                ]
-            }
-        ]
+        meta: { tabIndex: 1, requireTabBar: true }
+    },
+    {
+        path: '/friends/:friendId',
+        name: 'FriendProfile',
+        component: () => import('@/views/ProfileView.vue'),
+        meta: { requireTabBar: false, isNested: true },
+        props: true
+    },
+    {
+        path: '/friends/:friendId/wishes/:id',
+        name: 'FriendWishDetail',
+        component: () => import('@/components/WishDetailView.vue'),
+        meta: { requireTabBar: false, isNested: true }
     },
     {
         path: '/search',

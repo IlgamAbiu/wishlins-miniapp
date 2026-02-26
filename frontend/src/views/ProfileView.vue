@@ -576,7 +576,7 @@ async function handleSubscribe() {
 
 /* === HEADER SECTION === */
 .header-section {
-  padding: calc(20px + var(--safe-area-top)) 20px 0;
+  padding: calc(24px + var(--safe-area-top)) 20px 0;
   display: flex;
   flex-direction: column;
   gap: 20px;

@@ -491,7 +491,7 @@ async function handleDeleteWish(id: string) {
     justify-content: flex-end; /* Push icons to the right, away from native BackButton on the left */
     align-items: center;
     padding: 20px;
-    padding-top: calc(20px + env(safe-area-inset-top, 0px));
+    padding-top: calc(24px + var(--safe-area-top));
     padding-right: 60px; /* Safe space for the native 3-dots Telegram menu on the right */
     z-index: 70; /* Above everything, including gloss (60) */
     pointer-events: none; /* Let clicks pass through empty spaces */

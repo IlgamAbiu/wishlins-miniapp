@@ -207,7 +207,7 @@ watch(subscribeVersion, () => {
 .friends-view__header {
   display: flex;
   flex-direction: column;
-  padding: calc(16px + var(--safe-area-top)) 16px 16px; /* top accounts for fullscreen status bar */
+  padding: calc(24px + var(--safe-area-top)) 16px 16px; /* top accounts for fullscreen status bar */
   margin-bottom: 16px;
 }
 

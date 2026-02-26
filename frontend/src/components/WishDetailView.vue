@@ -5,10 +5,13 @@ import { useWishlists } from '@/composables/useWishlists'
 import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
 import { useUser } from '@/composables/useUser'
 import type { Wish } from '@/types'
+import { useRoute, useRouter } from 'vue-router'
 import AddWishModal from '@/components/AddWishModal.vue'
-import { navigationStore } from '@/stores/navigation.store'
 
-const { selectedWish, closeWish, updateWish, deleteWish, fulfillWish, bookWish, unbookWish } = useWishes()
+const route = useRoute()
+const router = useRouter()
+
+const { fetchWishById, updateWish, deleteWish, fulfillWish, bookWish, unbookWish } = useWishes()
 const { wishlists, fetchWishlists } = useWishlists()
 const { user, webapp } = useTelegramWebApp()
 const { getUserByTelegramId } = useUser()
@@ -17,23 +20,39 @@ const showEditModal = ref(false)
 const internalUserId = ref<string | null>(null)
 const loadingOwnership = ref(true)
 
-// Fetch internal user ID for ownership check and handle Telegram UI
+// Fetch internal user ID for ownership check and load wish data
 onMounted(async () => {
-    if (user.value) {
-        const internalUser = await getUserByTelegramId(user.value.id)
-        if (internalUser) {
-            internalUserId.value = internalUser.id
-            await fetchWishlists(user.value.id)
-        }
-        loadingOwnership.value = false
-    }
-})
-const wish = computed(() => selectedWish.value)
+    const wishId = route.params.id as string
+    const viewerTelegramId = user.value?.id
 
+    if (wishId) {
+        const fetchedWish = await fetchWishById(wishId, viewerTelegramId)
+        if (fetchedWish) {
+            wish.value = fetchedWish
+            
+            // Fetch ownership context now that we have the wish
+            if (user.value) {
+                const internalUser = await getUserByTelegramId(user.value.id)
+                if (internalUser) {
+                    internalUserId.value = internalUser.id
+                    await fetchWishlists(user.value.id)
+                }
+            }
+        }
+    }
+    
+    // Ownership loading finished (either success or not logged in)
+    loadingOwnership.value = false
+})
+
+const wish = ref<Wish | null>(null)
+const isLoadingWish = ref(true)
+
+// We use 'as Wish' because the template is guarded by v-if="wish"
 const safeWish = computed<Wish>(() => wish.value as Wish)
 
 const formattedPrice = computed(() => {
-  if (!safeWish.value.price) return ''
+  if (!safeWish.value?.price) return ''
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: safeWish.value.currency || 'USD',
@@ -46,32 +65,22 @@ const formattedPrice = computed(() => {
 const isOwner = computed(() => {
     if (!internalUserId.value || !safeWish.value) return false
     
-    // Find the wishlist this wish belongs to
-    // We search in the currently loaded wishlists. 
-    // IMPORTANT: If we are viewing a friend's profile, 'wishlists' state from useWishlists might contain THEIR wishlists if they were just fetched.
-    // However, since we re-fetch YOUR wishlists in onMounted above, strict id comparison is key.
-    
-    // Better approach: Check if the wishlist's user_id matches internalUserId
-    const wishlist = wishlists.value.find(w => w.id === safeWish.value.wishlist_id)
+    // Check wishlist ownership
+    const wishlist = wishlists.value.find(w => w.id === safeWish.value?.wishlist_id)
     if (wishlist) {
         return wishlist.user_id === internalUserId.value
     }
     
-    // Fallback/Edge case:
-    // If we are in "Friends" tab, we might have loaded the FRIEND'S wishlists into the global store.
-    // If so, `wishlists` contains friend's lists.
-    // So finding the wishlist there and checking user_id should still work:
-    // friend's wishlist user_id != internalUserId -> isOwner = false. Correct.
+    // If we're deep nested in friends route, the viewer is *not* the owner
+    if (route.params.friendId) return false
     
-    // But what if we haven't loaded the wishlist for this wish?
-    // (e.g. deep link or some other flow)
-    // We assume data consistency for now.
-    
+    // Fallback: If we couldn't resolve from local wishlist (e.g. direct load not complete)
+    // we can attempt to rely on current user's lists if they load.
     return false
 })
 
 const isFulfilled = computed(() => {
-    const wishlist = wishlists.value.find(w => w.id === safeWish.value.wishlist_id)
+    const wishlist = wishlists.value.find(w => w.id === safeWish.value?.wishlist_id)
     return wishlist?.title === 'Сбывшиеся мечты'
 })
 
@@ -89,8 +98,8 @@ function handleBack(event?: Event) {
   console.log('Back button clicked, popping history')
   isClosing.value = true
   
-  // Actually go back in history. The popstate listener will call closeWish()
-  window.history.back()
+  // Actually go back in history using Vue Router
+  router.back()
 
   // Reset after transition completes
   setTimeout(() => {
@@ -108,7 +117,7 @@ function handleShare() {
 }
 
 function handleStoreLink() {
-    if (safeWish.value.link) {
+    if (safeWish.value?.link) {
         window.open(safeWish.value.link, '_blank')
     } else {
         alert('Здесь может быть ссылка на магазин, но пока ее нет')
@@ -194,12 +203,11 @@ async function handleRestore() {
         // Wait for next tick to ensure Vue has processed all reactive updates
         await nextTick()
 
-        // Force re-check: ensure selectedWish has the updated wishlist_id
+        // Force re-check: ensure wish has the updated wishlist_id
         // This triggers isFulfilled to re-compute with fresh wishlists data
-        if (selectedWish.value && selectedWish.value.id === updated.id) {
-            // selectedWish should already be updated by updateWish, but double-check
-            selectedWish.value = { ...updated }
-            console.log('selectedWish updated, isFulfilled should now be:', isFulfilled.value)
+        if (wish.value && wish.value.id === updated.id) {
+            wish.value = { ...updated }
+            console.log('wish updated, isFulfilled should now be:', isFulfilled.value)
         }
     } catch (err) {
         console.error('Error restoring wish:', err)
@@ -218,9 +226,11 @@ async function handleBook() {
     if (isBookedByMe.value) {
         const confirmed = confirm('Отменить бронирование?')
         if (!confirmed) return
-        await unbookWish(safeWish.value.id, user.value.id)
+        const updated = await unbookWish(safeWish.value.id, user.value.id)
+        if (updated) wish.value = updated
     } else {
-        await bookWish(safeWish.value.id, user.value.id)
+        const updated = await bookWish(safeWish.value.id, user.value.id)
+        if (updated) wish.value = updated
     }
 }
 async function handleUpdateWish(data: any) {
@@ -231,6 +241,7 @@ async function handleUpdateWish(data: any) {
     
     const updated = await updateWish(safeWish.value.id, updateData, user.value.id)
     if (updated) {
+        wish.value = updated
         showEditModal.value = false
     }
 }
@@ -241,7 +252,7 @@ async function handleDeleteWish(id: string) {
     const success = await deleteWish(id, user.value.id)
     if (success) {
         showEditModal.value = false
-        closeWish()
+        router.back()
     }
 }
 </script>

@@ -62,6 +62,31 @@ async def get_wishlist_wishes(
     return [_wish_to_response(wish, viewer_id) for wish in wishes]
 
 
+@router.get("/{wish_id}", response_model=WishResponse)
+async def get_wish(
+    wish_id: UUID,
+    service: Annotated[WishService, Depends(get_wish_service)],
+    user_service: UserServiceDep,
+    viewer_telegram_id: Optional[int] = Query(None, description="Telegram ID of the viewer (to compute booked_by_me)"),
+):
+    """Get a single wish."""
+    try:
+        wish = await service.get_wish(wish_id)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e),
+        )
+
+    viewer_id: Optional[UUID] = None
+    if viewer_telegram_id is not None:
+        viewer = await user_service.get_user_by_telegram_id(viewer_telegram_id)
+        if viewer:
+            viewer_id = viewer.id
+
+    return _wish_to_response(wish, viewer_id)
+
+
 @router.post("", response_model=WishResponse, status_code=status.HTTP_201_CREATED)
 async def create_wish(
     request: WishCreateRequest,

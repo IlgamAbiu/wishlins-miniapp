@@ -9,12 +9,11 @@ import FriendCard from '@/components/FriendCard.vue'
 import type { User } from '@/types'
 
 import { userService } from '@/services/user.service'
-import { navigationStore } from '@/stores/navigation.store'
+import { useRouter } from 'vue-router'
 import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
 import { subscribeVersion } from '@/composables/useUser'
 
-// Async helper for ProfileView (circular dep potential if static import, but AsyncComponent handles it well)
-const ProfileView = defineAsyncComponent(() => import('@/views/ProfileView.vue'))
+const router = useRouter()
 
 const { webapp, user } = useTelegramWebApp()
 const friends = ref<User[]>([])
@@ -23,8 +22,6 @@ const isLoading = ref(true)
 const isSearching = ref(false)
 const error = ref<string | null>(null)
 const searchQuery = ref('') // Search state
-
-const selectedFriendId = computed(() => navigationStore.state.selectedFriendId)
 
 // Displayed users: either search results or friends list
 const displayedUsers = computed(() => {
@@ -100,7 +97,7 @@ function handleAddFriend() {
 }
 
 function openFriendProfile(friendId: number) {
-    navigationStore.openFriendProfile(friendId)
+    router.push({ name: 'FriendProfile', params: { friendId } })
 }
 
 // Removed localized back button logic. Handled by generic useNativeNavigation
@@ -125,13 +122,8 @@ watch(subscribeVersion, () => {
 
 <template>
   <div class="friends-view-stack" @click="handleBackgroundClick">
-      <!-- 1. Profile View (Nested) -->
-      <div v-if="selectedFriendId" class="nested-profile-view">
-          <ProfileView :user-id="selectedFriendId" />
-      </div>
-
-      <!-- 2. Friends List (Default) -->
-      <div v-else class="friends-list-view">
+      <!-- Friends List (Always rendered, overlay will cover it) -->
+      <div class="friends-list-view">
             <div class="friends-view__header">
             <div class="header-top">
                 <div class="header-text-column">

@@ -3,46 +3,20 @@
  * Root application component with Tab Bar navigation.
  * Shows BlockedScreen when opened outside Telegram.
  */
-import { computed, defineAsyncComponent } from 'vue'
-import { useNavigation } from '@/composables/useNavigation'
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
 import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
-import { useWishes } from '@/composables/useWishes'
 import { TabBar } from '@/components/navigation'
 import BlockedScreen from '@/components/BlockedScreen.vue'
-import WishDetailView from '@/components/WishDetailView.vue'
-import { useNativeNavigation } from '@/composables/useNativeNavigation'
 
-// Initialize native history-based navigation
-useNativeNavigation()
+// Optional: Keep this if we have some global init logic besides router
+// import { useNativeNavigation } from '@/composables/useNativeNavigation'
 
-// Lazy load views
-const ProfileView = defineAsyncComponent(() => import('@/views/ProfileView.vue'))
-// Robust Async Component Loading for FriendsView
-const FriendsView = defineAsyncComponent({
-  loader: () => import('@/views/FriendsView.vue'),
-  onError: (error, retry, fail, attempts) => {
-    console.error('Error loading FriendsView:', error)
-    if (attempts <= 3) {
-      retry()
-    } else {
-      fail()
-    }
-  },
-})
-const SearchView = defineAsyncComponent(() => import('@/views/SearchView.vue'))
-
-const { activeTab } = useNavigation()
+const route = useRoute()
 const { isReady, isInTelegram } = useTelegramWebApp()
-const { selectedWish } = useWishes()
 
-// Map tab IDs to components
-const tabComponents = {
-  profile: ProfileView,
-  friends: FriendsView,
-  search: SearchView,
-}
-
-const currentComponent = computed(() => tabComponents[activeTab.value])
+// TabBar visibility is now controlled by route meta
+const showTabBar = computed(() => route.meta.requireTabBar !== false)
 </script>
 
 <template>
@@ -60,16 +34,14 @@ const currentComponent = computed(() => tabComponents[activeTab.value])
     <div class="mesh-gradient"></div>
 
     <main class="app__content">
-      <KeepAlive :max="2">
-        <component :is="currentComponent" :key="activeTab" />
-      </KeepAlive>
+      <router-view v-slot="{ Component, route }">
+        <Transition :name="(route.meta.transitionName as string) || 'fade'">
+             <component :is="Component" :key="route.path" />
+        </Transition>
+      </router-view>
     </main>
 
-    <Transition name="fade-scale">
-      <WishDetailView v-if="selectedWish" />
-    </Transition>
-
-    <TabBar v-show="!selectedWish" />
+    <TabBar v-show="showTabBar" />
   </div>
 </template>
 
@@ -190,17 +162,43 @@ a {
   opacity: 0;
 }
 
-.fade-scale-enter-active {
-  transition: opacity 0.25s ease, transform 0.25s ease;
-}
-
-.fade-scale-leave-active {
-  transition: opacity 0.15s ease, transform 0.15s ease;
-}
-
 .fade-scale-enter-from,
 .fade-scale-leave-to {
   opacity: 0;
   transform: scale(0.95);
 }
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+  position: absolute;
+  width: 100%;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* Slide Transitions (Push/Pop) */
+.slide-left-enter-active,
+.slide-left-leave-active,
+.slide-right-enter-active,
+.slide-right-leave-active {
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  position: absolute;
+  width: 100%;
+}
+
+.slide-left-enter-from,
+.slide-right-leave-to {
+  transform: translateX(100%);
+}
+
+.slide-left-leave-to,
+.slide-right-enter-from {
+  transform: translateX(-30%);
+  opacity: 0.5;
+}
+
 </style>

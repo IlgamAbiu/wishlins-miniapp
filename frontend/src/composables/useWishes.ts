@@ -60,7 +60,31 @@ export function useWishes() {
             wishes.value = await response.json()
         } catch (err) {
             error.value = err instanceof Error ? err.message : 'Unknown error occurred'
-            wishes.value = []
+        } finally {
+            loading.value = false
+        }
+    }
+
+    async function fetchWishById(wishId: string, viewerTelegramId?: number): Promise<Wish | null> {
+        loading.value = true
+        error.value = null
+
+        try {
+            const url = viewerTelegramId
+                ? `${API_BASE_URL}/wishes/${wishId}?viewer_telegram_id=${viewerTelegramId}`
+                : `${API_BASE_URL}/wishes/${wishId}`
+
+            const response = await fetch(url)
+
+            if (!response.ok) {
+                if (response.status === 404) return null
+                throw new Error(`Failed to fetch wish: ${response.statusText}`)
+            }
+
+            return await response.json()
+        } catch (err) {
+            error.value = err instanceof Error ? err.message : 'Unknown error occurred'
+            return null
         } finally {
             loading.value = false
         }
@@ -287,6 +311,7 @@ export function useWishes() {
         loading,
         error,
         fetchWishes,
+        fetchWishById,
         createWish,
         deleteWish,
         updateWish,

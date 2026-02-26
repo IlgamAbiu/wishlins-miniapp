@@ -2,16 +2,33 @@
 /**
  * TabBar - Bottom navigation bar component.
  */
-import { useNavigation } from '@/composables/useNavigation'
 import { useKeyboard } from '@/composables/useKeyboard'
+import { useRoute, useRouter } from 'vue-router'
 import TabBarItem from './TabBarItem.vue'
-import type { TabId } from '@/types'
+import { TAB_CONFIGS } from '@/stores/navigation.store' // Re-using data structure for now
 
-const { tabs, activeTab, navigateToTab, isActive } = useNavigation()
+const route = useRoute()
+const router = useRouter()
 const { isKeyboardOpen } = useKeyboard()
 
 function handleTabSelect(tabId: string) {
-  navigateToTab(tabId as TabId)
+  // Map tab IDs to routes
+  const pathMap: Record<string, string> = {
+      'profile': '/profile',
+      'friends': '/friends',
+      'search': '/search'
+  }
+  
+  if (pathMap[tabId]) {
+      router.push(pathMap[tabId])
+  }
+}
+
+function isActive(tabId: string) {
+    if (tabId === 'profile' && route.path.startsWith('/profile')) return true
+    if (tabId === 'friends' && route.path.startsWith('/friends')) return true
+    if (tabId === 'search' && route.path.startsWith('/search')) return true
+    return false
 }
 </script>
 
@@ -24,7 +41,7 @@ function handleTabSelect(tabId: string) {
   >
     <div class="tab-bar__content">
       <TabBarItem
-        v-for="tab in tabs"
+        v-for="tab in TAB_CONFIGS"
         :key="tab.id"
         :tab="tab"
         :is-active="isActive(tab.id)"

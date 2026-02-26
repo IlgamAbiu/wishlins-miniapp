@@ -58,6 +58,13 @@ class WishService:
 
         return await self._wish_repository.get_by_wishlist_id(wishlist_id)
 
+    async def get_wish(self, wish_id: UUID) -> Wish:
+        """Get a single wish by id."""
+        wish = await self._wish_repository.get_by_id(wish_id)
+        if not wish:
+            raise ValueError(f"Wish with id {wish_id} not found")
+        return wish
+
     async def update_wish(self, wish_id: UUID, data: WishUpdate) -> Wish:
         """Update an existing wish."""
         wish = await self._wish_repository.get_by_id(wish_id)

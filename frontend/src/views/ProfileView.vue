@@ -7,7 +7,7 @@ import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
 import { useWishlists } from '@/composables/useWishlists'
 import { useWishes } from '@/composables/useWishes'
 import { useUser } from '@/composables/useUser'
-import { navigationStore } from '@/stores/navigation.store'
+import { useRoute, useRouter } from 'vue-router'
 import EventCarousel from '@/components/EventCarousel.vue'
 import WishGrid from '@/components/WishGrid.vue'
 import AddWishModal from '@/components/AddWishModal.vue'
@@ -38,19 +38,23 @@ const profileText = ref('Saving for a dream ✨')
 const isSubscribed = ref(false)
 const isSubscriptionLoading = ref(false)
 
+const route = useRoute()
+const router = useRouter()
+
 // Guest Mode Logic
 const targetUserId = computed(() => {
-    if (props.userId) return props.userId
-    return navigationStore.state.viewedUserId || user.value?.id
+    if (props.userId) return Number(props.userId)
+    const routeFriendId = route.params.friendId
+    if (routeFriendId) return Number(routeFriendId)
+    return user.value?.id
 })
 
 // Check if we are in "Stack Mode" (navigated from Friends list)
 const isStackMode = computed(() => !!props.userId)
 
 const isOwner = computed(() => {
-    if (props.userId) return props.userId === user.value?.id
-    if (!navigationStore.state.viewedUserId) return true
-    return navigationStore.state.viewedUserId === user.value?.id
+    if (targetUserId.value !== user.value?.id) return false
+    return true
 })
 
 // Current User Display
@@ -181,18 +185,21 @@ async function initData() {
 }
 
 // Watch for user changes OR navigation state changes OR prop changes
-watch([() => user.value, () => navigationStore.state.viewedUserId, () => props.userId], () => {
+watch([() => user.value, targetUserId], () => {
    // Reset selected event when switching profiles
    selectedEventId.value = null
    initData()
 }, { immediate: true })
 
-// Re-fetch own data when returning to "Мои желания" tab (KeepAlive keeps stale state)
-watch(() => navigationStore.state.activeTab, (newTab) => {
-  if (newTab === 'profile' && !isStackMode.value) {
-    initData()
+// Re-fetch own data when returning to "Мои желания" tab
+watch(
+  () => route.path,
+  (newPath) => {
+    if (newPath === '/profile') {
+      initData()
+    }
   }
-})
+)
 
 // Watch for event selection to fetch wishes
 let fetchTimeout: ReturnType<typeof setTimeout>
@@ -329,7 +336,11 @@ async function handleAddWish(data: any) {
 }
 
 function onWishClick(wish: any) {
-  openWish(wish)
+  if (isOwner.value) {
+    router.push({ name: 'MyWishDetail', params: { id: wish.id } })
+  } else {
+    router.push({ name: 'FriendWishDetail', params: { friendId: targetUserId.value, id: wish.id } })
+  }
 }
 
 function handleEditProfile() {

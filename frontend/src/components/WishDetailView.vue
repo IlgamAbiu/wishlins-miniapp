@@ -407,14 +407,6 @@ async function handleDeleteWish(id: string) {
 
     <!-- Fixed Header (Top of everything) -->
     <header class="header">
-        <button
-            type="button"
-            @click.stop="handleBack"
-            :disabled="isClosing"
-            class="glass-btn back-btn">
-            <span class="material-symbols-outlined icon">arrow_back</span>
-        </button>
-        
         <div class="header-actions">
             <button @click="handleShare" class="glass-btn icon-btn">
                 <span class="material-symbols-outlined">ios_share</span>

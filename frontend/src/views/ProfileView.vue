@@ -369,16 +369,8 @@ async function handleSubscribe() {
     <div v-else class="content">
       <!-- Header with glass-panel -->
       <header class="header-section">
-        <!-- Back Button for Stack Mode (Guest View) -->
-        <div v-if="isStackMode" class="back-button-container" @click="handleGoBack">
-            <button class="glass-btn back-header-btn">
-                <span class="material-symbols-outlined text-[20px]">arrow_back</span>
-            </button>
-        </div>
-
         <div 
           class="glass-panel header-panel" 
-          :class="{ 'header-with-back-btn': isStackMode }"
           @click="isOwner && handleEditProfile()"
         >
           <div class="avatar-wrapper">
@@ -571,9 +563,7 @@ async function handleSubscribe() {
   transform: scale(0.98);
 }
 
-.header-with-back-btn {
-  margin-top: 60px; /* Increased from 40px to prevent overlap with 48px button + offset */
-}
+
 
 
 .avatar-wrapper {
@@ -661,25 +651,7 @@ async function handleSubscribe() {
   color: #94a3b8;
 }
 
-/* Back button specific style */
-.back-header-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #64748b; /* Slate 500 */
-  background: rgba(255, 255, 255, 0.4);
-  margin-right: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.5); /* Explicit border match */
-}
 
-[data-theme='dark'] .back-header-btn {
-  color: #cbd5e1;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
 
 .edit-header-btn {
   margin-left: auto;

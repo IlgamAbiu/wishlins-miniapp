@@ -14,7 +14,9 @@ const router = useRouter()
 
 watch(isReady, (ready) => {
   if (ready && startParam.value) {
-    if (startParam.value.startsWith('wish_')) {
+    const handled = sessionStorage.getItem('deepLinkHandled')
+    if (!handled && startParam.value.startsWith('wish_')) {
+      sessionStorage.setItem('deepLinkHandled', 'true')
       const wishId = startParam.value.replace('wish_', '')
       router.push({ name: 'wish-detail', params: { id: wishId } })
     }
@@ -45,13 +47,11 @@ watch(isReady, (ready) => {
             v-if="route.meta.keepAlive" 
           />
         </KeepAlive>
-        <Transition name="fade-scale" mode="out-in">
-          <component 
-            :is="Component" 
-            :key="route.name || 'no-cache'" 
-            v-if="!route.meta.keepAlive" 
-          />
-        </Transition>
+        <component 
+          :is="Component" 
+          :key="route.name || 'no-cache'" 
+          v-if="!route.meta.keepAlive" 
+        />
       </router-view>
     </main>
 

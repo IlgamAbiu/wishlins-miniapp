@@ -241,7 +241,7 @@ export function useTelegramWebApp() {
   // Initialize on first use
   initializeTelegram()
 
-  const isInTelegram = computed(() => isAvailable.value)
+  const isInTelegram = computed(() => hasValidInitData.value)
 
   const userDisplayName = computed(() => {
     if (!user.value) return 'Guest'

@@ -316,11 +316,7 @@ async function handleSubscribe() {
 
 <template>
   <div class="profile-view">
-    <div v-if="!isInTelegram" class="not-telegram">
-      <p>Only works in Telegram</p>
-    </div>
-
-    <div v-else class="content">
+    <div class="content">
       <!-- Header -->
       <header class="header-section">
         <div

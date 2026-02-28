@@ -6,10 +6,30 @@
 import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
 import BlockedScreen from '@/components/BlockedScreen.vue'
 
-const { isReady, isInTelegram } = useTelegramWebApp()
+const { isReady, isInTelegram, isAvailable, hasValidInitData, user, webapp } = useTelegramWebApp()
+
+// Debug logging
+console.log('[App] isReady:', isReady.value)
+console.log('[App] isAvailable:', isAvailable.value)
+console.log('[App] hasValidInitData:', hasValidInitData.value)
+console.log('[App] isInTelegram:', isInTelegram.value)
+console.log('[App] user:', user.value)
+console.log('[App] webapp initData:', webapp.value?.initData?.substring(0, 100))
+console.log('[App] window.Telegram:', !!window.Telegram)
+console.log('[App] window.Telegram.WebApp:', !!window.Telegram?.WebApp)
 </script>
 
 <template>
+  <!-- DEBUG OVERLAY — remove after fix -->
+  <div style="position:fixed;top:0;left:0;right:0;z-index:9999;background:rgba(0,0,0,0.85);color:#0f0;font-size:11px;padding:8px 12px;font-family:monospace;word-break:break-all;">
+    isReady={{ isReady }} |
+    isAvailable={{ isAvailable }} |
+    isInTelegram={{ isInTelegram }} |
+    hasInitData={{ hasValidInitData }} |
+    user={{ user?.id || 'null' }} |
+    initData={{ webapp?.initData?.substring(0, 50) || 'empty' }}
+  </div>
+
   <!-- Loading -->
   <div v-if="!isReady" class="app-loading">
     <div class="app-loading__spinner"></div>

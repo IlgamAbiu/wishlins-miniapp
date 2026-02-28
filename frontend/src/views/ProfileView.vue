@@ -1,13 +1,14 @@
 <script setup lang="ts">
 /**
  * ProfileView - User profile with Events (Wishlists) and Wishes.
+ * Used for both own profile (/wishes) and friend profile (/friends/:friendId).
  */
 import { ref, watch, computed, onMounted, onUnmounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
 import { useWishlists } from '@/composables/useWishlists'
 import { useWishes } from '@/composables/useWishes'
 import { useUser } from '@/composables/useUser'
-import { navigationStore } from '@/stores/navigation.store'
 import EventCarousel from '@/components/EventCarousel.vue'
 import WishGrid from '@/components/WishGrid.vue'
 import AddWishModal from '@/components/AddWishModal.vue'
@@ -16,9 +17,8 @@ import EditProfileTextModal from '@/components/EditProfileTextModal.vue'
 import DeleteEventModal from '@/components/DeleteEventModal.vue'
 import EventLimitModal from '@/components/EventLimitModal.vue'
 
-const props = defineProps<{
-    userId?: number // Optional prop for direct user ID (Stack Navigation)
-}>()
+const route = useRoute()
+const router = useRouter()
 
 const { isInTelegram, user, userDisplayName } = useTelegramWebApp()
 const { wishlists, fetchWishlists, createWishlist, updateWishlist, deleteWishlist } = useWishlists()
@@ -38,24 +38,27 @@ const profileText = ref('Saving for a dream ✨')
 const isSubscribed = ref(false)
 const isSubscriptionLoading = ref(false)
 
-// Guest Mode Logic
+// Guest Mode Logic — determine target user from route params
 const targetUserId = computed(() => {
-    if (props.userId) return props.userId
-    return navigationStore.state.viewedUserId || user.value?.id
+    // Friend profile route: /friends/:friendId
+    const friendId = route.params.friendId
+    if (friendId) return Number(friendId)
+    // Own profile
+    return user.value?.id
 })
 
-// Check if we are in "Stack Mode" (navigated from Friends list)
-const isStackMode = computed(() => !!props.userId)
+// Check if we are viewing someone else's profile (from route)
+const isGuestMode = computed(() => !!route.params.friendId)
 
 const isOwner = computed(() => {
-    if (props.userId) return props.userId === user.value?.id
-    if (!navigationStore.state.viewedUserId) return true
-    return navigationStore.state.viewedUserId === user.value?.id
+    if (isGuestMode.value) {
+        return Number(route.params.friendId) === user.value?.id
+    }
+    return true
 })
 
 // Current User Display
 const currentProfileUser = ref<any>(null)
-// ... displayUser computed ...
 
 const displayUser = computed(() => {
     if (isOwner.value) {
@@ -80,19 +83,10 @@ const displayUser = computed(() => {
 let wishUpdateUnsubscribe: (() => void) | null = null
 
 onMounted(() => {
-    // If a global wish update happens (e.g. from Detail View), re-fetch or update local list
     wishUpdateUnsubscribe = onWishUpdate((type, wish, id) => {
-        // Simple strategy: if we are viewing the wishlist that was modified, refresh it
-        // Or if we don't know, just refresh everything if it affects current user context
-        // For MVP, if we are owner, just refresh or let reactivity handle it if we used shared store (but we split it)
-
-        // If we are the owner, we definitely want to refresh
         if (isOwner.value && type !== 'create') {
-            // 'create' is usually handled by the creating component adding it,
-            // but if created from somewhere else?
+            // Refresh is handled below
         }
-
-        // Actually, easiest way is just to re-fetch wishes for current selected event if any
         if (selectedEventId.value) {
              fetchWishes(selectedEventId.value, user.value?.id)
         }
@@ -100,22 +94,13 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-    // Clean up wish update listener
     if (wishUpdateUnsubscribe) {
         wishUpdateUnsubscribe()
     }
-
-    // Clean up fetch timeout
     if (fetchTimeout) {
         clearTimeout(fetchTimeout)
     }
 })
-
-function handleGoBack() {
-    navigationStore.closeFriendProfile()
-}
-
-
 
 // Event limit constant
 const MAX_EVENTS = 5
@@ -132,11 +117,7 @@ async function initData() {
   if (userId) {
     isLoading.value = true
     try {
-      // Load user profile data including profile_text
-      // Pass current user ID to check subscription status
       const currentUserTelegramId = user.value?.id
-      console.log('initData: checking subscription for', userId, 'by', currentUserTelegramId)
-      
       const userData = await getUserByTelegramId(userId, currentUserTelegramId)
       
       if (userData) {
@@ -144,8 +125,6 @@ async function initData() {
         if (userData.profile_text) {
           profileText.value = userData.profile_text
         }
-        // Set subscription status
-        console.log('initData: is_subscribed from backend:', userData.is_subscribed)
         isSubscribed.value = !!userData.is_subscribed
       }
 
@@ -164,25 +143,16 @@ async function initData() {
   }
 }
 
-// Watch for user changes OR navigation state changes OR prop changes
-watch([() => user.value, () => navigationStore.state.viewedUserId, () => props.userId], () => {
-   // Reset selected event when switching profiles
+// Watch for user changes (initial load and when user becomes available)
+watch([() => user.value, () => route.params.friendId], () => {
    selectedEventId.value = null
    initData()
 }, { immediate: true })
-
-// Re-fetch own data when returning to "Мои желания" tab (KeepAlive keeps stale state)
-watch(() => navigationStore.state.activeTab, (newTab) => {
-  if (newTab === 'profile' && !isStackMode.value) {
-    initData()
-  }
-})
 
 // Watch for event selection to fetch wishes
 let fetchTimeout: ReturnType<typeof setTimeout>
 watch(selectedEventId, (newId) => {
   if (newId) {
-    // Debounce fetch to avoid lag during rapid scanning
     if (fetchTimeout) clearTimeout(fetchTimeout)
     fetchTimeout = setTimeout(() => {
       fetchWishes(newId, user.value?.id)
@@ -199,7 +169,6 @@ async function handleSaveEvent(title: string, date: string, description: string)
   if (!user.value) return
 
   if (editingEvent.value) {
-    // Update existing
     const updated = await updateWishlist(editingEvent.value.id, {
       title,
       eventDate: date || null,
@@ -210,7 +179,6 @@ async function handleSaveEvent(title: string, date: string, description: string)
       editingEvent.value = null
     }
   } else {
-    // Create new
     const newWishlist = await createWishlist(
       title,
       user.value.id,
@@ -226,7 +194,6 @@ async function handleSaveEvent(title: string, date: string, description: string)
 }
 
 function openCreateEventModal() {
-  // Check event limit (max 5 events)
   if (wishlists.value.length >= MAX_EVENTS) {
     showEventLimitModal.value = true
     return
@@ -244,13 +211,10 @@ function handleEditEvent() {
 function handleDeleteEvent() {
   if (!selectedEvent.value) return
 
-  // Check if event has wishes
   if (wishes.value.length > 0) {
-    // Show modal with options
     eventToDelete.value = selectedEvent.value
     showDeleteEventModal.value = true
   } else {
-    // Delete immediately if no wishes
     confirmDeleteEvent(false)
   }
 }
@@ -261,7 +225,6 @@ async function confirmDeleteEvent(moveWishes: boolean) {
   const eventId = (eventToDelete.value || selectedEvent.value).id
 
   try {
-    // If user wants to move wishes, move them to default wishlist first
     if (moveWishes && wishes.value.length > 0 && user.value) {
       const defaultEvent = wishlists.value.find(w => w.is_default)
       if (defaultEvent) {
@@ -273,13 +236,11 @@ async function confirmDeleteEvent(moveWishes: boolean) {
       }
     }
 
-    // Delete the wishlist
     const success = await deleteWishlist(eventId)
     if (success) {
       showDeleteEventModal.value = false
       eventToDelete.value = null
 
-      // Select default event
       const defaultEvent = wishlists.value.find(w => w.is_default)
       if (defaultEvent) selectedEventId.value = defaultEvent.id
     }
@@ -290,7 +251,6 @@ async function confirmDeleteEvent(moveWishes: boolean) {
 }
 
 function handleShareEvent() {
-  // TODO: Implement real sharing
   console.log('Sharing event:', selectedEvent.value?.id)
   if (window.Telegram?.WebApp) {
       window.Telegram.WebApp.showAlert('Ссылка на событие скопирована!')
@@ -313,7 +273,16 @@ async function handleAddWish(data: any) {
 }
 
 function onWishClick(wish: any) {
+  // Store wish data so WishDetailView can access it
   openWish(wish)
+  // Navigate to the appropriate wish detail route
+  if (isGuestMode.value) {
+    // Friend's wish: /friends/:friendId/wishes/:wishId
+    router.push(`/friends/${route.params.friendId}/wishes/${wish.id}`)
+  } else {
+    // Own wish: /wishes/:wishId
+    router.push(`/wishes/${wish.id}`)
+  }
 }
 
 function handleEditProfile() {
@@ -346,15 +315,12 @@ async function handleSubscribe() {
     isSubscriptionLoading.value = true
     try {
         if (isSubscribed.value) {
-            // Unsubscribe
             const success = await unsubscribe(user.value.id, targetUserId.value)
             if (success) isSubscribed.value = false
         } else {
-            // Subscribe
             const success = await subscribe(user.value.id, targetUserId.value)
             if (success) isSubscribed.value = true
         }
-        // Trigger haptic feedback
         if (window.Telegram?.WebApp?.HapticFeedback) {
             window.Telegram.WebApp.HapticFeedback.impactOccurred('medium')
         }
@@ -374,16 +340,8 @@ async function handleSubscribe() {
     <div v-else class="content">
       <!-- Header with glass-panel -->
       <header class="header-section">
-        <!-- Back Button for Stack Mode (Guest View) -->
-        <div v-if="isStackMode" class="back-button-container" @click="handleGoBack">
-            <button class="glass-btn back-header-btn">
-                <span class="material-symbols-outlined text-[20px]">arrow_back</span>
-            </button>
-        </div>
-
         <div 
-          class="glass-panel header-panel" 
-          :class="{ 'header-with-back-btn': isStackMode }"
+          class="glass-panel header-panel"
           @click="isOwner && handleEditProfile()"
         >
           <div class="avatar-wrapper">
@@ -576,11 +534,6 @@ async function handleSubscribe() {
   transform: scale(0.98);
 }
 
-.header-with-back-btn {
-  margin-top: 60px; /* Increased from 40px to prevent overlap with 48px button + offset */
-}
-
-
 .avatar-wrapper {
   position: relative;
 }
@@ -666,41 +619,21 @@ async function handleSubscribe() {
   color: #94a3b8;
 }
 
-/* Back button specific style */
-.back-header-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #64748b; /* Slate 500 */
-  background: rgba(255, 255, 255, 0.4);
-  margin-right: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.5); /* Explicit border match */
-}
-
-[data-theme='dark'] .back-header-btn {
-  color: #cbd5e1;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
 .edit-header-btn {
   margin-left: auto;
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.5); /* Match template border */
+  border: 1px solid rgba(255, 255, 255, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #64748b;
-  background: rgba(255, 255, 255, 0.4); /* Consistent with light theme template */
+  background: rgba(255, 255, 255, 0.4);
 }
 
 [data-theme='dark'] .edit-header-btn {
-  color: #cbd5e1; /* slate-300 */
+  color: #cbd5e1;
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -708,13 +641,13 @@ async function handleSubscribe() {
 /* Subscribe Button (Liquid Glass) */
 .subscribe-btn {
   margin-left: auto;
-  width: 44px; /* Fixed width for circle */
+  width: 44px;
   height: 44px;
-  border-radius: 50%; /* Circle shape */
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(10, 13, 194, 0.1); /* Primary tint */
+  background: rgba(10, 13, 194, 0.1);
   border: 1px solid rgba(10, 13, 194, 0.2);
   color: var(--tg-button-color);
   backdrop-filter: blur(12px);
@@ -722,8 +655,6 @@ async function handleSubscribe() {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(10, 13, 194, 0.15);
-  /* padding removed */
-  /* gap removed */
 }
 
 .subscribe-btn:active {
@@ -732,7 +663,7 @@ async function handleSubscribe() {
 }
 
 .subscribe-btn.subscribed {
-  background: rgba(34, 197, 94, 0.15); /* Green tint */
+  background: rgba(34, 197, 94, 0.15);
   border: 1px solid rgba(34, 197, 94, 0.3);
   color: #22c55e;
   box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15);
@@ -765,14 +696,13 @@ async function handleSubscribe() {
 .carousel-wrapper {
   margin: 0 -20px;
   padding: 0 20px;
-  /* Prevent shadow clipping in carousel */
   overflow: visible;
 }
 
 .skeleton-carousel {
   display: flex;
   gap: 8px;
-  padding: 4px 0; /* Match EventCarousel padding */
+  padding: 4px 0;
 }
 
 .skeleton-carousel .event-pill {
@@ -788,7 +718,6 @@ async function handleSubscribe() {
 }
 
 /* === EVENT DESCRIPTION === */
-/* .event-description-wrapper removed empty rule */
 
 .event-description {
   padding: 16px;
@@ -921,43 +850,4 @@ async function handleSubscribe() {
 .v-leave-to {
   opacity: 0;
 }
-
-.back-button-container {
-    position: absolute;
-    left: 20px;
-    top: calc(20px + var(--safe-area-top));
-    z-index: 20;
-}
-
-.back-header-btn {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.9);
-    
-    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.back-header-btn:active {
-    background: rgba(255, 255, 255, 0.15);
-    transform: scale(0.98);
-}
-
-[data-theme='light'] .back-header-btn {
-    background: rgba(0, 0, 0, 0.05);
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    color: #333;
-    box-shadow: none;
-}
-
 </style>

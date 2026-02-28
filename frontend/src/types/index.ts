@@ -7,7 +7,7 @@
  * Available tabs in the application.
  * - profile: Мои желания (My Wishes)
  * - friends: Друзья (Friends)
- * - search: Поиск (Search)
+ * - search: Идеи (Ideas)
  */
 export type TabId = 'profile' | 'friends' | 'search'
 
@@ -19,17 +19,7 @@ export interface TabConfig {
   label: string
   icon: string
   activeIcon: string
-}
-
-/**
- * Navigation state.
- */
-export interface NavigationState {
-  activeTab: TabId
-  previousTab: TabId | null
-  viewedUserId: number | null // Telegram ID of the user being viewed (null = current user)
-  selectedFriendId: number | null // ID of friend selected in Friends tab (Stack navigation)
-  history: TabId[]
+  route: string
 }
 
 /**

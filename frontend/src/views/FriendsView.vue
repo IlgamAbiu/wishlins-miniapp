@@ -1,30 +1,26 @@
-```html
 <script setup lang="ts">
 /**
  * FriendsView - Friends tab.
  * Displays list of friends sorted by birthday.
+ * Navigation to friend profiles is handled via Vue Router.
  */
-import { ref, computed, onMounted, watch, defineAsyncComponent } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import FriendCard from '@/components/FriendCard.vue'
 import type { User } from '@/types'
 
 import { userService } from '@/services/user.service'
-import { navigationStore } from '@/stores/navigation.store'
 import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
 import { subscribeVersion } from '@/composables/useUser'
 
-// Async helper for ProfileView (circular dep potential if static import, but AsyncComponent handles it well)
-const ProfileView = defineAsyncComponent(() => import('@/views/ProfileView.vue'))
-
-const { webapp, user, backButton } = useTelegramWebApp()
+const router = useRouter()
+const { webapp, user } = useTelegramWebApp()
 const friends = ref<User[]>([])
 const searchResults = ref<User[]>([])
 const isLoading = ref(true)
 const isSearching = ref(false)
 const error = ref<string | null>(null)
 const searchQuery = ref('') // Search state
-
-const selectedFriendId = computed(() => navigationStore.state.selectedFriendId)
 
 // Displayed users: either search results or friends list
 const displayedUsers = computed(() => {
@@ -100,23 +96,8 @@ function handleAddFriend() {
 }
 
 function openFriendProfile(friendId: number) {
-    navigationStore.openFriendProfile(friendId)
+    router.push(`/friends/${friendId}`)
 }
-
-function handleBackButton() {
-    navigationStore.closeFriendProfile()
-}
-
-// Watch selectedFriendId to toggle Back Button
-watch(selectedFriendId, (newId) => {
-    if (newId) {
-        backButton.value.show()
-        backButton.value.onClick(handleBackButton)
-    } else {
-        backButton.value.hide()
-        backButton.value.offClick(handleBackButton)
-    }
-})
 
 // Dismiss keyboard on background click
 function handleBackgroundClick(event: Event) {
@@ -138,13 +119,8 @@ watch(subscribeVersion, () => {
 
 <template>
   <div class="friends-view-stack" @click="handleBackgroundClick">
-      <!-- 1. Profile View (Nested) -->
-      <div v-if="selectedFriendId" class="nested-profile-view">
-          <ProfileView :user-id="selectedFriendId" />
-      </div>
-
-      <!-- 2. Friends List (Default) -->
-      <div v-else class="friends-list-view">
+      <!-- Friends List -->
+      <div class="friends-list-view">
             <div class="friends-view__header">
             <div class="header-top">
                 <div class="header-text-column">
@@ -191,7 +167,6 @@ watch(subscribeVersion, () => {
                 <div class="placeholder__icon">🎁</div>
                 <div class="placeholder__sparkle">🌟</div>
                 </div>
-                <!-- <h2 class="placeholder__title">Пока нет друзей</h2> -->
                 <p class="placeholder__text">Ищите друзей через поиск или пригласите их в приложение!</p>
                 <button class="primary-button" @click="handleAddFriend">Пригласить друзей</button>
             </div>

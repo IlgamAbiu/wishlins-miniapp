@@ -1,18 +1,20 @@
 /**
- * useNavigation - Composable for tab navigation.
+ * useNavigation - Composable for tab navigation via Vue Router.
  */
 
 import { computed } from 'vue'
-import { navigationStore, TAB_CONFIGS } from '@/stores'
+import { useRouter, useRoute } from 'vue-router'
+import { TAB_CONFIGS, getTabIdFromPath } from '@/stores/navigation.store'
 import type { TabId } from '@/types'
 
 export function useNavigation() {
-  const { state, switchTab, goBack, isTabActive, activeTabConfig } = navigationStore
+  const router = useRouter()
+  const route = useRoute()
 
   /**
-   * Current active tab ID.
+   * Current active tab ID (derived from route path).
    */
-  const activeTab = computed(() => state.activeTab)
+  const activeTab = computed(() => getTabIdFromPath(route.path))
 
   /**
    * All available tabs.
@@ -20,30 +22,31 @@ export function useNavigation() {
   const tabs = TAB_CONFIGS
 
   /**
-   * Switch to a tab.
+   * Switch to a tab via router.
    */
   function navigateToTab(tabId: TabId): void {
-    if (state.activeTab === tabId) return
-    switchTab(tabId)
+    const tab = TAB_CONFIGS.find(t => t.id === tabId)
+    if (tab) {
+      router.push(tab.route)
+    }
   }
 
   /**
    * Check if a tab is currently active.
    */
   function isActive(tabId: TabId): boolean {
-    return isTabActive(tabId)
+    return activeTab.value === tabId
   }
 
   /**
-   * Navigate back to previous tab.
+   * Navigate back via router.
    */
-  function navigateBack(): boolean {
-    return goBack()
+  function navigateBack(): void {
+    router.back()
   }
 
   return {
     activeTab,
-    activeTabConfig,
     tabs,
     navigateToTab,
     navigateBack,

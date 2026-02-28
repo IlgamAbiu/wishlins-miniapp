@@ -1,44 +1,13 @@
 <script setup lang="ts">
 /**
- * Root application component with Tab Bar navigation.
+ * Root application component.
  * Shows BlockedScreen when opened outside Telegram.
+ * Main navigation is handled by Vue Router.
  */
-import { computed, defineAsyncComponent } from 'vue'
-import { useNavigation } from '@/composables/useNavigation'
 import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
-import { useWishes } from '@/composables/useWishes'
-import { TabBar } from '@/components/navigation'
 import BlockedScreen from '@/components/BlockedScreen.vue'
-import WishDetailView from '@/components/WishDetailView.vue'
 
-// Lazy load views
-const ProfileView = defineAsyncComponent(() => import('@/views/ProfileView.vue'))
-// Robust Async Component Loading for FriendsView
-const FriendsView = defineAsyncComponent({
-  loader: () => import('@/views/FriendsView.vue'),
-  onError: (error, retry, fail, attempts) => {
-    console.error('Error loading FriendsView:', error)
-    if (attempts <= 3) {
-      retry()
-    } else {
-      fail()
-    }
-  },
-})
-const SearchView = defineAsyncComponent(() => import('@/views/SearchView.vue'))
-
-const { activeTab } = useNavigation()
 const { isReady, isInTelegram } = useTelegramWebApp()
-const { selectedWish } = useWishes()
-
-// Map tab IDs to components
-const tabComponents = {
-  profile: ProfileView,
-  friends: FriendsView,
-  search: SearchView,
-}
-
-const currentComponent = computed(() => tabComponents[activeTab.value])
 </script>
 
 <template>
@@ -55,17 +24,7 @@ const currentComponent = computed(() => tabComponents[activeTab.value])
     <!-- Mesh gradients (dark theme) -->
     <div class="mesh-gradient"></div>
 
-    <main class="app__content">
-      <KeepAlive :max="2">
-        <component :is="currentComponent" :key="activeTab" />
-      </KeepAlive>
-    </main>
-
-    <Transition name="fade-scale">
-      <WishDetailView v-if="selectedWish" />
-    </Transition>
-
-    <TabBar v-show="!selectedWish" />
+    <router-view />
   </div>
 </template>
 
@@ -146,21 +105,6 @@ a {
   position: relative;
 }
 
-.app__content {
-  flex: 1;
-  overflow: hidden;
-  position: relative;
-  z-index: 1;
-}
-
-.app__content > * {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-}
-
 /* Mesh gradient for dark theme */
 .mesh-gradient {
   position: fixed;
@@ -184,19 +128,5 @@ a {
 /* Hide blur circles in dark theme */
 [data-theme='dark'] .blur-decoration {
   opacity: 0;
-}
-
-.fade-scale-enter-active {
-  transition: opacity 0.25s ease, transform 0.25s ease;
-}
-
-.fade-scale-leave-active {
-  transition: opacity 0.15s ease, transform 0.15s ease;
-}
-
-.fade-scale-enter-from,
-.fade-scale-leave-to {
-  opacity: 0;
-  transform: scale(0.95);
 }
 </style>

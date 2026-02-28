@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
 import { useWishes } from '@/composables/useWishes'
 import { useWishlists } from '@/composables/useWishlists'
 import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
 import { useUser } from '@/composables/useUser'
 import type { Wish } from '@/types'
 import AddWishModal from '@/components/AddWishModal.vue'
+
+const router = useRouter()
 
 const { selectedWish, closeWish, updateWish, deleteWish, fulfillWish, bookWish, unbookWish } = useWishes()
 const { wishlists, fetchWishlists } = useWishlists()
@@ -41,7 +44,7 @@ const formattedPrice = computed(() => {
   }).format(safeWish.value.price)
 })
 
-import { navigationStore } from '@/stores/navigation.store'
+// Navigation handled by Vue Router + Telegram BackButton
 
 // ...
 
@@ -83,14 +86,10 @@ const isClosing = ref(false)
 
 function handleBack() {
   // Prevent multiple rapid clicks
-  if (isClosing.value) {
-    console.log('Already closing, ignoring click')
-    return
-  }
+  if (isClosing.value) return
 
-  console.log('Back button clicked, closing wish')
   isClosing.value = true
-  closeWish()
+  router.back()
 
   // Reset after transition completes
   setTimeout(() => {
@@ -241,7 +240,7 @@ async function handleDeleteWish(id: string) {
     const success = await deleteWish(id, user.value.id)
     if (success) {
         showEditModal.value = false
-        closeWish()
+        router.back()
     }
 }
 </script>
@@ -391,14 +390,9 @@ async function handleDeleteWish(id: string) {
     </div>
 
     <!-- Fixed Header (Top of everything) -->
+    <!-- Back button removed — Telegram native BackButton is used instead -->
     <header class="header">
-        <button
-            type="button"
-            @click.stop="handleBack"
-            :disabled="isClosing"
-            class="glass-btn back-btn">
-            <span class="material-symbols-outlined icon">arrow_back</span>
-        </button>
+        <div class="header-spacer"></div>
         
         <div class="header-actions">
             <button @click="handleShare" class="glass-btn icon-btn">

@@ -2,4 +2,4 @@
  * Stores barrel export.
  */
 
-export { navigationStore, TAB_CONFIGS } from './navigation.store'
+export { navigationStore, TAB_CONFIGS, getTabIdFromPath } from './navigation.store'

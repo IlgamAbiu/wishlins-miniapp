@@ -464,7 +464,7 @@ async function handleSubscribe() {
 
 <style scoped>
 .profile-view {
-  height: 100vh;
+  height: 100%;
   background: transparent;
   display: flex;
   flex-direction: column;

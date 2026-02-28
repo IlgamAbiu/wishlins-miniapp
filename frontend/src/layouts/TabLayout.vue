@@ -8,6 +8,10 @@ import TabBar from '@/components/TabBar.vue'
 
 <template>
   <div class="tab-layout">
+    <!-- DEBUG MARKER 2: TabLayout -->
+    <div style="background:green;color:white;padding:10px;z-index:100;position:relative;flex-shrink:0;">
+      [TABLAYOUT] renders OK
+    </div>
     <main class="tab-layout__content">
       <router-view v-slot="{ Component, route }">
         <KeepAlive :max="3">

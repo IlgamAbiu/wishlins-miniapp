@@ -20,16 +20,6 @@ console.log('[App] window.Telegram.WebApp:', !!window.Telegram?.WebApp)
 </script>
 
 <template>
-  <!-- DEBUG OVERLAY — remove after fix -->
-  <div style="position:fixed;top:0;left:0;right:0;z-index:9999;background:rgba(0,0,0,0.85);color:#0f0;font-size:11px;padding:8px 12px;font-family:monospace;word-break:break-all;">
-    isReady={{ isReady }} |
-    isAvailable={{ isAvailable }} |
-    isInTelegram={{ isInTelegram }} |
-    hasInitData={{ hasValidInitData }} |
-    user={{ user?.id || 'null' }} |
-    initData={{ webapp?.initData?.substring(0, 50) || 'empty' }}
-  </div>
-
   <!-- Loading -->
   <div v-if="!isReady" class="app-loading">
     <div class="app-loading__spinner"></div>
@@ -41,6 +31,10 @@ console.log('[App] window.Telegram.WebApp:', !!window.Telegram?.WebApp)
   <!-- Main App -->
   <div v-else class="app">
     <div class="mesh-gradient"></div>
+    <!-- DEBUG MARKER 1: App level -->
+    <div style="background:red;color:white;padding:10px;z-index:100;position:relative;flex-shrink:0;">
+      [APP] user={{ user?.id }} route={{ $route.path }}
+    </div>
     <router-view />
   </div>
 </template>

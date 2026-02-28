@@ -105,6 +105,12 @@ a {
   position: relative;
 }
 
+/* Ensure router-view content fills the container */
+.app > :not(.mesh-gradient) {
+  flex: 1;
+  min-height: 0;
+}
+
 /* Mesh gradient for dark theme */
 .mesh-gradient {
   position: fixed;

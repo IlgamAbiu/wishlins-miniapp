@@ -62,7 +62,12 @@ export function setupTelegramBackButton(routerInstance: any) {
     const { backButton } = useTelegramWebApp()
 
     backButton.value.onClick(() => {
-        routerInstance.back()
+        // If there's nowhere to go back to natively, push to profile
+        if (window.history.length <= 1) {
+            routerInstance.push('/')
+        } else {
+            routerInstance.back()
+        }
     })
 
     isBackButtonConfigured = true

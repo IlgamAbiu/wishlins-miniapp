@@ -1,17 +1,13 @@
 <script setup lang="ts">
 /**
- * FriendCard.vue
- * 
- * Displays a friend in the list.
+ * FriendCard - Displays a friend in the grid.
  */
 import { computed } from 'vue'
 import type { User } from '@/types'
 
-interface Props {
+const props = defineProps<{
   friend: User
-}
-
-const props = defineProps<Props>()
+}>()
 
 const wishCount = computed(() => props.friend.wish_count ?? 0)
 
@@ -26,48 +22,44 @@ function pluralizeWishes(count: number): string {
 
 const birthdayText = computed(() => {
   if (!props.friend.birth_date) return 'День рождения не указан'
-  
+
   const today = new Date()
   const birthDate = new Date(props.friend.birth_date)
   const nextBirthday = new Date(today.getFullYear(), birthDate.getMonth(), birthDate.getDate())
-  
-  // Reset hours to avoid timezone issues affecting day diff
+
   today.setHours(0, 0, 0, 0)
   nextBirthday.setHours(0, 0, 0, 0)
 
   if (nextBirthday < today) {
     nextBirthday.setFullYear(today.getFullYear() + 1)
   }
-  
+
   const diffTime = nextBirthday.getTime() - today.getTime()
   const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24))
-  
+
   if (diffDays === 0) return 'День рождения сегодня! 🎂'
   if (diffDays === 1) return 'День рождения завтра'
-  
+
   const lastDigit = diffDays % 10
   const lastTwoDigits = diffDays % 100
-  
+
   let dayWord = 'дней'
-  if (lastDigit === 1 && lastTwoDigits !== 11) {
-    dayWord = 'день'
-  } else if ([2, 3, 4].includes(lastDigit) && ![12, 13, 14].includes(lastTwoDigits)) {
-    dayWord = 'дня'
-  }
-  
+  if (lastDigit === 1 && lastTwoDigits !== 11) dayWord = 'день'
+  else if ([2, 3, 4].includes(lastDigit) && ![12, 13, 14].includes(lastTwoDigits)) dayWord = 'дня'
+
   return `До дня рождения ${diffDays} ${dayWord}`
 })
 
 const displayName = computed(() => {
-    if (props.friend.first_name && props.friend.last_name) {
-        return `${props.friend.first_name} ${props.friend.last_name}`
-    }
-    return props.friend.first_name || props.friend.username || 'Friend'
+  if (props.friend.first_name && props.friend.last_name) {
+    return `${props.friend.first_name} ${props.friend.last_name}`
+  }
+  return props.friend.first_name || props.friend.username || 'Friend'
 })
 
-const avatarInitial = computed(() => {
-    return (props.friend.first_name || props.friend.username || '?')[0].toUpperCase()
-})
+const avatarInitial = computed(() =>
+  (props.friend.first_name || props.friend.username || '?')[0].toUpperCase()
+)
 </script>
 
 <template>
@@ -75,15 +67,13 @@ const avatarInitial = computed(() => {
     <div class="friend-card__avatar">
       <img v-if="friend.avatar_url" :src="friend.avatar_url" :alt="displayName" />
       <div v-else class="friend-card__avatar-placeholder">{{ avatarInitial }}</div>
-      <!-- Badge removed as requested -->
     </div>
-    
+
     <div class="friend-card__info">
       <h3 class="friend-card__name">{{ displayName }}</h3>
       <p class="friend-card__wishes">{{ pluralizeWishes(wishCount) }}</p>
-      
+
       <div class="friend-card__next-event">
-        <!-- Label removed as requested -->
         <span class="friend-card__event-date">{{ birthdayText }}</span>
       </div>
     </div>
@@ -140,8 +130,6 @@ const avatarInitial = computed(() => {
   border: 2px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Removed friend-card__gift-icon styles */
-
 .friend-card__name {
   margin: 0;
   font-size: 18px;
@@ -171,8 +159,6 @@ const avatarInitial = computed(() => {
 [data-theme='dark'] .friend-card__next-event {
   background: rgba(51, 65, 85, 0.6);
 }
-
-/* Removed friend-card__event-label styles */
 
 .friend-card__event-date {
   font-size: 13px;

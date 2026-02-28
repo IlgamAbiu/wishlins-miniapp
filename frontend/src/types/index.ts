@@ -1,13 +1,9 @@
 /**
  * Type definitions for the Wishlist Mini App.
- * Simplified version with only navigation types.
  */
 
 /**
  * Available tabs in the application.
- * - profile: Мои желания (My Wishes)
- * - friends: Друзья (Friends)
- * - search: Идеи (Ideas)
  */
 export type TabId = 'profile' | 'friends' | 'search'
 
@@ -75,10 +71,9 @@ export interface CreateWishRequest {
   image_url?: string
   price?: number
   currency?: string
-  priority?: WishPriority  // defaults to 'just_want' on backend
-  store?: string           // auto-extracted on backend
+  priority?: WishPriority
+  store?: string
 }
-
 
 /**
  * API response for wishlist list.
@@ -105,3 +100,9 @@ export interface User {
   created_at: string
   updated_at: string
 }
+
+/**
+ * Haptic feedback types.
+ */
+export type HapticImpactStyle = 'light' | 'medium' | 'heavy' | 'rigid' | 'soft'
+export type HapticNotificationType = 'error' | 'success' | 'warning'

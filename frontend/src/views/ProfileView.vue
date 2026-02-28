@@ -2,6 +2,12 @@
 /**
  * ProfileView - User profile with Events (Wishlists) and Wishes.
  * Used for both own profile (/wishes) and friend profile (/friends/:friendId).
+ * 
+ * Telegram integrations:
+ * - showPopup() for delete event confirmation (replaces DeleteEventModal)
+ * - showAlert() for event limit (replaces EventLimitModal)
+ * - showConfirm() for destructive actions
+ * - HapticFeedback on subscribe/unsubscribe
  */
 import { ref, watch, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -9,107 +15,93 @@ import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
 import { useWishlists } from '@/composables/useWishlists'
 import { useWishes } from '@/composables/useWishes'
 import { useUser } from '@/composables/useUser'
+import { useHaptic } from '@/composables/useHaptic'
 import EventCarousel from '@/components/EventCarousel.vue'
 import WishGrid from '@/components/WishGrid.vue'
 import AddWishModal from '@/components/AddWishModal.vue'
 import AddEventModal from '@/components/AddEventModal.vue'
 import EditProfileTextModal from '@/components/EditProfileTextModal.vue'
-import DeleteEventModal from '@/components/DeleteEventModal.vue'
-import EventLimitModal from '@/components/EventLimitModal.vue'
 
 const route = useRoute()
 const router = useRouter()
 
-const { isInTelegram, user, userDisplayName } = useTelegramWebApp()
+const { isInTelegram, user, userDisplayName, showPopup, showAlert } = useTelegramWebApp()
 const { wishlists, fetchWishlists, createWishlist, updateWishlist, deleteWishlist } = useWishlists()
 const { wishes, loading: wishesLoading, error: wishesError, fetchWishes, createWish, moveWishesToWishlist, openWish, onWishUpdate } = useWishes()
 const { updateProfileText, getUserByTelegramId, subscribe, unsubscribe } = useUser()
+const { impact, notification } = useHaptic()
 
 const selectedEventId = ref<string | null>(null)
-// ... modal state refs ...
 const showAddWishModal = ref(false)
 const showAddEventModal = ref(false)
 const showEditProfileModal = ref(false)
-const showDeleteEventModal = ref(false)
-const showEventLimitModal = ref(false)
 const editingEvent = ref<any>(null)
-const eventToDelete = ref<any>(null)
 const profileText = ref('Saving for a dream ✨')
 const isSubscribed = ref(false)
 const isSubscriptionLoading = ref(false)
 
-// Guest Mode Logic — determine target user from route params
+// Guest mode logic
 const targetUserId = computed(() => {
-    // Friend profile route: /friends/:friendId
-    const friendId = route.params.friendId
-    if (friendId) return Number(friendId)
-    // Own profile
-    return user.value?.id
+  const friendId = route.params.friendId
+  if (friendId) return Number(friendId)
+  return user.value?.id
 })
 
-// Check if we are viewing someone else's profile (from route)
 const isGuestMode = computed(() => !!route.params.friendId)
 
 const isOwner = computed(() => {
-    if (isGuestMode.value) {
-        return Number(route.params.friendId) === user.value?.id
-    }
-    return true
+  if (isGuestMode.value) {
+    return Number(route.params.friendId) === user.value?.id
+  }
+  return true
 })
 
-// Current User Display
+// Current user display
 const currentProfileUser = ref<any>(null)
 
 const displayUser = computed(() => {
-    if (isOwner.value) {
-        return {
-            displayName: userDisplayName.value,
-            photoUrl: user.value?.photo_url,
-            initial: userDisplayName.value?.charAt(0)
-        }
-    } else {
-        if (!currentProfileUser.value) return { displayName: 'Loading...', photoUrl: null, initial: '?' }
-        const u = currentProfileUser.value
-        const name = u.last_name ? `${u.first_name} ${u.last_name}` : u.first_name
-        return {
-            displayName: name,
-            photoUrl: u.avatar_url,
-            initial: name?.charAt(0) || '?'
-        }
+  if (isOwner.value) {
+    return {
+      displayName: userDisplayName.value,
+      photoUrl: user.value?.photo_url,
+      initial: userDisplayName.value?.charAt(0),
     }
+  } else {
+    if (!currentProfileUser.value) return { displayName: 'Loading...', photoUrl: null, initial: '?' }
+    const u = currentProfileUser.value
+    const name = u.last_name ? `${u.first_name} ${u.last_name}` : u.first_name
+    return {
+      displayName: name,
+      photoUrl: u.avatar_url,
+      initial: name?.charAt(0) || '?',
+    }
+  }
 })
 
-// Subscribe to global wish updates to keep this list fresh
-let wishUpdateUnsubscribe: (() => void) | null = null
-
-onMounted(() => {
-    wishUpdateUnsubscribe = onWishUpdate((type, wish, id) => {
-        if (isOwner.value && type !== 'create') {
-            // Refresh is handled below
-        }
-        if (selectedEventId.value) {
-             fetchWishes(selectedEventId.value, user.value?.id)
-        }
-    })
-})
-
-onUnmounted(() => {
-    if (wishUpdateUnsubscribe) {
-        wishUpdateUnsubscribe()
-    }
-    if (fetchTimeout) {
-        clearTimeout(fetchTimeout)
-    }
-})
-
-// Event limit constant
+// Event limit
 const MAX_EVENTS = 5
 
-const selectedEvent = computed(() => 
+const selectedEvent = computed(() =>
   wishlists.value.find(w => w.id === selectedEventId.value)
 )
 
-// Initial Data Fetch
+// Global wish update subscription
+let wishUpdateUnsubscribe: (() => void) | null = null
+
+onMounted(() => {
+  wishUpdateUnsubscribe = onWishUpdate((type) => {
+    if (selectedEventId.value) {
+      fetchWishes(selectedEventId.value, user.value?.id)
+    }
+  })
+})
+
+onUnmounted(() => {
+  if (wishUpdateUnsubscribe) wishUpdateUnsubscribe()
+  if (fetchTimeout) clearTimeout(fetchTimeout)
+})
+
+// Initial data fetch
 const isLoading = ref(true)
 
 async function initData() {
@@ -119,23 +111,20 @@ async function initData() {
     try {
       const currentUserTelegramId = user.value?.id
       const userData = await getUserByTelegramId(userId, currentUserTelegramId)
-      
+
       if (userData) {
         currentProfileUser.value = userData
-        if (userData.profile_text) {
-          profileText.value = userData.profile_text
-        }
+        if (userData.profile_text) profileText.value = userData.profile_text
         isSubscribed.value = !!userData.is_subscribed
       }
 
       await fetchWishlists(userId)
 
-      // Select default event or first one
       if (wishlists.value.length > 0) {
         const defaultEvent = wishlists.value.find(w => w.is_default)
         selectedEventId.value = defaultEvent ? defaultEvent.id : wishlists.value[0].id
       } else {
-          selectedEventId.value = null
+        selectedEventId.value = null
       }
     } finally {
       isLoading.value = false
@@ -143,13 +132,12 @@ async function initData() {
   }
 }
 
-// Watch for user changes (initial load and when user becomes available)
 watch([() => user.value, () => route.params.friendId], () => {
-   selectedEventId.value = null
-   initData()
+  selectedEventId.value = null
+  initData()
 }, { immediate: true })
 
-// Watch for event selection to fetch wishes
+// Fetch wishes on event selection
 let fetchTimeout: ReturnType<typeof setTimeout>
 watch(selectedEventId, (newId) => {
   if (newId) {
@@ -161,7 +149,7 @@ watch(selectedEventId, (newId) => {
 })
 
 // Handlers
-async function handleEventSelect(id: string) {
+function handleEventSelect(id: string) {
   selectedEventId.value = id
 }
 
@@ -172,33 +160,28 @@ async function handleSaveEvent(title: string, date: string, description: string)
     const updated = await updateWishlist(editingEvent.value.id, {
       title,
       eventDate: date || null,
-      description: description || null
+      description: description || null,
     })
     if (updated) {
       showAddEventModal.value = false
       editingEvent.value = null
     }
   } else {
-    const newWishlist = await createWishlist(
-      title,
-      user.value.id,
-      true,
-      date || null,
-      description || null
-    )
+    const newWishlist = await createWishlist(title, user.value.id, true, date || null, description || null)
     if (newWishlist) {
       showAddEventModal.value = false
       selectedEventId.value = newWishlist.id
+      notification('success')
     }
   }
 }
 
 function openCreateEventModal() {
   if (wishlists.value.length >= MAX_EVENTS) {
-    showEventLimitModal.value = true
+    // Use Telegram showAlert instead of custom EventLimitModal
+    showAlert('Максимум 5 событий. Удалите одно из существующих, чтобы создать новое.')
     return
   }
-
   editingEvent.value = null
   showAddEventModal.value = true
 }
@@ -208,21 +191,35 @@ function handleEditEvent() {
   showAddEventModal.value = true
 }
 
-function handleDeleteEvent() {
+async function handleDeleteEvent() {
   if (!selectedEvent.value) return
 
   if (wishes.value.length > 0) {
-    eventToDelete.value = selectedEvent.value
-    showDeleteEventModal.value = true
+    // Use Telegram showPopup instead of DeleteEventModal
+    const buttonId = await showPopup({
+      title: `Удалить «${selectedEvent.value.title}»?`,
+      message: `В этом списке ${wishes.value.length} желаний. Что сделать с ними?`,
+      buttons: [
+        { id: 'move', type: 'default', text: 'Переместить в основной' },
+        { id: 'delete', type: 'destructive', text: 'Удалить всё' },
+        { id: 'cancel', type: 'cancel' },
+      ],
+    })
+
+    if (buttonId === 'move') {
+      await confirmDeleteEvent(true)
+    } else if (buttonId === 'delete') {
+      await confirmDeleteEvent(false)
+    }
+    // 'cancel' — do nothing
   } else {
-    confirmDeleteEvent(false)
+    await confirmDeleteEvent(false)
   }
 }
 
 async function confirmDeleteEvent(moveWishes: boolean) {
-  if (!eventToDelete.value && !selectedEvent.value) return
-
-  const eventId = (eventToDelete.value || selectedEvent.value).id
+  if (!selectedEvent.value) return
+  const eventId = selectedEvent.value.id
 
   try {
     if (moveWishes && wishes.value.length > 0 && user.value) {
@@ -230,7 +227,7 @@ async function confirmDeleteEvent(moveWishes: boolean) {
       if (defaultEvent) {
         const moved = await moveWishesToWishlist(eventId, defaultEvent.id, user.value.id)
         if (!moved) {
-          alert('Не удалось переместить желания')
+          showAlert('Не удалось переместить желания')
           return
         }
       }
@@ -238,49 +235,42 @@ async function confirmDeleteEvent(moveWishes: boolean) {
 
     const success = await deleteWishlist(eventId)
     if (success) {
-      showDeleteEventModal.value = false
-      eventToDelete.value = null
-
+      impact('medium')
       const defaultEvent = wishlists.value.find(w => w.is_default)
       if (defaultEvent) selectedEventId.value = defaultEvent.id
     }
   } catch (err) {
     console.error('Failed to delete event:', err)
-    alert('Произошла ошибка при удалении события')
+    showAlert('Произошла ошибка при удалении события')
   }
 }
 
 function handleShareEvent() {
-  console.log('Sharing event:', selectedEvent.value?.id)
-  if (window.Telegram?.WebApp) {
-      window.Telegram.WebApp.showAlert('Ссылка на событие скопирована!')
-  } else {
-      alert('Ссылка скопирована! (тест)')
+  const wa = window.Telegram?.WebApp
+  if (wa) {
+    wa.showAlert('Ссылка на событие скопирована!')
   }
 }
 
 async function handleAddWish(data: any) {
   if (!selectedEventId.value || !user.value) return
-  
+
   const newWish = await createWish({
     ...data,
-    wishlist_id: selectedEventId.value
+    wishlist_id: selectedEventId.value,
   }, user.value.id)
-  
+
   if (newWish) {
     showAddWishModal.value = false
+    notification('success')
   }
 }
 
 function onWishClick(wish: any) {
-  // Store wish data so WishDetailView can access it
   openWish(wish)
-  // Navigate to the appropriate wish detail route
   if (isGuestMode.value) {
-    // Friend's wish: /friends/:friendId/wishes/:wishId
     router.push(`/friends/${route.params.friendId}/wishes/${wish.id}`)
   } else {
-    // Own wish: /wishes/:wishId
     router.push(`/wishes/${wish.id}`)
   }
 }
@@ -291,7 +281,6 @@ function handleEditProfile() {
 
 async function handleSaveProfileText(text: string) {
   if (!user.value) return
-
   const success = await updateProfileText(user.value.id, text)
   if (success) {
     profileText.value = text
@@ -299,48 +288,42 @@ async function handleSaveProfileText(text: string) {
   }
 }
 
-// Склонение слова "желание"
 function pluralizeWishes(count: number): string {
   const cases = [2, 0, 1, 1, 1, 2]
   const titles = ['желание', 'желания', 'желаний']
-  const index = (count % 100 > 4 && count % 100 < 20)
-    ? 2
-    : cases[Math.min(count % 10, 5)]
+  const index = (count % 100 > 4 && count % 100 < 20) ? 2 : cases[Math.min(count % 10, 5)]
   return `${count} ${titles[index]}`
 }
 
 async function handleSubscribe() {
-    if (!user.value || !targetUserId.value || isSubscriptionLoading.value) return
-    
-    isSubscriptionLoading.value = true
-    try {
-        if (isSubscribed.value) {
-            const success = await unsubscribe(user.value.id, targetUserId.value)
-            if (success) isSubscribed.value = false
-        } else {
-            const success = await subscribe(user.value.id, targetUserId.value)
-            if (success) isSubscribed.value = true
-        }
-        if (window.Telegram?.WebApp?.HapticFeedback) {
-            window.Telegram.WebApp.HapticFeedback.impactOccurred('medium')
-        }
-    } finally {
-        isSubscriptionLoading.value = false
+  if (!user.value || !targetUserId.value || isSubscriptionLoading.value) return
+
+  isSubscriptionLoading.value = true
+  try {
+    if (isSubscribed.value) {
+      const success = await unsubscribe(user.value.id, targetUserId.value)
+      if (success) isSubscribed.value = false
+    } else {
+      const success = await subscribe(user.value.id, targetUserId.value)
+      if (success) isSubscribed.value = true
     }
+    impact('medium')
+  } finally {
+    isSubscriptionLoading.value = false
+  }
 }
 </script>
 
 <template>
   <div class="profile-view">
-    <!-- Not in Telegram -->
     <div v-if="!isInTelegram" class="not-telegram">
       <p>Only works in Telegram</p>
     </div>
 
     <div v-else class="content">
-      <!-- Header with glass-panel -->
+      <!-- Header -->
       <header class="header-section">
-        <div 
+        <div
           class="glass-panel header-panel"
           @click="isOwner && handleEditProfile()"
         >
@@ -351,7 +334,7 @@ async function handleSubscribe() {
               <div class="avatar-status"></div>
             </div>
           </div>
-          
+
           <div class="user-info">
             <template v-if="isLoading">
               <div class="skeleton skeleton-text" style="width: 120px; height: 24px; margin-bottom: 4px;"></div>
@@ -362,32 +345,32 @@ async function handleSubscribe() {
               <p class="user-subtitle">{{ profileText }}</p>
             </template>
           </div>
-          
-           <!-- Subscribe Button (Liquid Glass) -->
-          <button 
-            v-if="!isOwner && !isLoading" 
+
+          <!-- Subscribe Button -->
+          <button
+            v-if="!isOwner && !isLoading"
             class="subscribe-btn"
             :class="{ 'subscribed': isSubscribed, 'loading': isSubscriptionLoading }"
             @click.stop="handleSubscribe"
           >
             <span v-if="isSubscriptionLoading" class="material-symbols-outlined spin">progress_activity</span>
             <template v-else>
-                <span class="material-symbols-outlined text-[20px]">{{ isSubscribed ? 'check' : 'person_add' }}</span>
+              <span class="material-symbols-outlined" style="font-size:20px">{{ isSubscribed ? 'check' : 'person_add' }}</span>
             </template>
           </button>
 
           <button v-if="isOwner" class="glass-btn edit-header-btn">
-            <span class="material-symbols-outlined text-[20px]">edit</span>
+            <span class="material-symbols-outlined" style="font-size:20px">edit</span>
           </button>
         </div>
 
         <!-- Events Carousel -->
         <div class="carousel-wrapper">
           <div v-if="isLoading" class="skeleton-carousel">
-             <div class="skeleton event-pill" style="width: 100px;"></div>
-             <div class="skeleton event-add-btn"></div>
-             <div class="skeleton event-pill" style="width: 120px;"></div>
-             <div class="skeleton event-pill" style="width: 90px;"></div>
+            <div class="skeleton event-pill" style="width: 100px;"></div>
+            <div class="skeleton event-add-btn"></div>
+            <div class="skeleton event-pill" style="width: 120px;"></div>
+            <div class="skeleton event-pill" style="width: 90px;"></div>
           </div>
           <EventCarousel
             v-else
@@ -399,12 +382,10 @@ async function handleSubscribe() {
           />
         </div>
 
-        <!-- Event Description (if exists) -->
+        <!-- Event Description -->
         <div v-if="selectedEvent?.description" class="event-description-wrapper">
           <div class="event-description glass-card-new">
-            <p class="description-text">
-              {{ selectedEvent.description }}
-            </p>
+            <p class="description-text">{{ selectedEvent.description }}</p>
           </div>
         </div>
 
@@ -416,17 +397,17 @@ async function handleSubscribe() {
               class="glass-btn action-btn"
               @click="handleEditEvent"
             >
-              <span class="material-symbols-outlined text-[18px]">edit</span>
+              <span class="material-symbols-outlined" style="font-size:18px">edit</span>
             </button>
             <button
               v-if="isOwner && !selectedEvent.is_default"
               class="glass-btn action-btn"
               @click="handleDeleteEvent"
             >
-              <span class="material-symbols-outlined text-[18px]">delete</span>
+              <span class="material-symbols-outlined" style="font-size:18px">delete</span>
             </button>
             <button class="glass-btn action-btn" @click="handleShareEvent">
-              <span class="material-symbols-outlined text-[18px]">ios_share</span>
+              <span class="material-symbols-outlined" style="font-size:18px">ios_share</span>
             </button>
           </div>
           <div class="item-count">
@@ -435,22 +416,22 @@ async function handleSubscribe() {
         </div>
       </header>
 
-      <!-- Data Status/Grid -->
+      <!-- Wishes Section -->
       <section class="wishes-section">
-         <WishGrid
-           :wishes="wishes"
-           :loading="wishesLoading"
-           :error="wishesError"
-           :is-owner="isOwner"
-           @add="showAddWishModal = true"
-           @click="onWishClick"
-         />
+        <WishGrid
+          :wishes="wishes"
+          :loading="wishesLoading"
+          :error="wishesError"
+          :is-owner="isOwner"
+          @add="showAddWishModal = true"
+          @click="onWishClick"
+        />
       </section>
 
-      <!-- Floating FAB Button -->
-      <button 
-        v-if="isOwner && selectedEvent?.title !== 'Сбывшиеся мечты'" 
-        class="fab-button" 
+      <!-- FAB -->
+      <button
+        v-if="isOwner && selectedEvent?.title !== 'Сбывшиеся мечты'"
+        class="fab-button"
         @click="showAddWishModal = true"
       >
         <span class="fab-icon">+</span>
@@ -458,39 +439,28 @@ async function handleSubscribe() {
 
       <!-- Modals -->
       <Teleport to="body">
-         <AddWishModal
-           v-if="showAddWishModal"
-           @close="showAddWishModal = false"
-           @submit="handleAddWish"
-         />
-         <AddEventModal
-           v-if="showAddEventModal"
-           :initial-data="editingEvent ? {
-             title: editingEvent.title,
-             date: editingEvent.event_date,
-             description: editingEvent.description || ''
-           } : undefined"
-           :is-default-event="editingEvent?.is_default || false"
-           @close="showAddEventModal = false"
-           @submit="handleSaveEvent"
-         />
-         <EditProfileTextModal
-           v-if="showEditProfileModal"
-           :initial-text="profileText"
-           @close="showEditProfileModal = false"
-           @submit="handleSaveProfileText"
-         />
-         <DeleteEventModal
-           v-if="showDeleteEventModal && eventToDelete"
-           :event-title="eventToDelete.title"
-           :wishes-count="wishes.length"
-           @close="showDeleteEventModal = false; eventToDelete = null"
-           @confirm="confirmDeleteEvent"
-         />
-         <EventLimitModal
-           v-if="showEventLimitModal"
-           @close="showEventLimitModal = false"
-         />
+        <AddWishModal
+          v-if="showAddWishModal"
+          @close="showAddWishModal = false"
+          @submit="handleAddWish"
+        />
+        <AddEventModal
+          v-if="showAddEventModal"
+          :initial-data="editingEvent ? {
+            title: editingEvent.title,
+            date: editingEvent.event_date,
+            description: editingEvent.description || '',
+          } : undefined"
+          :is-default-event="editingEvent?.is_default || false"
+          @close="showAddEventModal = false"
+          @submit="handleSaveEvent"
+        />
+        <EditProfileTextModal
+          v-if="showEditProfileModal"
+          :initial-text="profileText"
+          @close="showEditProfileModal = false"
+          @submit="handleSaveProfileText"
+        />
       </Teleport>
     </div>
   </div>
@@ -513,7 +483,7 @@ async function handleSubscribe() {
   -webkit-overflow-scrolling: touch;
 }
 
-/* === HEADER SECTION === */
+/* Header */
 .header-section {
   padding: calc(20px + var(--safe-area-top)) 20px 0;
   display: flex;
@@ -530,13 +500,9 @@ async function handleSubscribe() {
   transition: all 0.2s ease;
 }
 
-.header-panel:active {
-  transform: scale(0.98);
-}
+.header-panel:active { transform: scale(0.98); }
 
-.avatar-wrapper {
-  position: relative;
-}
+.avatar-wrapper { position: relative; }
 
 .avatar {
   width: 56px;
@@ -553,30 +519,19 @@ async function handleSubscribe() {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
-.avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
+.avatar img { width: 100%; height: 100%; object-fit: cover; }
 
 .avatar-placeholder {
-  width: 100%;
-  height: 100%;
-  background: var(--gradient-festive); /* Use themed gradient */
+  width: 100%; height: 100%;
+  background: var(--gradient-festive);
   color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; font-weight: 700;
 }
 
 .avatar-status {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 14px;
-  height: 14px;
+  position: absolute; bottom: 0; right: 0;
+  width: 14px; height: 14px;
   background: #34C759;
   border: 2px solid white;
   border-radius: 50%;
@@ -589,45 +544,27 @@ async function handleSubscribe() {
 
 .user-info {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  display: flex; flex-direction: column; justify-content: center;
 }
 
 .user-name {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 700;
-  color: #111118;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
+  margin: 0; font-size: 18px; font-weight: 700;
+  color: #111118; line-height: 1.2; letter-spacing: -0.02em;
 }
 
-[data-theme='dark'] .user-name {
-  color: #f8fafc;
-}
+[data-theme='dark'] .user-name { color: #f8fafc; }
 
 .user-subtitle {
-  margin: 0;
-  font-size: 12px;
-  font-weight: 500;
-  color: #64748b;
-  margin-top: 2px;
+  margin: 0; font-size: 12px; font-weight: 500; color: #64748b; margin-top: 2px;
 }
 
-[data-theme='dark'] .user-subtitle {
-  color: #94a3b8;
-}
+[data-theme='dark'] .user-subtitle { color: #94a3b8; }
 
 .edit-header-btn {
   margin-left: auto;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+  width: 40px; height: 40px; border-radius: 50%;
   border: 1px solid rgba(255, 255, 255, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex; align-items: center; justify-content: center;
   color: #64748b;
   background: rgba(255, 255, 255, 0.4);
 }
@@ -638,128 +575,65 @@ async function handleSubscribe() {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Subscribe Button (Liquid Glass) */
+/* Subscribe Button */
 .subscribe-btn {
   margin-left: auto;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 44px; height: 44px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
   background: rgba(10, 13, 194, 0.1);
   border: 1px solid rgba(10, 13, 194, 0.2);
   color: var(--tg-button-color);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(10, 13, 194, 0.15);
 }
 
-.subscribe-btn:active {
-  transform: scale(0.96);
-  background: rgba(10, 13, 194, 0.2);
-}
+.subscribe-btn:active { transform: scale(0.96); background: rgba(10, 13, 194, 0.2); }
 
 .subscribe-btn.subscribed {
-  background: rgba(34, 197, 94, 0.15);
-  border: 1px solid rgba(34, 197, 94, 0.3);
-  color: #22c55e;
-  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15);
+  background: rgba(34, 197, 94, 0.15); border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #22c55e; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15);
 }
 
 [data-theme='dark'] .subscribe-btn {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #fff;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
 [data-theme='dark'] .subscribe-btn.subscribed {
-    background: rgba(16, 185, 129, 0.2);
-    border-color: rgba(16, 185, 129, 0.4);
-    color: #34d399;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+  background: rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.4);
+  color: #34d399; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
 }
 
-.spin {
-    animation: spin 1s linear infinite;
-    font-size: 20px;
-}
+.spin { animation: spin 1s linear infinite; font-size: 20px; }
+@keyframes spin { 100% { transform: rotate(360deg); } }
 
-@keyframes spin {
-    100% { transform: rotate(360deg); }
-}
+/* Carousel */
+.carousel-wrapper { margin: 0 -20px; padding: 0 20px; overflow: visible; }
 
-/* === CAROUSEL WRAPPER === */
-.carousel-wrapper {
-  margin: 0 -20px;
-  padding: 0 20px;
-  overflow: visible;
-}
+.skeleton-carousel { display: flex; gap: 8px; padding: 4px 0; }
+.skeleton-carousel .event-pill { height: 44px; border-radius: 22px; }
+.skeleton-carousel .event-add-btn { width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0; }
 
-.skeleton-carousel {
-  display: flex;
-  gap: 8px;
-  padding: 4px 0;
-}
-
-.skeleton-carousel .event-pill {
-  height: 44px;
-  border-radius: 22px;
-}
-
-.skeleton-carousel .event-add-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-/* === EVENT DESCRIPTION === */
-
-.event-description {
-  padding: 16px;
-  border-radius: 22px;
-}
+/* Event Description */
+.event-description { padding: 16px; border-radius: 22px; }
 
 .description-text {
-  margin: 0;
-  font-size: 15px;
-  line-height: 1.6;
-  color: #64748b;
-  font-weight: 400;
-  font-style: italic;
-  white-space: pre-line;
+  margin: 0; font-size: 15px; line-height: 1.6;
+  color: #64748b; font-weight: 400; font-style: italic; white-space: pre-line;
 }
 
-[data-theme='dark'] .description-text {
-  color: #9CA3AF;
-}
+[data-theme='dark'] .description-text { color: #9CA3AF; }
 
-/* === ACTIONS ROW === */
-.actions-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 4px;
-}
-
-.actions-buttons {
-  display: flex;
-  gap: 10px;
-}
+/* Actions Row */
+.actions-row { display: flex; justify-content: space-between; align-items: center; padding: 0 4px; }
+.actions-buttons { display: flex; gap: 10px; }
 
 .action-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #64748b;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+  width: 44px; height: 44px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: #64748b; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
 }
 
 [data-theme='dark'] .action-btn {
@@ -767,87 +641,34 @@ async function handleSubscribe() {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
 }
 
-.item-count {
-  text-align: right;
-}
+.item-count { text-align: right; }
 
 .count-label {
-  font-size: 10px;
-  font-weight: 700;
-  color: #94a3b8;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  font-size: 10px; font-weight: 700; color: #94a3b8;
+  text-transform: uppercase; letter-spacing: 0.08em;
 }
 
-[data-theme='dark'] .count-label {
-  color: #6B7280;
-}
+[data-theme='dark'] .count-label { color: #6B7280; }
 
-/* === WISHES SECTION === */
-.wishes-section {
-  min-height: 200px;
-  margin-top: 20px;
-}
+/* Wishes */
+.wishes-section { min-height: 200px; margin-top: 20px; }
 
-/* === FAB BUTTON === */
+/* FAB */
 .fab-button {
   position: fixed;
   bottom: calc(100px + env(safe-area-inset-bottom));
   right: 20px;
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
+  width: 64px; height: 64px; border-radius: 50%;
   background: var(--tg-button-color);
-  color: white;
-  border: 4px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 8px 24px rgba(10, 13, 194, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  color: white; border: none;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px; font-weight: 300;
+  box-shadow: 0 12px 24px rgba(79, 70, 229, 0.4);
   cursor: pointer;
-  transition: all 0.2s ease;
-  z-index: 100;
+  z-index: 50;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
-[data-theme='dark'] .fab-button {
-  background: #0a0dc2;
-  border: 4px solid rgba(10, 13, 194, 0.2);
-  box-shadow: 0 0 30px rgba(10, 13, 194, 0.5),
-              0 8px 24px rgba(0, 0, 0, 0.4);
-}
-
-[data-theme='dark'] .fab-button:hover {
-  box-shadow: 0 0 40px rgba(10, 13, 194, 0.7),
-              0 8px 24px rgba(0, 0, 0, 0.5);
-  transform: scale(1.05);
-}
-
-[data-theme='dark'] .fab-button:active {
-  transform: scale(0.95);
-}
-
-.fab-button:hover {
-  transform: scale(1.05);
-}
-
-.fab-button:active {
-  transform: scale(0.95);
-}
-
-.fab-icon {
-  font-size: 36px;
-  font-weight: 300;
-  line-height: 1;
-}
-
-/* Transitions */
-.v-enter-active,
-.v-leave-active {
-  transition: opacity 0.2s ease;
-}
-
-.v-enter-from,
-.v-leave-to {
-  opacity: 0;
-}
+.fab-button:active { transform: scale(0.92); }
+.fab-icon { line-height: 1; }
 </style>

@@ -17,7 +17,7 @@ const TabLayout = () => import('@/layouts/TabLayout.vue')
 const ProfileView = () => import('@/views/ProfileView.vue')
 const FriendsView = () => import('@/views/FriendsView.vue')
 const SearchView = () => import('@/views/SearchView.vue')
-const WishDetailView = () => import('@/components/WishDetailView.vue')
+const WishDetailView = () => import('@/views/WishDetailView.vue')
 
 const routes: RouteRecordRaw[] = [
     {
@@ -62,7 +62,7 @@ const routes: RouteRecordRaw[] = [
         ],
     },
 
-    // === Nested screens (no TabBar, BackButton visible) ===
+    // === Nested screens (no TabBar, Telegram BackButton visible) ===
     {
         path: '/wishes/:wishId',
         name: 'wish-detail',
@@ -89,19 +89,20 @@ const router = createRouter({
     routes,
 })
 
-// --- Telegram BackButton Integration ---
+// ─── Telegram BackButton Integration ────────────────────────────────────────
+
 let backButtonHandler: (() => void) | null = null
 
 router.afterEach((to) => {
-    const webapp = window.Telegram?.WebApp
-    if (!webapp) return
+    const wa = window.Telegram?.WebApp
+    if (!wa) return
 
     const level = (to.meta.level as number) || 0
     const isNested = level >= 2
 
     // Clean up previous handler
     if (backButtonHandler) {
-        webapp.BackButton.offClick(backButtonHandler)
+        wa.BackButton.offClick(backButtonHandler)
         backButtonHandler = null
     }
 
@@ -109,10 +110,10 @@ router.afterEach((to) => {
         backButtonHandler = () => {
             router.back()
         }
-        webapp.BackButton.onClick(backButtonHandler)
-        webapp.BackButton.show()
+        wa.BackButton.onClick(backButtonHandler)
+        wa.BackButton.show()
     } else {
-        webapp.BackButton.hide()
+        wa.BackButton.hide()
     }
 })
 

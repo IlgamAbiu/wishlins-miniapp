@@ -6,11 +6,11 @@ import App from './App.vue'
 import router from './router'
 
 // Import design system CSS in correct order
-import './assets/design-system.css'     // Base design tokens
-import './assets/liquid-glass.css'      // Glass morphism system
-import './assets/typography.css'        // SF Pro typography
-import './assets/animations.css'        // Liquid animations
-import './assets/utilities.css'         // Utility classes
+import './assets/design-system.css'
+import './assets/liquid-glass.css'
+import './assets/typography.css'
+import './assets/animations.css'
+import './assets/utilities.css'
 
 // Create and mount the app
 const app = createApp(App)

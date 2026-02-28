@@ -1,29 +1,56 @@
 /**
  * useNavigation - Composable for tab navigation via Vue Router.
+ * Tab configs are defined here (no separate store needed).
  */
 
 import { computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { TAB_CONFIGS, getTabIdFromPath } from '@/stores/navigation.store'
-import type { TabId } from '@/types'
+import type { TabId, TabConfig } from '@/types'
+
+/**
+ * Tab configurations.
+ * Icons use Material Symbols.
+ */
+export const TAB_CONFIGS: TabConfig[] = [
+  {
+    id: 'profile',
+    label: 'Мои желания',
+    icon: 'card_giftcard',
+    activeIcon: 'card_giftcard',
+    route: '/wishes',
+  },
+  {
+    id: 'friends',
+    label: 'Друзья',
+    icon: 'group',
+    activeIcon: 'group',
+    route: '/friends',
+  },
+  {
+    id: 'search',
+    label: 'Идеи',
+    icon: 'lightbulb',
+    activeIcon: 'lightbulb',
+    route: '/ideas',
+  },
+]
+
+/**
+ * Get the active tab ID from the current route path.
+ */
+export function getTabIdFromPath(path: string): TabId {
+  if (path.startsWith('/friends')) return 'friends'
+  if (path.startsWith('/ideas')) return 'search'
+  return 'profile'
+}
 
 export function useNavigation() {
   const router = useRouter()
   const route = useRoute()
 
-  /**
-   * Current active tab ID (derived from route path).
-   */
   const activeTab = computed(() => getTabIdFromPath(route.path))
-
-  /**
-   * All available tabs.
-   */
   const tabs = TAB_CONFIGS
 
-  /**
-   * Switch to a tab via router.
-   */
   function navigateToTab(tabId: TabId): void {
     const tab = TAB_CONFIGS.find(t => t.id === tabId)
     if (tab) {
@@ -31,16 +58,10 @@ export function useNavigation() {
     }
   }
 
-  /**
-   * Check if a tab is currently active.
-   */
   function isActive(tabId: TabId): boolean {
     return activeTab.value === tabId
   }
 
-  /**
-   * Navigate back via router.
-   */
   function navigateBack(): void {
     router.back()
   }

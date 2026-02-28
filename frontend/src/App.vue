@@ -2,7 +2,6 @@
 /**
  * Root application component.
  * Shows BlockedScreen when opened outside Telegram.
- * Main navigation is handled by Vue Router.
  */
 import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
 import BlockedScreen from '@/components/BlockedScreen.vue'
@@ -11,32 +10,25 @@ const { isReady, isInTelegram } = useTelegramWebApp()
 </script>
 
 <template>
-  <!-- Loading state while checking Telegram availability -->
+  <!-- Loading -->
   <div v-if="!isReady" class="app-loading">
     <div class="app-loading__spinner"></div>
   </div>
 
-  <!-- Blocked screen for non-Telegram access -->
+  <!-- Blocked -->
   <BlockedScreen v-else-if="!isInTelegram" />
 
-  <!-- Main app when in Telegram -->
+  <!-- Main App -->
   <div v-else class="app">
-    <!-- Mesh gradients (dark theme) -->
     <div class="mesh-gradient"></div>
-
     <router-view />
   </div>
 </template>
 
 <style>
-/* Global Styles are now handled in design-system.css */
-/* We keep reset here or move to design-system.css completely */
-
+/* Global Styles */
 :root {
-  /* Tab bar height */
   --tab-bar-height: 56px;
-
-  /* Safe area insets for fullscreen Telegram Mini App */
   --safe-area-top: env(safe-area-inset-top, 0px);
   --safe-area-bottom: env(safe-area-inset-bottom, 0px);
   --safe-area-left: env(safe-area-inset-left, 0px);
@@ -58,7 +50,6 @@ html, body {
 
 [data-theme='dark'] html,
 [data-theme='dark'] body {
-  /* Use the dark theme aurora gradient variables */
   background: radial-gradient(circle at 50% 0%, var(--aurora-bg-1) 0%, var(--aurora-bg-2) 60%, var(--aurora-bg-3) 100%);
 }
 
@@ -92,9 +83,7 @@ a {
 }
 
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }
 
 .app {
@@ -105,13 +94,11 @@ a {
   position: relative;
 }
 
-/* Ensure router-view content fills the container */
 .app > :not(.mesh-gradient) {
   flex: 1;
   min-height: 0;
 }
 
-/* Mesh gradient for dark theme */
 .mesh-gradient {
   position: fixed;
   top: 0;
@@ -131,7 +118,6 @@ a {
   opacity: 1;
 }
 
-/* Hide blur circles in dark theme */
 [data-theme='dark'] .blur-decoration {
   opacity: 0;
 }

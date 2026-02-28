@@ -1,4 +1,7 @@
 <script setup lang="ts">
+/**
+ * WishCard - Individual wish card component.
+ */
 import type { Wish } from '@/types'
 import { computed } from 'vue'
 
@@ -9,7 +12,7 @@ const props = defineProps<{
   isBookedByMe: boolean
 }>()
 
-const emit = defineEmits<{
+defineEmits<{
   (e: 'click', wish: Wish): void
 }>()
 
@@ -18,12 +21,10 @@ function formatPrice(price: number | null, currency: string | null) {
   return new Intl.NumberFormat('ru-RU', {
     style: 'currency',
     currency: currency || 'RUB',
-    maximumFractionDigits: 0
+    maximumFractionDigits: 0,
   }).format(price)
 }
 
-
-// Generate consistent gradient based on title length/chars to avoid index dependency
 function getGradient(str: string): string {
   const gradients = [
     'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -70,7 +71,7 @@ const bookingState = computed<'owner' | 'free' | 'booked-other' | 'booked-me'>((
         <span class="gradient-icon">✨</span>
       </div>
 
-      <!-- Занято кем-то другим -->
+      <!-- Booked by someone else -->
       <div v-if="bookingState === 'booked-other'" class="booked-overlay">
         <div class="booked-badge">
           <span class="booked-icon">🔒</span>
@@ -78,7 +79,7 @@ const bookingState = computed<'owner' | 'free' | 'booked-other' | 'booked-me'>((
         </div>
       </div>
 
-      <!-- Я уже дарю -->
+      <!-- Booked by me -->
       <div v-if="bookingState === 'booked-me'" class="gifter-badge">
         <span class="gifter-icon">🎁</span>
         <span class="gifter-label">Я дарю</span>
@@ -110,7 +111,6 @@ const bookingState = computed<'owner' | 'free' | 'booked-other' | 'booked-me'>((
   transform: scale(0.98);
 }
 
-/* === SHARED STYLES === */
 .card-image-wrapper {
   position: relative;
   background: var(--tg-secondary-bg-color);
@@ -137,8 +137,6 @@ const bookingState = computed<'owner' | 'free' | 'booked-other' | 'booked-me'>((
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
 }
 
-
-
 .card-content {
   padding: 12px;
   display: flex;
@@ -161,16 +159,15 @@ const bookingState = computed<'owner' | 'free' | 'booked-other' | 'booked-me'>((
 
 .card-price {
   font-weight: 700;
-  color: var(--tg-accent-text-color); /* Matches design blue */
+  color: var(--tg-accent-text-color);
 }
 
-
-/* === LAYOUT: FULL (Large Card) === */
+/* Layout: Full */
 .layout-full {
   border-radius: 32px;
   padding: 16px;
   gap: 16px;
-  background: #1c1c1e; /* Dark themes usually have dark cards */
+  background: #1c1c1e;
 }
 
 [data-theme='light'] .layout-full {
@@ -201,10 +198,7 @@ const bookingState = computed<'owner' | 'free' | 'booked-other' | 'booked-me'>((
   font-size: 20px;
 }
 
-
-
-
-/* === LAYOUT: HALF (Small Card) === */
+/* Layout: Half */
 .layout-half {
   border-radius: 24px;
   padding: 12px;
@@ -230,8 +224,7 @@ const bookingState = computed<'owner' | 'free' | 'booked-other' | 'booked-me'>((
   font-size: 13px;
 }
 
-
-/* === STATE: BOOKED BY SOMEONE ELSE === */
+/* Booked states */
 .state-booked-other {
   opacity: 0.75;
 }
@@ -261,10 +254,7 @@ const bookingState = computed<'owner' | 'free' | 'booked-other' | 'booked-me'>((
   -webkit-backdrop-filter: blur(8px);
 }
 
-.booked-icon {
-  font-size: 14px;
-  line-height: 1;
-}
+.booked-icon { font-size: 14px; line-height: 1; }
 
 .booked-label {
   font-size: 12px;
@@ -274,26 +264,13 @@ const bookingState = computed<'owner' | 'free' | 'booked-other' | 'booked-me'>((
   text-transform: uppercase;
 }
 
-[data-theme='light'] .booked-overlay {
-  background: rgba(200, 200, 220, 0.45);
-}
+[data-theme='light'] .booked-overlay { background: rgba(200, 200, 220, 0.45); }
+[data-theme='light'] .booked-badge { background: rgba(255, 255, 255, 0.7); border: 1px solid rgba(0, 0, 0, 0.1); }
+[data-theme='light'] .booked-label { color: rgba(30, 30, 50, 0.85); }
 
-[data-theme='light'] .booked-badge {
-  background: rgba(255, 255, 255, 0.7);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-[data-theme='light'] .booked-label {
-  color: rgba(30, 30, 50, 0.85);
-}
-
-
-/* === STATE: BOOKED BY ME (GIFTER) === */
+/* Gifter state */
 .state-booked-me {
-  box-shadow:
-    0 0 0 2px rgba(16, 185, 129, 0.7),
-    0 0 16px 4px rgba(16, 185, 129, 0.3),
-    var(--glass-card-shadow);
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.7), 0 0 16px 4px rgba(16, 185, 129, 0.3), var(--glass-card-shadow);
   border-color: rgba(16, 185, 129, 0.6) !important;
 }
 
@@ -314,10 +291,7 @@ const bookingState = computed<'owner' | 'free' | 'booked-other' | 'booked-me'>((
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(16, 185, 129, 0.2);
 }
 
-.gifter-icon {
-  font-size: 12px;
-  line-height: 1;
-}
+.gifter-icon { font-size: 12px; line-height: 1; }
 
 .gifter-label {
   font-size: 11px;
@@ -334,13 +308,6 @@ const bookingState = computed<'owner' | 'free' | 'booked-other' | 'booked-me'>((
 }
 
 [data-theme='light'] .state-booked-me {
-  box-shadow:
-    0 0 0 2px rgba(16, 185, 129, 0.6),
-    0 0 12px 3px rgba(16, 185, 129, 0.15),
-    var(--glass-card-shadow);
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.6), 0 0 12px 3px rgba(16, 185, 129, 0.15), var(--glass-card-shadow);
 }
-
-
-
-
 </style>

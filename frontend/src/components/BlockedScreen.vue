@@ -1,163 +1,81 @@
 <script setup lang="ts">
 /**
- * Blocking screen shown when app is opened outside Telegram.
- * Displays a message and button to redirect to Telegram bot.
+ * BlockedScreen - shown when app is opened outside Telegram.
  */
-
-const botUsername = import.meta.env.VITE_BOT_USERNAME || 'lalala'
-const telegramLink = `https://t.me/${botUsername}`
-
-function openTelegram() {
-  window.location.href = telegramLink
-}
 </script>
 
 <template>
   <div class="blocked-screen">
-    <div class="blocked-screen__content">
-      <div class="blocked-screen__icon">🎁</div>
-      <h1 class="blocked-screen__title">Wishlist</h1>
-      <p class="blocked-screen__subtitle">
-        Создавайте списки желаний<br>и делитесь с друзьями
+    <div class="blocked-content">
+      <div class="blocked-icon">🔒</div>
+      <h1 class="blocked-title">Wishlins</h1>
+      <p class="blocked-text">
+        Это приложение работает только<br/>
+        внутри Telegram
       </p>
-
-      <div class="blocked-screen__divider"></div>
-
-      <div class="blocked-screen__warning">
-        <span class="blocked-screen__warning-icon">⚠️</span>
-        <p class="blocked-screen__warning-text">
-          Это приложение работает<br>только в Telegram
-        </p>
-      </div>
-
-      <div class="blocked-screen__instructions">
-        <p class="blocked-screen__instructions-title">Для использования:</p>
-        <ol class="blocked-screen__steps">
-          <li>Установите Telegram</li>
-          <li>Откройте @{{ botUsername }}</li>
-          <li>Нажмите "Создать wishlist"</li>
-        </ol>
-      </div>
-
-      <button class="blocked-screen__button" @click="openTelegram">
+      <a
+        href="https://t.me/my_123_wishlist_bot"
+        class="blocked-button"
+        target="_blank"
+      >
         Открыть в Telegram
-      </button>
+      </a>
     </div>
   </div>
 </template>
 
 <style scoped>
 .blocked-screen {
-  position: fixed;
-  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 20px;
-}
-
-.blocked-screen__content {
-  background: white;
-  border-radius: 24px;
-  padding: 40px 32px;
-  max-width: 340px;
-  width: 100%;
+  height: 100vh;
+  background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+  color: white;
   text-align: center;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  padding: 24px;
 }
 
-.blocked-screen__icon {
+.blocked-content {
+  max-width: 320px;
+}
+
+.blocked-icon {
   font-size: 64px;
-  margin-bottom: 16px;
+  margin-bottom: 24px;
 }
 
-.blocked-screen__title {
-  font-size: 28px;
-  font-weight: 700;
-  color: #1a1a2e;
-  margin: 0 0 8px;
+.blocked-title {
+  font-size: 32px;
+  font-weight: 800;
+  margin: 0 0 12px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-.blocked-screen__subtitle {
+.blocked-text {
   font-size: 16px;
-  color: #666;
-  margin: 0;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0 0 32px;
   line-height: 1.5;
 }
 
-.blocked-screen__divider {
-  height: 1px;
-  background: linear-gradient(90deg, transparent, #ddd, transparent);
-  margin: 24px 0;
-}
-
-.blocked-screen__warning {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 24px;
-}
-
-.blocked-screen__warning-icon {
-  font-size: 32px;
-}
-
-.blocked-screen__warning-text {
-  font-size: 15px;
-  font-weight: 600;
-  color: #e74c3c;
-  margin: 0;
-  line-height: 1.4;
-}
-
-.blocked-screen__instructions {
-  text-align: left;
-  background: #f8f9fa;
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 24px;
-}
-
-.blocked-screen__instructions-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: #333;
-  margin: 0 0 12px;
-}
-
-.blocked-screen__steps {
-  margin: 0;
-  padding-left: 20px;
-  font-size: 14px;
-  color: #555;
-  line-height: 1.8;
-}
-
-.blocked-screen__steps li {
-  margin-bottom: 4px;
-}
-
-.blocked-screen__button {
-  width: 100%;
-  padding: 16px 24px;
+.blocked-button {
+  display: inline-block;
+  padding: 14px 32px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 16px;
   font-size: 16px;
   font-weight: 600;
-  color: white;
-  background: linear-gradient(135deg, #0088cc 0%, #0066aa 100%);
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
+  text-decoration: none;
   transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
 }
 
-.blocked-screen__button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0, 136, 204, 0.4);
-}
-
-.blocked-screen__button:active {
-  transform: translateY(0);
+.blocked-button:active {
+  transform: scale(0.96);
 }
 </style>

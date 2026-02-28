@@ -3,7 +3,7 @@
  * Event Carousel Component.
  * Horizontal scrollable list of events (wishlists).
  */
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import type { Wishlist } from '@/types'
 
 const props = withDefaults(defineProps<{
@@ -11,7 +11,7 @@ const props = withDefaults(defineProps<{
   selectedEventId: string | null
   isOwner?: boolean
 }>(), {
-  isOwner: true
+  isOwner: true,
 })
 
 const emit = defineEmits<{
@@ -19,22 +19,18 @@ const emit = defineEmits<{
   (e: 'add'): void
 }>()
 
-const defaultEvent = computed(() => {
-  return props.events.find(e => e.is_default)
-})
+const defaultEvent = computed(() => props.events.find(e => e.is_default))
 
-const otherEvents = computed(() => {
-  // Filter out default, sort by date (newest first)
-  return props.events
+const otherEvents = computed(() =>
+  props.events
     .filter(e => !e.is_default)
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-})
+)
 
 function selectEvent(id: string) {
   emit('select', id)
 }
 
-// Calculate days until event
 function getDaysUntilEvent(eventDate: string | null): string | null {
   if (!eventDate) return null
 
@@ -47,30 +43,19 @@ function getDaysUntilEvent(eventDate: string | null): string | null {
   const diffTime = event.getTime() - now.getTime()
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
 
-  if (diffDays < 0) {
-    return `было ${Math.abs(diffDays)} дн. назад`
-  } else if (diffDays === 0) {
-    return 'сегодня'
-  } else if (diffDays === 1) {
-    return 'завтра'
-  } else if (diffDays <= 7) {
-    return `через ${diffDays} дн.`
-  } else if (diffDays <= 30) {
-    return `через ${diffDays} дн.`
-  } else if (diffDays <= 365) {
-    const months = Math.floor(diffDays / 30)
-    return `через ${months} мес.`
-  } else {
-    const years = Math.floor(diffDays / 365)
-    return `через ${years} г.`
-  }
+  if (diffDays < 0) return `было ${Math.abs(diffDays)} дн. назад`
+  if (diffDays === 0) return 'сегодня'
+  if (diffDays === 1) return 'завтра'
+  if (diffDays <= 30) return `через ${diffDays} дн.`
+  if (diffDays <= 365) return `через ${Math.floor(diffDays / 30)} мес.`
+  return `через ${Math.floor(diffDays / 365)} г.`
 }
 </script>
 
 <template>
   <div class="event-carousel">
     <div class="event-carousel__track">
-      <!-- 1. Default Event Pill -->
+      <!-- Default Event -->
       <button
         v-if="defaultEvent"
         class="event-pill"
@@ -80,7 +65,7 @@ function getDaysUntilEvent(eventDate: string | null): string | null {
         <span class="pill-text">{{ defaultEvent.title }}</span>
       </button>
 
-      <!-- 2. Add Event Button (Circle with +) -->
+      <!-- Add Button -->
       <button
         v-if="isOwner"
         class="event-add-btn glass-btn"
@@ -89,7 +74,7 @@ function getDaysUntilEvent(eventDate: string | null): string | null {
         <span class="add-icon">+</span>
       </button>
 
-      <!-- 3. Other Events Pills -->
+      <!-- Other Events -->
       <button
         v-for="event in otherEvents"
         :key="event.id"
@@ -97,7 +82,7 @@ function getDaysUntilEvent(eventDate: string | null): string | null {
         :class="{
           'event-pill--active active-pill': event.id === selectedEventId,
           'glass-btn': event.id !== selectedEventId,
-          'has-date': event.event_date
+          'has-date': event.event_date,
         }"
         @click="selectEvent(event.id)"
       >
@@ -115,7 +100,6 @@ function getDaysUntilEvent(eventDate: string | null): string | null {
   width: 100%;
   overflow-x: auto;
   padding: 4px 0;
-  /* Hide scrollbar */
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -131,7 +115,6 @@ function getDaysUntilEvent(eventDate: string | null): string | null {
   min-width: min-content;
 }
 
-/* === EVENT PILL === */
 .event-pill {
   display: flex;
   align-items: center;
@@ -146,7 +129,6 @@ function getDaysUntilEvent(eventDate: string | null): string | null {
   transition: all 0.2s ease;
   white-space: nowrap;
   color: #64748b;
-  /* Reduced shadow to prevent clipping */
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
   position: relative;
 }
@@ -191,7 +173,6 @@ function getDaysUntilEvent(eventDate: string | null): string | null {
   color: #4f46e5;
 }
 
-/* === ADD BUTTON === */
 .event-add-btn {
   display: flex;
   align-items: center;
@@ -202,7 +183,6 @@ function getDaysUntilEvent(eventDate: string | null): string | null {
   cursor: pointer;
   flex-shrink: 0;
   color: #64748b;
-  /* Reduced shadow to prevent clipping */
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
 }
 

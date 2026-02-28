@@ -1,13 +1,15 @@
 /**
  * Composable for user profile operations.
+ * Merges functionality from useUser.ts + user.service.ts into one file.
+ * Uses centralized API client.
  */
 
 import { ref } from 'vue'
+import { api } from '@/services/api'
+import type { User } from '@/types'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
-
-// Global counter — incremented whenever the subscription list changes
-// FriendsView watches this to trigger a re-fetch of the friends list
+// Global counter — incremented whenever the subscription list changes.
+// FriendsView watches this to trigger a re-fetch.
 export const subscribeVersion = ref(0)
 
 export function useUser() {
@@ -15,26 +17,14 @@ export function useUser() {
   const error = ref<string | null>(null)
 
   /**
-   * Update user profile text
+   * Update user profile text.
    */
   async function updateProfileText(telegramId: number, profileText: string): Promise<boolean> {
     loading.value = true
     error.value = null
 
     try {
-      const response = await fetch(`${API_BASE_URL}/users/telegram/${telegramId}/profile`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ profile_text: profileText }),
-      })
-
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.detail || 'Failed to update profile')
-      }
-
+      await api.patch(`/users/telegram/${telegramId}/profile`, { profile_text: profileText })
       return true
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Unknown error'
@@ -46,34 +36,19 @@ export function useUser() {
   }
 
   /**
-   * Get user by telegram ID
+   * Get user by Telegram ID.
    */
   async function getUserByTelegramId(telegramId: number, currentUserId?: number): Promise<any | null> {
     loading.value = true
     error.value = null
 
     try {
-      const url = currentUserId
-        ? `${API_BASE_URL}/users/telegram/${telegramId}?current_user_id=${currentUserId}`
-        : `${API_BASE_URL}/users/telegram/${telegramId}`
-
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-
-      if (!response.ok) {
-        if (response.status === 404) {
-          return null
-        }
-        const data = await response.json()
-        throw new Error(data.detail || 'Failed to get user')
-      }
-
-      return await response.json()
-    } catch (err) {
+      const query = currentUserId
+        ? `/users/telegram/${telegramId}?current_user_id=${currentUserId}`
+        : `/users/telegram/${telegramId}`
+      return await api.get(query)
+    } catch (err: any) {
+      if (err.status === 404) return null
       error.value = err instanceof Error ? err.message : 'Unknown error'
       console.error('Error getting user:', err)
       return null
@@ -82,14 +57,40 @@ export function useUser() {
     }
   }
 
+  /**
+   * Get friends list for a user.
+   */
+  async function getFriends(telegramId: number): Promise<User[]> {
+    try {
+      return await api.get<User[]>(`/users/friends?telegram_id=${telegramId}`)
+    } catch (err) {
+      console.error('Error fetching friends:', err)
+      throw err
+    }
+  }
+
+  /**
+   * Search users by query string.
+   */
+  async function searchUsers(query: string, currentUserId: number): Promise<User[]> {
+    try {
+      return await api.get<User[]>(
+        `/users/search?query=${encodeURIComponent(query)}&current_user_id=${currentUserId}`
+      )
+    } catch (err: any) {
+      if (err.status === 404) return []
+      console.error('Error searching users:', err)
+      throw err
+    }
+  }
+
+  /**
+   * Subscribe to a user.
+   */
   async function subscribe(currentUserId: number, targetId: number): Promise<boolean> {
     loading.value = true
     try {
-      const response = await fetch(`${API_BASE_URL}/users/${targetId}/subscribe?current_user_id=${currentUserId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      })
-      if (!response.ok) throw new Error('Failed to subscribe')
+      await api.post(`/users/${targetId}/subscribe?current_user_id=${currentUserId}`)
       subscribeVersion.value++
       return true
     } catch (err) {
@@ -100,14 +101,13 @@ export function useUser() {
     }
   }
 
+  /**
+   * Unsubscribe from a user.
+   */
   async function unsubscribe(currentUserId: number, targetId: number): Promise<boolean> {
     loading.value = true
     try {
-      const response = await fetch(`${API_BASE_URL}/users/${targetId}/subscribe?current_user_id=${currentUserId}`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-      })
-      if (!response.ok) throw new Error('Failed to unsubscribe')
+      await api.delete(`/users/${targetId}/subscribe?current_user_id=${currentUserId}`)
       subscribeVersion.value++
       return true
     } catch (err) {
@@ -123,7 +123,9 @@ export function useUser() {
     error,
     updateProfileText,
     getUserByTelegramId,
+    getFriends,
+    searchUsers,
     subscribe,
-    unsubscribe
+    unsubscribe,
   }
 }

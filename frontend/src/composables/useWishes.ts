@@ -1,16 +1,17 @@
 /**
  * Composable for managing wishes.
+ * Uses centralized API client.
  */
 
 import { ref } from 'vue'
+import { api } from '@/services/api'
 import type { Wish, CreateWishRequest } from '@/types'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
+// ─── Global State ───────────────────────────────────────────────────────────
 
-// Global State (Selection & Cross-component Events)
 const selectedWish = ref<Wish | null>(null)
 
-// Simple Event Bus for list updates
+// Simple Event Bus for cross-component list updates
 type WishEventType = 'create' | 'update' | 'delete' | 'move' | 'fulfill'
 type WishEventCallback = (type: WishEventType, wish?: Wish, id?: string) => void
 const listeners = new Set<WishEventCallback>()
@@ -24,8 +25,9 @@ function onWishUpdate(callback: WishEventCallback) {
     return () => listeners.delete(callback)
 }
 
+// ─── Composable ─────────────────────────────────────────────────────────────
+
 export function useWishes() {
-    // Local State (Per component/view)
     const wishes = ref<Wish[]>([])
     const loading = ref(false)
     const error = ref<string | null>(null)
@@ -45,16 +47,10 @@ export function useWishes() {
         currentWishlistId.value = wishlistId
 
         try {
-            const url = viewerTelegramId
-                ? `${API_BASE_URL}/wishes?wishlist_id=${wishlistId}&viewer_telegram_id=${viewerTelegramId}`
-                : `${API_BASE_URL}/wishes?wishlist_id=${wishlistId}`
-            const response = await fetch(url)
-
-            if (!response.ok) {
-                throw new Error(`Failed to fetch wishes: ${response.statusText}`)
-            }
-
-            wishes.value = await response.json()
+            const query = viewerTelegramId
+                ? `/wishes?wishlist_id=${wishlistId}&viewer_telegram_id=${viewerTelegramId}`
+                : `/wishes?wishlist_id=${wishlistId}`
+            wishes.value = await api.get<Wish[]>(query)
         } catch (err) {
             error.value = err instanceof Error ? err.message : 'Unknown error occurred'
             wishes.value = []
@@ -68,24 +64,9 @@ export function useWishes() {
         error.value = null
 
         try {
-            const response = await fetch(`${API_BASE_URL}/wishes?telegram_id=${telegramId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(wish),
-            })
-
-            if (!response.ok) {
-                throw new Error(`Failed to create wish: ${response.statusText}`)
-            }
-
-            const newWish = await response.json()
-
-            // Emit event for other listeners
+            const newWish = await api.post<Wish>(`/wishes?telegram_id=${telegramId}`, wish)
             emitWishEvent('create', newWish)
 
-            // Local update (if matches context)
             if (currentWishlistId.value === newWish.wishlist_id || !currentWishlistId.value) {
                 wishes.value.unshift(newWish)
             }
@@ -101,16 +82,8 @@ export function useWishes() {
     async function deleteWish(wishId: string, telegramId: number): Promise<boolean> {
         loading.value = true
         try {
-            const response = await fetch(`${API_BASE_URL}/wishes/${wishId}?telegram_id=${telegramId}`, {
-                method: 'DELETE',
-            })
-
-            if (!response.ok) {
-                throw new Error('Failed to delete wish')
-            }
-
+            await api.delete(`/wishes/${wishId}?telegram_id=${telegramId}`)
             emitWishEvent('delete', undefined, wishId)
-
             wishes.value = wishes.value.filter(w => w.id !== wishId)
             return true
         } catch (err) {
@@ -122,28 +95,14 @@ export function useWishes() {
     }
 
     async function updateWish(wishId: string, wish: Partial<CreateWishRequest>, telegramId: number): Promise<Wish | null> {
-        loading.value = true;
+        loading.value = true
         try {
-            const response = await fetch(`${API_BASE_URL}/wishes/${wishId}?telegram_id=${telegramId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(wish),
-            })
-
-            if (!response.ok) {
-                throw new Error('Failed to update wish')
-            }
-
-            const updated = await response.json()
-
+            const updated = await api.put<Wish>(`/wishes/${wishId}?telegram_id=${telegramId}`, wish)
             emitWishEvent('update', updated)
 
             const index = wishes.value.findIndex(w => w.id === wishId)
 
-            // Smart list update logic...
-            // (Reusing existing logic but now operating on local 'wishes' ref)
+            // Smart list update: handle wishlist moves
             if (currentWishlistId.value && updated.wishlist_id !== currentWishlistId.value) {
                 if (index !== -1) wishes.value.splice(index, 1)
             } else if (currentWishlistId.value && updated.wishlist_id === currentWishlistId.value) {
@@ -156,7 +115,7 @@ export function useWishes() {
                 if (index !== -1) wishes.value[index] = updated
             }
 
-            if (selectedWish.value && selectedWish.value.id === wishId) {
+            if (selectedWish.value?.id === wishId) {
                 selectedWish.value = updated
             }
 
@@ -169,7 +128,6 @@ export function useWishes() {
         }
     }
 
-    // Optimized moveWishesToWishlist with batching (max 5 simultaneous requests)
     async function moveWishesToWishlist(
         fromWishlistId: string,
         toWishlistId: string,
@@ -177,28 +135,20 @@ export function useWishes() {
     ): Promise<boolean> {
         loading.value = true
         try {
-            // 1. Fetch wishes to move
-            const response = await fetch(`${API_BASE_URL}/wishes?wishlist_id=${fromWishlistId}`)
-            if (!response.ok) throw new Error('Failed to fetch wishes')
-            const wishesToMove: Wish[] = await response.json()
+            const wishesToMove = await api.get<Wish[]>(`/wishes?wishlist_id=${fromWishlistId}`)
 
-            // 2. Batch update - max 5 simultaneous requests to avoid overload
+            // Batch update — max 5 simultaneous
             const BATCH_SIZE = 5
             for (let i = 0; i < wishesToMove.length; i += BATCH_SIZE) {
                 const batch = wishesToMove.slice(i, i + BATCH_SIZE)
-                const batchPromises = batch.map(wish =>
-                    fetch(`${API_BASE_URL}/wishes/${wish.id}?telegram_id=${telegramId}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ wishlist_id: toWishlistId }),
-                    })
+                await Promise.all(
+                    batch.map(wish =>
+                        api.put(`/wishes/${wish.id}?telegram_id=${telegramId}`, { wishlist_id: toWishlistId })
+                    )
                 )
-                const results = await Promise.all(batchPromises)
-                if (results.some(r => !r.ok)) throw new Error('Failed to move some wishes')
             }
 
             emitWishEvent('move')
-
             return true
         } catch (err) {
             error.value = err instanceof Error ? err.message : 'Failed to move wishes'
@@ -211,26 +161,17 @@ export function useWishes() {
     async function fulfillWish(wishId: string, telegramId: number): Promise<Wish | null> {
         loading.value = true
         try {
-            const response = await fetch(`${API_BASE_URL}/wishes/${wishId}/fulfill?telegram_id=${telegramId}`, {
-                method: 'POST',
-            })
-
-            if (!response.ok) {
-                throw new Error('Failed to fulfill wish')
-            }
-
-            const updated = await response.json()
+            const updated = await api.post<Wish>(`/wishes/${wishId}/fulfill?telegram_id=${telegramId}`)
             emitWishEvent('fulfill', updated)
 
             const index = wishes.value.findIndex(w => w.id === wishId)
-            // ... Logic ...
             if (currentWishlistId.value && updated.wishlist_id !== currentWishlistId.value) {
                 if (index !== -1) wishes.value.splice(index, 1)
             } else {
                 if (index !== -1) wishes.value[index] = updated
             }
 
-            if (selectedWish.value && selectedWish.value.id === wishId) {
+            if (selectedWish.value?.id === wishId) {
                 selectedWish.value = updated
             }
             return updated
@@ -244,11 +185,7 @@ export function useWishes() {
 
     async function bookWish(wishId: string, telegramId: number): Promise<Wish | null> {
         try {
-            const response = await fetch(`${API_BASE_URL}/wishes/${wishId}/book?telegram_id=${telegramId}`, {
-                method: 'POST',
-            })
-            if (!response.ok) throw new Error('Failed to book wish')
-            const updated: Wish = await response.json()
+            const updated = await api.post<Wish>(`/wishes/${wishId}/book?telegram_id=${telegramId}`)
             emitWishEvent('update', updated)
             const index = wishes.value.findIndex(w => w.id === wishId)
             if (index !== -1) wishes.value[index] = updated
@@ -262,11 +199,7 @@ export function useWishes() {
 
     async function unbookWish(wishId: string, telegramId: number): Promise<Wish | null> {
         try {
-            const response = await fetch(`${API_BASE_URL}/wishes/${wishId}/book?telegram_id=${telegramId}`, {
-                method: 'DELETE',
-            })
-            if (!response.ok) throw new Error('Failed to unbook wish')
-            const updated: Wish = await response.json()
+            const updated = await api.delete<Wish>(`/wishes/${wishId}/book?telegram_id=${telegramId}`)
             emitWishEvent('update', updated)
             const index = wishes.value.findIndex(w => w.id === wishId)
             if (index !== -1) wishes.value[index] = updated
@@ -293,6 +226,6 @@ export function useWishes() {
         unbookWish,
         openWish,
         closeWish,
-        onWishUpdate // Export this
+        onWishUpdate,
     }
 }

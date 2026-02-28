@@ -13,7 +13,7 @@ defineProps<{
   isOwner?: boolean
 }>()
 
-const emit = defineEmits<{
+defineEmits<{
   (e: 'add'): void
   (e: 'click', wish: Wish): void
 }>()
@@ -21,7 +21,7 @@ const emit = defineEmits<{
 
 <template>
   <div class="wish-grid">
-    <!-- Loading State (Skeletons) -->
+    <!-- Loading Skeletons -->
     <div v-if="loading" class="grid-content">
       <div v-for="i in 4" :key="i" class="wish-card skeleton-card">
         <div class="skeleton skeleton-image"></div>
@@ -32,18 +32,18 @@ const emit = defineEmits<{
       </div>
     </div>
 
-    <!-- Error State -->
+    <!-- Error -->
     <div v-else-if="error" class="grid-error">
       <p>{{ error }}</p>
     </div>
 
-    <!-- Empty State -->
+    <!-- Empty -->
     <div v-else-if="wishes.length === 0" class="grid-empty">
       <div class="empty-icon">✨</div>
       <p class="empty-text">Список желаний пуст</p>
     </div>
 
-    <!-- Unified Grid Content -->
+    <!-- Grid -->
     <div v-else class="grid-content">
       <WishCard
         v-for="wish in wishes"
@@ -57,37 +57,14 @@ const emit = defineEmits<{
         @click="$emit('click', wish)"
       />
     </div>
-    
   </div>
 </template>
 
 <style scoped>
-/* Scoped styles - Design System Refactor */
 .wish-grid {
-  padding: 0 var(--spacing-lg) 100px; /* Enhanced bottom padding */
+  padding: 0 var(--spacing-lg) 100px;
 }
 
-/* Loading */
-.grid-loading {
-  display: flex;
-  justify-content: center;
-  padding: var(--spacing-xl);
-}
-
-.spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid rgba(0, 0, 0, 0.1);
-  border-top-color: var(--tg-button-color);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-/* Empty State */
 .grid-empty {
   display: flex;
   flex-direction: column;
@@ -111,16 +88,14 @@ const emit = defineEmits<{
   margin-bottom: var(--spacing-lg);
 }
 
-/* Unified Grid Layout */
 .grid-content {
   display: grid;
-  grid-template-columns: 1fr 1fr; /* Two columns */
+  grid-template-columns: 1fr 1fr;
   gap: 16px;
   width: 100%;
 }
 
 .grid-item {
-  /* Default span is 1 column (half width) */
   grid-column: span 1;
 }
 
@@ -128,17 +103,14 @@ const emit = defineEmits<{
   grid-column: 1 / -1;
 }
 
-/* Use a deep selector or ensure higher specificity if needed, 
-   but since the class is added in the parent template, it should work.
-   Adding !important to force layout if there are conflicting styles. */
-/* Skeleton Card */
+/* Skeleton */
 .skeleton-card {
   background: var(--tg-secondary-bg-color);
   border-radius: var(--border-radius-lg);
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  height: 200px; /* Approx height of a card */
+  height: 200px;
 }
 
 .skeleton-image {

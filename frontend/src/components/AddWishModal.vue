@@ -1,9 +1,11 @@
 <script setup lang="ts">
 /**
  * Add/Edit Wish Modal.
- * Bottom sheet modal to add or edit a wish.
+ * Bottom sheet modal with Telegram MainButton for submit.
  */
-import { ref, reactive, watch, onBeforeUnmount } from 'vue'
+import { ref, reactive, watch, onMounted, onBeforeUnmount } from 'vue'
+import { useTelegramMainButton } from '@/composables/useTelegramMainButton'
+import { useHaptic } from '@/composables/useHaptic'
 import type { Wish, WishPriority } from '@/types'
 
 const props = defineProps<{
@@ -12,22 +14,24 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'close'): void
-  (e: 'submit', data: { 
-    id?: string;
-    title: string; 
-    subtitle?: string; 
-    priority: WishPriority; 
-    price?: number; 
-    currency?: string; 
-    link?: string; 
-    description?: string 
+  (e: 'submit', data: {
+    id?: string
+    title: string
+    subtitle?: string
+    priority: WishPriority
+    price?: number
+    currency?: string
+    link?: string
+    description?: string
   }): void
   (e: 'delete', id: string): void
 }>()
 
+const mainButton = useTelegramMainButton()
+const { impact } = useHaptic()
+
 const isSubmitting = ref(false)
 const isDeleting = ref(false)
-let submitTimeout: ReturnType<typeof setTimeout>
 let scrollTimeout: ReturnType<typeof setTimeout>
 
 const form = reactive({
@@ -37,7 +41,7 @@ const form = reactive({
   price: '',
   currency: 'RUB',
   link: '',
-  description: ''
+  description: '',
 })
 
 // Initialize form with existing data if editing
@@ -51,7 +55,6 @@ watch(() => props.initialWish, (wish) => {
     form.link = wish.link || ''
     form.description = wish.description || ''
   } else {
-    // Reset form
     form.title = ''
     form.subtitle = ''
     form.priority = 'just_want'
@@ -63,13 +66,14 @@ watch(() => props.initialWish, (wish) => {
 }, { immediate: true })
 
 function handleSubmit() {
-  if (!form.title.trim()) return
-  
+  if (!form.title.trim() || isSubmitting.value) return
+
   isSubmitting.value = true
-  
-  // Convert price string to number if present
+  mainButton.setLoading(true)
+  impact('light')
+
   const priceNumber = form.price ? parseFloat(form.price) : undefined
-  
+
   emit('submit', {
     id: props.initialWish?.id,
     title: form.title,
@@ -78,19 +82,35 @@ function handleSubmit() {
     price: priceNumber,
     currency: form.currency,
     link: form.link,
-    description: form.description
+    description: form.description,
   })
-  
-  // Reset submitting state after emit, parent handles closing or error
-  if (submitTimeout) clearTimeout(submitTimeout)
-  submitTimeout = setTimeout(() => { isSubmitting.value = false }, 500)
+
+  // Reset after emit
+  setTimeout(() => {
+    isSubmitting.value = false
+    mainButton.setLoading(false)
+  }, 500)
 }
 
 function handleDelete() {
-  if (!props.initialWish || !confirm('Вы уверены, что хотите удалить это желание?')) return
-  
-  isDeleting.value = true
-  emit('delete', props.initialWish.id)
+  if (!props.initialWish) return
+
+  // Use Telegram confirm via the webapp
+  const wa = window.Telegram?.WebApp
+  if (wa) {
+    wa.showConfirm('Вы уверены, что хотите удалить это желание?', (confirmed) => {
+      if (confirmed && props.initialWish) {
+        isDeleting.value = true
+        impact('medium')
+        emit('delete', props.initialWish.id)
+      }
+    })
+  } else {
+    if (confirm('Вы уверены, что хотите удалить это желание?') && props.initialWish) {
+      isDeleting.value = true
+      emit('delete', props.initialWish.id)
+    }
+  }
 }
 
 function onInputFocus(event: FocusEvent) {
@@ -100,9 +120,27 @@ function onInputFocus(event: FocusEvent) {
   }, 300)
 }
 
+// Watch form title to enable/disable MainButton
+watch(() => form.title, (val) => {
+  if (val.trim()) {
+    mainButton.enable()
+  } else {
+    mainButton.disable()
+  }
+})
+
+// Show MainButton on mount
+onMounted(() => {
+  const buttonText = props.initialWish ? 'Сохранить' : 'Добавить желание'
+  mainButton.show(buttonText, handleSubmit)
+  if (!form.title.trim()) {
+    mainButton.disable()
+  }
+})
+
 onBeforeUnmount(() => {
-  if (submitTimeout) clearTimeout(submitTimeout)
   if (scrollTimeout) clearTimeout(scrollTimeout)
+  // MainButton auto-hides via composable onUnmounted
 })
 </script>
 
@@ -218,24 +256,16 @@ onBeforeUnmount(() => {
           ></textarea>
         </div>
 
-        <div class="button-group">
-            <button
-              type="submit"
-              class="submit-btn"
-              :disabled="isSubmitting || !form.title.trim()"
-            >
-              {{ isSubmitting ? 'Сохранение...' : (initialWish ? 'Сохранить' : 'Добавить желание') }}
-            </button>
-            
-            <button
-              v-if="initialWish"
-              type="button"
-              class="delete-btn"
-              @click="handleDelete"
-              :disabled="isDeleting"
-            >
-                {{ isDeleting ? 'Удаление...' : 'Удалить желание' }}
-            </button>
+        <!-- Delete button (edit mode only) — submit handled by MainButton -->
+        <div v-if="initialWish" class="button-group">
+          <button
+            type="button"
+            class="delete-btn"
+            @click="handleDelete"
+            :disabled="isDeleting"
+          >
+            {{ isDeleting ? 'Удаление...' : 'Удалить желание' }}
+          </button>
         </div>
       </form>
     </div>
@@ -243,7 +273,6 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-/* Reuse styles or import from a common file if possible */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -251,7 +280,7 @@ onBeforeUnmount(() => {
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   display: flex;
-  align-items: flex-end; /* Bottom sheet */
+  align-items: flex-end;
   z-index: 1000;
   animation: fade-in 0.2s ease-out;
 }
@@ -334,34 +363,8 @@ label {
   margin-left: 4px;
 }
 
-/* Inputs are globally styled, overrides here */
 input, select, textarea {
-  /* Ensure consistent width */
   width: 100%;
-}
-
-.submit-btn {
-  margin-top: var(--spacing-sm);
-  padding: 16px;
-  background: var(--tg-button-color);
-  color: var(--tg-button-text-color);
-  border: none;
-  border-radius: var(--border-radius-lg);
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: opacity var(--transition-fast), transform var(--transition-fast);
-  width: 100%;
-}
-
-.submit-btn:active {
-  transform: scale(0.98);
-}
-
-.submit-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
 }
 
 .delete-btn {
@@ -399,7 +402,7 @@ input, select, textarea {
   to { transform: translateY(0); }
 }
 
-/* Priority Selector Styles */
+/* Priority Selector */
 .priority-selector {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -445,13 +448,6 @@ input, select, textarea {
 
 .priority-emoji {
   font-size: 24px;
-}
-
-.field-hint {
-  font-size: 11px;
-  color: var(--tg-hint-color);
-  margin-top: 4px;
-  display: block;
 }
 
 /* Photo Upload Placeholder */

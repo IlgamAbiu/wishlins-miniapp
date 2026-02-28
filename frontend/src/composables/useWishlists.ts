@@ -1,35 +1,29 @@
 /**
  * Composable for managing wishlists.
+ * Uses centralized API client.
  */
 
 import { ref } from 'vue'
+import { api } from '@/services/api'
 import type { Wishlist, WishlistListResponse } from '@/types'
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
 
 export function useWishlists() {
   const wishlists = ref<Wishlist[]>([])
   const loading = ref(false)
   const error = ref<string | null>(null)
+
   async function fetchWishlists(telegramId: number): Promise<void> {
     loading.value = true
     error.value = null
 
     try {
-      const response = await fetch(`${API_BASE_URL}/wishlists/user/telegram/${telegramId}`)
-
-      if (!response.ok) {
-        if (response.status === 404) {
-          // User not found or has no wishlists
-          wishlists.value = []
-          return
-        }
-        throw new Error(`Failed to fetch wishlists: ${response.statusText}`)
-      }
-
-      const data: WishlistListResponse = await response.json()
+      const data = await api.get<WishlistListResponse>(`/wishlists/user/telegram/${telegramId}`)
       wishlists.value = data.wishlists
-    } catch (err) {
+    } catch (err: any) {
+      if (err.status === 404) {
+        wishlists.value = []
+        return
+      }
       error.value = err instanceof Error ? err.message : 'Unknown error occurred'
       wishlists.value = []
     } finally {
@@ -47,25 +41,12 @@ export function useWishlists() {
     loading.value = true
     error.value = null
     try {
-      const response = await fetch(`${API_BASE_URL}/wishlists/?telegram_id=${telegramId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title,
-          is_public: isPublic,
-          event_date: eventDate,
-          description: description || null
-        })
+      const newWishlist = await api.post<Wishlist>(`/wishlists/?telegram_id=${telegramId}`, {
+        title,
+        is_public: isPublic,
+        event_date: eventDate,
+        description: description || null,
       })
-
-      if (!response.ok) {
-        throw new Error(`Failed to create wishlist: ${response.statusText}`)
-      }
-
-      const newWishlist = await response.json()
-      // Add to global state
       wishlists.value.push(newWishlist)
       return newWishlist
     } catch (err) {
@@ -82,20 +63,12 @@ export function useWishlists() {
   ): Promise<Wishlist | null> {
     loading.value = true
     try {
-      const response = await fetch(`${API_BASE_URL}/wishlists/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: data.title,
-          is_public: data.isPublic,
-          event_date: data.eventDate,
-          description: data.description
-        })
+      const updated = await api.patch<Wishlist>(`/wishlists/${id}`, {
+        title: data.title,
+        is_public: data.isPublic,
+        event_date: data.eventDate,
+        description: data.description,
       })
-
-      if (!response.ok) throw new Error('Failed to update wishlist')
-
-      const updated = await response.json()
       const index = wishlists.value.findIndex(w => w.id === id)
       if (index !== -1) {
         wishlists.value[index] = updated
@@ -112,12 +85,7 @@ export function useWishlists() {
   async function deleteWishlist(id: string): Promise<boolean> {
     loading.value = true
     try {
-      const response = await fetch(`${API_BASE_URL}/wishlists/${id}`, {
-        method: 'DELETE'
-      })
-
-      if (!response.ok) throw new Error('Failed to delete wishlist')
-
+      await api.delete(`/wishlists/${id}`)
       wishlists.value = wishlists.value.filter(w => w.id !== id)
       return true
     } catch (err) {

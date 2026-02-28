@@ -1,9 +1,9 @@
 <script setup lang="ts">
 /**
- * TabLayout - Layout component for tab-level screens.
- * Shows the main content via <router-view> with KeepAlive, and a TabBar at bottom.
+ * TabLayout - Layout for tab-level screens.
+ * Shows content with KeepAlive and TabBar at bottom.
  */
-import { TabBar } from '@/components/navigation'
+import TabBar from '@/components/TabBar.vue'
 </script>
 
 <template>

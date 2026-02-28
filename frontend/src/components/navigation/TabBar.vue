@@ -2,16 +2,23 @@
 /**
  * TabBar - Bottom navigation bar component.
  */
+import { useRoute, useRouter } from 'vue-router'
 import { useNavigation } from '@/composables/useNavigation'
 import { useKeyboard } from '@/composables/useKeyboard'
 import TabBarItem from './TabBarItem.vue'
-import type { TabId } from '@/types'
 
-const { tabs, activeTab, navigateToTab, isActive } = useNavigation()
+const { tabs } = useNavigation()
 const { isKeyboardOpen } = useKeyboard()
 
+const route = useRoute()
+const router = useRouter()
+
 function handleTabSelect(tabId: string) {
-  navigateToTab(tabId as TabId)
+  router.push({ name: tabId })
+}
+
+function isActive(tabId: string) {
+  return route.name === tabId
 }
 </script>
 

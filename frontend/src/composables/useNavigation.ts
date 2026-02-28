@@ -1,52 +1,31 @@
 /**
- * useNavigation - Composable for tab navigation.
+ * useNavigation - Composable for static tab definitions.
  */
+import type { TabConfig } from '@/types'
 
-import { computed } from 'vue'
-import { navigationStore, TAB_CONFIGS } from '@/stores'
-import type { TabId } from '@/types'
+export const TAB_CONFIGS: TabConfig[] = [
+  {
+    id: 'profile',
+    label: 'Мои желания',
+    icon: 'card_giftcard',
+    activeIcon: 'card_giftcard',
+  },
+  {
+    id: 'friends',
+    label: 'Друзья',
+    icon: 'group',
+    activeIcon: 'group',
+  },
+  {
+    id: 'search',
+    label: 'Идеи',
+    icon: 'lightbulb',
+    activeIcon: 'lightbulb',
+  },
+]
 
 export function useNavigation() {
-  const { state, switchTab, goBack, isTabActive, activeTabConfig } = navigationStore
-
-  /**
-   * Current active tab ID.
-   */
-  const activeTab = computed(() => state.activeTab)
-
-  /**
-   * All available tabs.
-   */
-  const tabs = TAB_CONFIGS
-
-  /**
-   * Switch to a tab.
-   */
-  function navigateToTab(tabId: TabId): void {
-    if (state.activeTab === tabId) return
-    switchTab(tabId)
-  }
-
-  /**
-   * Check if a tab is currently active.
-   */
-  function isActive(tabId: TabId): boolean {
-    return isTabActive(tabId)
-  }
-
-  /**
-   * Navigate back to previous tab.
-   */
-  function navigateBack(): boolean {
-    return goBack()
-  }
-
   return {
-    activeTab,
-    activeTabConfig,
-    tabs,
-    navigateToTab,
-    navigateBack,
-    isActive,
+    tabs: TAB_CONFIGS,
   }
 }

@@ -30,6 +30,7 @@ interface TelegramWebApp {
     query_id?: string
     auth_date?: number
     hash?: string
+    start_param?: string
   }
   version: string
   platform: string
@@ -109,6 +110,7 @@ export function useTelegramWebApp() {
   const user = ref<TelegramUser | null>(null)
   const webapp = ref<TelegramWebApp | null>(null)
   const hasValidInitData = ref(false)
+  const startParam = ref<string | null>(null)
 
   // Check if running inside Telegram with valid initData
   const isInTelegram = computed(() => isAvailable.value && hasValidInitData.value)
@@ -131,6 +133,11 @@ export function useTelegramWebApp() {
       // Get user data from initDataUnsafe
       if (webapp.value.initDataUnsafe.user) {
         user.value = webapp.value.initDataUnsafe.user
+      }
+
+      // Check for deep link start_param (e.g. ?startapp=wish_123)
+      if (webapp.value.initDataUnsafe.start_param) {
+        startParam.value = webapp.value.initDataUnsafe.start_param
       }
 
       // Tell Telegram that the app is ready
@@ -225,5 +232,6 @@ export function useTelegramWebApp() {
     webapp,
     backButton,
     mainButton,
+    startParam,
   }
 }

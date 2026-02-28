@@ -3,11 +3,11 @@
  * ProfileView - User profile with Events (Wishlists) and Wishes.
  */
 import { ref, watch, computed, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
 import { useWishlists } from '@/composables/useWishlists'
 import { useWishes } from '@/composables/useWishes'
 import { useUser } from '@/composables/useUser'
-import { navigationStore } from '@/stores/navigation.store'
 import EventCarousel from '@/components/EventCarousel.vue'
 import WishGrid from '@/components/WishGrid.vue'
 import AddWishModal from '@/components/AddWishModal.vue'
@@ -15,6 +15,8 @@ import AddEventModal from '@/components/AddEventModal.vue'
 import EditProfileTextModal from '@/components/EditProfileTextModal.vue'
 import DeleteEventModal from '@/components/DeleteEventModal.vue'
 import EventLimitModal from '@/components/EventLimitModal.vue'
+
+const router = useRouter()
 
 const props = defineProps<{
     userId?: number // Optional prop for direct user ID (Stack Navigation)
@@ -41,7 +43,7 @@ const isSubscriptionLoading = ref(false)
 // Guest Mode Logic
 const targetUserId = computed(() => {
     if (props.userId) return props.userId
-    return navigationStore.state.viewedUserId || user.value?.id
+    return user.value?.id
 })
 
 // Check if we are in "Stack Mode" (navigated from Friends list)
@@ -49,8 +51,7 @@ const isStackMode = computed(() => !!props.userId)
 
 const isOwner = computed(() => {
     if (props.userId) return props.userId === user.value?.id
-    if (!navigationStore.state.viewedUserId) return true
-    return navigationStore.state.viewedUserId === user.value?.id
+    return true
 })
 
 // Current User Display
@@ -112,7 +113,7 @@ onUnmounted(() => {
 })
 
 function handleGoBack() {
-    navigationStore.closeFriendProfile()
+    router.back()
 }
 
 
@@ -164,19 +165,12 @@ async function initData() {
   }
 }
 
-// Watch for user changes OR navigation state changes OR prop changes
-watch([() => user.value, () => navigationStore.state.viewedUserId, () => props.userId], () => {
+// Watch for user changes OR prop changes
+watch([() => user.value, () => props.userId], () => {
    // Reset selected event when switching profiles
    selectedEventId.value = null
    initData()
 }, { immediate: true })
-
-// Re-fetch own data when returning to "Мои желания" tab (KeepAlive keeps stale state)
-watch(() => navigationStore.state.activeTab, (newTab) => {
-  if (newTab === 'profile' && !isStackMode.value) {
-    initData()
-  }
-})
 
 // Watch for event selection to fetch wishes
 let fetchTimeout: ReturnType<typeof setTimeout>
@@ -314,6 +308,7 @@ async function handleAddWish(data: any) {
 
 function onWishClick(wish: any) {
   openWish(wish)
+  router.push({ name: 'wish-detail', params: { id: wish.id } })
 }
 
 function handleEditProfile() {

@@ -3,42 +3,23 @@
  * Root application component with Tab Bar navigation.
  * Shows BlockedScreen when opened outside Telegram.
  */
-import { computed, defineAsyncComponent } from 'vue'
-import { useNavigation } from '@/composables/useNavigation'
+import { watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
-import { useWishes } from '@/composables/useWishes'
 import { TabBar } from '@/components/navigation'
 import BlockedScreen from '@/components/BlockedScreen.vue'
-import WishDetailView from '@/components/WishDetailView.vue'
 
-// Lazy load views
-const ProfileView = defineAsyncComponent(() => import('@/views/ProfileView.vue'))
-// Robust Async Component Loading for FriendsView
-const FriendsView = defineAsyncComponent({
-  loader: () => import('@/views/FriendsView.vue'),
-  onError: (error, retry, fail, attempts) => {
-    console.error('Error loading FriendsView:', error)
-    if (attempts <= 3) {
-      retry()
-    } else {
-      fail()
+const { isReady, isInTelegram, startParam } = useTelegramWebApp()
+const router = useRouter()
+
+watch(isReady, (ready) => {
+  if (ready && startParam.value) {
+    if (startParam.value.startsWith('wish_')) {
+      const wishId = startParam.value.replace('wish_', '')
+      router.push({ name: 'wish-detail', params: { id: wishId } })
     }
-  },
-})
-const SearchView = defineAsyncComponent(() => import('@/views/SearchView.vue'))
-
-const { activeTab } = useNavigation()
-const { isReady, isInTelegram } = useTelegramWebApp()
-const { selectedWish } = useWishes()
-
-// Map tab IDs to components
-const tabComponents = {
-  profile: ProfileView,
-  friends: FriendsView,
-  search: SearchView,
-}
-
-const currentComponent = computed(() => tabComponents[activeTab.value])
+  }
+}, { immediate: true })
 </script>
 
 <template>
@@ -56,16 +37,25 @@ const currentComponent = computed(() => tabComponents[activeTab.value])
     <div class="mesh-gradient"></div>
 
     <main class="app__content">
-      <KeepAlive :max="2">
-        <component :is="currentComponent" :key="activeTab" />
-      </KeepAlive>
+      <router-view v-slot="{ Component, route }">
+        <KeepAlive :max="3">
+          <component 
+            :is="Component" 
+            :key="route.name" 
+            v-if="route.meta.keepAlive" 
+          />
+        </KeepAlive>
+        <Transition name="fade-scale" mode="out-in">
+          <component 
+            :is="Component" 
+            :key="route.name || 'no-cache'" 
+            v-if="!route.meta.keepAlive" 
+          />
+        </Transition>
+      </router-view>
     </main>
 
-    <Transition name="fade-scale">
-      <WishDetailView v-if="selectedWish" />
-    </Transition>
-
-    <TabBar v-show="!selectedWish" />
+    <TabBar v-show="$route.meta.showTabBar" />
   </div>
 </template>
 

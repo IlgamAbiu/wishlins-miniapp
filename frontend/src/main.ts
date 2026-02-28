@@ -3,6 +3,7 @@
  */
 import { createApp } from 'vue'
 import App from './App.vue'
+import router, { setupTelegramBackButton } from './router'
 
 // Import design system CSS in correct order
 import './assets/design-system.css'     // Base design tokens
@@ -13,4 +14,8 @@ import './assets/utilities.css'         // Utility classes
 
 // Create and mount the app
 const app = createApp(App)
+app.use(router)
+
+setupTelegramBackButton(router)
+
 app.mount('#app')

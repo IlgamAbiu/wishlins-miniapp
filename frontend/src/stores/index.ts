@@ -2,4 +2,4 @@
  * Stores barrel export.
  */
 
-export { navigationStore, TAB_CONFIGS } from './navigation.store'
+// Deprecated: stores are now composables or native state.

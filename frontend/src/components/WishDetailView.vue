@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, nextTick } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useWishes } from '@/composables/useWishes'
 import { useWishlists } from '@/composables/useWishlists'
 import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
@@ -7,6 +8,8 @@ import { useUser } from '@/composables/useUser'
 import type { Wish } from '@/types'
 import AddWishModal from '@/components/AddWishModal.vue'
 
+const route = useRoute()
+const router = useRouter()
 const { selectedWish, closeWish, updateWish, deleteWish, fulfillWish, bookWish, unbookWish } = useWishes()
 const { wishlists, fetchWishlists } = useWishlists()
 const { user } = useTelegramWebApp()
@@ -18,6 +21,19 @@ const loadingOwnership = ref(true)
 
 // Fetch internal user ID for ownership check
 onMounted(async () => {
+    // If not set by ProfileView click, fetch wish by ID
+    if (!selectedWish.value || selectedWish.value.id !== route.params.id) {
+        const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
+        try {
+            const response = await fetch(`${API_BASE_URL}/wishes/${route.params.id}?telegram_id=${user.value?.id || ''}`)
+            if (response.ok) {
+                selectedWish.value = await response.json()
+            }
+        } catch (e) {
+            console.error('Failed to fetch wish detail:', e)
+        }
+    }
+
     if (user.value) {
         const internalUser = await getUserByTelegramId(user.value.id)
         if (internalUser) {
@@ -88,9 +104,10 @@ function handleBack() {
     return
   }
 
-  console.log('Back button clicked, closing wish')
+  console.log('Back button clicked, navigating back')
   isClosing.value = true
-  closeWish()
+  
+  router.back()
 
   // Reset after transition completes
   setTimeout(() => {

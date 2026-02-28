@@ -4,13 +4,14 @@
  * Shows BlockedScreen when opened outside Telegram.
  */
 import { watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useTelegramWebApp } from '@/composables/useTelegramWebApp'
 import { TabBar } from '@/components/navigation'
 import BlockedScreen from '@/components/BlockedScreen.vue'
 
-const { isReady, isInTelegram, startParam } = useTelegramWebApp()
+const { isReady, isInTelegram, startParam, backButton } = useTelegramWebApp()
 const router = useRouter()
+const route = useRoute()
 
 watch(isReady, (ready) => {
   if (ready && startParam.value) {
@@ -19,6 +20,21 @@ watch(isReady, (ready) => {
       sessionStorage.setItem('deepLinkHandled', 'true')
       const wishId = startParam.value.replace('wish_', '')
       router.push({ name: 'wish-detail', params: { id: wishId } })
+    }
+  }
+}, { immediate: true })
+
+// Keep Telegram BackButton synchronized with the Vue Router state
+// we need this here because the router.afterEach guard might fire before Telegram WebApp is fully ready
+watch([route, isReady], ([currentRoute, ready]) => {
+  if (ready && currentRoute) {
+    const level = (currentRoute.meta?.level as number) || 1
+    const isStackBase = currentRoute.meta?.stackBase === true
+
+    if (level === 1 || isStackBase) {
+      backButton.value.hide()
+    } else {
+      backButton.value.show()
     }
   }
 }, { immediate: true })

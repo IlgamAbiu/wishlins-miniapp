@@ -57,8 +57,6 @@ const formattedPrice = computed(() => {
   }).format(safeWish.value.price)
 })
 
-import { navigationStore } from '@/stores/navigation.store'
-
 // ...
 
 const isOwner = computed(() => {
